@@ -59,7 +59,7 @@ export default function DisciplinePage() {
       />
 
       {/* TOP STATS GRID WITH SPARKLINES */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Discipline Score"
           value="842"

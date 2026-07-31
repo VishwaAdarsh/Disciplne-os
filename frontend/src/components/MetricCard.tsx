@@ -40,9 +40,9 @@ export default function MetricCard({
       style={{
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
-        borderRadius: 'var(--card-radius, 16px)',
+        borderRadius: 'var(--card-radius, 14px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '18px 20px',
+        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',

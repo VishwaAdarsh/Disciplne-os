@@ -40,7 +40,7 @@ export default function BodyPage() {
       />
 
       {/* TOP STATS CARDS GRID WITH SPARKLINES */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Steps"
           value={`${mockBodyData.steps.current.toLocaleString()} / ${mockBodyData.steps.target.toLocaleString()}`}
@@ -171,7 +171,7 @@ export default function BodyPage() {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justify: 'center',
+              justifyContent: 'center',
               gap: '8px',
               boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
             }}

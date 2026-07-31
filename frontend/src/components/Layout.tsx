@@ -113,6 +113,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           {/* Level Badge */}
           <div
+            className="hide-mobile"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -130,6 +131,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           {/* Theme Toggle Button */}
           <button
+            className="hide-mobile"
             onClick={toggleTheme}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             style={{
@@ -150,6 +152,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           {/* Notifications Button */}
           <button
+            className="hide-mobile"
             onClick={() => setShowNotifications(!showNotifications)}
             title="Notifications"
             style={{
@@ -188,6 +191,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </div>
             <button
+              className="hide-mobile"
               onClick={logout}
               title="Sign out"
               style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}

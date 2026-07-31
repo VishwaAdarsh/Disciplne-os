@@ -49,7 +49,18 @@ export default function PageHeader({
       </div>
 
       {categories && categories.length > 0 && onSelectCategory && (
-        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div
+          className="no-scrollbar"
+          style={{
+            display: 'flex',
+            gap: '6px',
+            overflowX: 'auto',
+            flexWrap: 'nowrap',
+            width: '100%',
+            paddingBottom: '4px',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {categories.map((cat) => {
             const active = (activeCategory || 'All').toLowerCase() === cat.toLowerCase();
             return (
@@ -57,12 +68,13 @@ export default function PageHeader({
                 key={cat}
                 onClick={() => onSelectCategory(cat)}
                 style={{
+                  flexShrink: 0,
                   background: active ? '#6366F1' : 'var(--card-bg)',
                   color: active ? '#FFFFFF' : 'var(--text-muted)',
                   border: active ? '1px solid #6366F1' : '1px solid var(--card-border)',
                   borderRadius: '20px',
-                  padding: '6px 14px',
-                  fontSize: '12px',
+                  padding: '5px 12px',
+                  fontSize: '11px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',

@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Award, Lock, CheckCircle2, Shield, Flame, Zap, Brain, Crown } from 'lucide-react';
+import { Award, CheckCircle2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
-import MetricCard from '../components/MetricCard';
 import { mockAchievementsData } from '../mock/achievementsData';
 
 export default function AchievementsPage() {
@@ -55,7 +54,7 @@ export default function AchievementsPage() {
       </div>
 
       {/* ACHIEVEMENTS CARDS GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         {filtered.map((item) => (
           <div
             key={item.id}

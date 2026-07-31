@@ -24,7 +24,7 @@ export default function DonutChartCard({
   data,
   centerLabel,
   centerSublabel,
-  height = 240,
+  height = 180,
   unit = '',
 }: DonutChartCardProps) {
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
@@ -35,12 +35,12 @@ export default function DonutChartCard({
       style={{
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
-        borderRadius: 'var(--card-radius, 16px)',
+        borderRadius: 'var(--card-radius, 14px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '20px',
+        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '10px',
       }}
     >
       <div>

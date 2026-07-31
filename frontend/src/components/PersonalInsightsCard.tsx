@@ -62,15 +62,28 @@ export default function PersonalInsightsCard({ insights }: PersonalInsightsCardP
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+      <div
+        className="no-scrollbar"
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          gap: '12px',
+          paddingBottom: '4px',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         {filtered.map((item) => (
           <div
             key={item.id}
             style={{
+              flex: '0 0 82%',
+              minWidth: '240px',
+              scrollSnapAlign: 'start',
               background: 'linear-gradient(135deg, rgba(139,92,246,0.05), rgba(99,102,241,0.02))',
               border: '1px solid rgba(139,92,246,0.18)',
               borderRadius: '14px',
-              padding: '16px',
+              padding: '14px 16px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',

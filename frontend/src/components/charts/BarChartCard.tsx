@@ -24,7 +24,7 @@ export default function BarChartCard({
   subtitle,
   data,
   defaultColor = '#6366F1',
-  height = 240,
+  height = 180,
   unit = '',
   badge,
   badgeColor = '#6366F1',
@@ -36,12 +36,12 @@ export default function BarChartCard({
       style={{
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
-        borderRadius: 'var(--card-radius, 16px)',
+        borderRadius: 'var(--card-radius, 14px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '20px',
+        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '14px',
+        gap: '10px',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

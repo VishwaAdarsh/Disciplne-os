@@ -84,7 +84,7 @@ export default function NutritionPage() {
       />
 
       {/* TOP MACROS CARDS GRID WITH HORIZONTAL PROGRESS BARS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Calories"
           value={`${mockNutritionData.calories.current.toLocaleString()} / ${mockNutritionData.calories.target.toLocaleString()}`}
@@ -280,7 +280,7 @@ export default function NutritionPage() {
                     color: m.logged ? '#10B981' : 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
-                    justify: 'center',
+                    justifyContent: 'center',
                     fontWeight: 700,
                   }}
                 >

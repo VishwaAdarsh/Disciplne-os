@@ -29,7 +29,7 @@ export default function AreaTrendChartCard({
   dataKey = 'value',
   series,
   color = '#6366F1',
-  height = 240,
+  height = 190,
   unit = '',
   timeframes,
   onTimeframeChange,
@@ -53,28 +53,28 @@ export default function AreaTrendChartCard({
       style={{
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
-        borderRadius: 'var(--card-radius, 16px)',
+        borderRadius: 'var(--card-radius, 14px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '20px',
+        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '14px',
+        gap: '10px',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
         <div>
-          <h3 className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+          <h3 className="font-sekuya" style={{ fontSize: '15px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
             {title}
           </h3>
           {subtitle && (
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
               {subtitle}
             </p>
           )}
         </div>
 
         {timeframes && timeframes.length > 0 && (
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--input-bg)', padding: '3px', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', gap: '3px', background: 'var(--input-bg)', padding: '3px', borderRadius: '8px' }}>
             {timeframes.map((tf) => (
               <button
                 key={tf}
@@ -116,7 +116,8 @@ export default function AreaTrendChartCard({
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                minTickGap={25}
+                tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
               />
               <YAxis
                 axisLine={false}

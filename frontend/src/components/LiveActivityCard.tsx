@@ -89,10 +89,12 @@ export default function LiveActivityCard({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setIsPaused(!isPaused)}
               style={{
+                flex: '1 1 auto',
+                justifyContent: 'center',
                 background: isPaused ? '#10B981' : 'var(--input-bg)',
                 color: isPaused ? '#FFF' : 'var(--text-main)',
                 border: '1px solid var(--card-border)',
@@ -114,6 +116,8 @@ export default function LiveActivityCard({
             <button
               onClick={() => alert('Focus session logged!')}
               style={{
+                flex: '1 1 auto',
+                justifyContent: 'center',
                 background: '#6366F1',
                 color: '#FFFFFF',
                 border: 'none',

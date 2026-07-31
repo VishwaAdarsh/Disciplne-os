@@ -44,7 +44,7 @@ export default function Analytics() {
       />
 
       {/* HIGHLIGHT CALLOUTS CARDS GRID WITH SPARKLINES */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Best Day"
           value={mockAnalyticsData.highlights.bestDayScore}

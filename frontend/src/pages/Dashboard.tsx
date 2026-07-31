@@ -67,7 +67,7 @@ export default function Dashboard() {
       />
 
       {/* PRIMARY KPI CARDS GRID */}
-      <div className="grid-responsive-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+      <div className="mobile-kpi-grid grid-responsive-3" style={{ gap: '12px' }}>
         {/* DISCIPLINE SCORE RADIAL CARD */}
         <RadialScoreCard
           score={mockOverviewData.kpis.disciplineScore}

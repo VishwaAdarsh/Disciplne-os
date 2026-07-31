@@ -43,41 +43,41 @@ export default function PerformanceSummary({ comparisons, categoryScores }: Perf
       style={{
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
-        borderRadius: 'var(--card-radius, 16px)',
+        borderRadius: 'var(--card-radius, 14px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '22px',
+        padding: '16px 18px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '24px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '20px',
       }}
     >
       {/* LEFT SIDE: Comparison Grid */}
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Award size={18} color="#6366F1" />
-              <span className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
+              <Award size={16} color="#6366F1" />
+              <span className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
                 Performance Comparison
               </span>
             </div>
 
-            <div style={{ display: 'flex', gap: '4px', background: 'var(--input-bg)', padding: '3px', borderRadius: '10px' }}>
+            <div style={{ display: 'flex', gap: '3px', background: 'var(--input-bg)', padding: '3px', borderRadius: '8px' }}>
               <button
                 onClick={() => setActiveTab('score')}
                 style={{
                   background: activeTab === 'score' ? '#6366F1' : 'transparent',
                   color: activeTab === 'score' ? '#FFF' : 'var(--text-muted)',
                   border: 'none',
-                  borderRadius: '7px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '10px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
               >
-                Performance Score
+                Score
               </button>
               <button
                 onClick={() => setActiveTab('avg')}
@@ -85,57 +85,57 @@ export default function PerformanceSummary({ comparisons, categoryScores }: Perf
                   background: activeTab === 'avg' ? '#6366F1' : 'transparent',
                   color: activeTab === 'avg' ? '#FFF' : 'var(--text-muted)',
                   border: 'none',
-                  borderRadius: '7px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '10px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
               >
-                Daily Average
+                Avg
               </button>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' }}>
-            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>TODAY</div>
-              <div className="font-sekuya text-gradient-score" style={{ fontSize: '24px', fontWeight: 700, margin: '2px 0' }}>
+          <div className="mobile-stats-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>TODAY</div>
+              <div className="font-sekuya text-gradient-score" style={{ fontSize: '20px', fontWeight: 700, margin: '2px 0' }}>
                 {activeTab === 'score' ? comparisons.today : Math.round(comparisons.today * 0.9)}
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#10B981' }}>{comparisons.todayTrend}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: '#10B981' }}>{comparisons.todayTrend}</div>
             </div>
 
-            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>THIS WEEK</div>
-              <div className="font-sekuya text-gradient-brand" style={{ fontSize: '24px', fontWeight: 700, margin: '2px 0' }}>
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>WEEK</div>
+              <div className="font-sekuya text-gradient-brand" style={{ fontSize: '20px', fontWeight: 700, margin: '2px 0' }}>
                 {activeTab === 'score' ? comparisons.thisWeek : Math.round(comparisons.thisWeek * 0.92)}
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#10B981' }}>{comparisons.thisWeekTrend}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: '#10B981' }}>{comparisons.thisWeekTrend}</div>
             </div>
 
-            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>THIS MONTH</div>
-              <div className="font-sekuya text-gradient-xp" style={{ fontSize: '24px', fontWeight: 700, margin: '2px 0' }}>
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>MONTH</div>
+              <div className="font-sekuya text-gradient-xp" style={{ fontSize: '20px', fontWeight: 700, margin: '2px 0' }}>
                 {activeTab === 'score' ? comparisons.thisMonth : Math.round(comparisons.thisMonth * 0.88)}
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#10B981' }}>{comparisons.thisMonthTrend}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: '#10B981' }}>{comparisons.thisMonthTrend}</div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-            <div style={{ background: 'var(--input-bg)', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>YESTERDAY</div>
-              <div className="font-sekuya" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.yesterday}</div>
+          <div className="mobile-stats-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <div style={{ background: 'var(--input-bg)', borderRadius: '8px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>YESTERDAY</div>
+              <div className="font-sekuya" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.yesterday}</div>
             </div>
-            <div style={{ background: 'var(--input-bg)', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST WEEK</div>
-              <div className="font-sekuya" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.lastWeek}</div>
+            <div style={{ background: 'var(--input-bg)', borderRadius: '8px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST WEEK</div>
+              <div className="font-sekuya" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.lastWeek}</div>
             </div>
-            <div style={{ background: 'var(--input-bg)', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST MONTH</div>
-              <div className="font-sekuya" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.lastMonth}</div>
+            <div style={{ background: 'var(--input-bg)', borderRadius: '8px', padding: '8px 4px', textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>LAST MONTH</div>
+              <div className="font-sekuya" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>{comparisons.lastMonth}</div>
             </div>
           </div>
         </div>
@@ -143,14 +143,14 @@ export default function PerformanceSummary({ comparisons, categoryScores }: Perf
 
       {/* RIGHT SIDE: Horizontal Progress Bars */}
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <span className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <span className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
             Your Performance Today
           </span>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Category Breakdown</span>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Breakdown</span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {categories.map(({ name, score, color }) => (
             <HorizontalProgressBar
               key={name}
@@ -159,7 +159,7 @@ export default function PerformanceSummary({ comparisons, categoryScores }: Perf
               max={100}
               unit="%"
               color={color}
-              height={9}
+              height={7}
               showPercentage={false}
             />
           ))}

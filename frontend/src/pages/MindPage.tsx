@@ -45,7 +45,7 @@ export default function MindPage() {
       />
 
       {/* TOP STATS CARDS GRID WITH SPARKLINES */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Mood"
           value={`${selectedMood} / 5`}

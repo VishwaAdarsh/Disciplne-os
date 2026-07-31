@@ -34,7 +34,7 @@ export default function SettingsPage() {
           <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px', color: 'var(--text-main)' }}>
             Operator Profile
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+          <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
             <div>
               <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Name</label>
               <input
@@ -78,7 +78,7 @@ export default function SettingsPage() {
           <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px', color: 'var(--text-main)' }}>
             System Parameters
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+          <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
             <div>
               <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Theme</label>
               <div style={{ display: 'flex', gap: '8px' }}>
