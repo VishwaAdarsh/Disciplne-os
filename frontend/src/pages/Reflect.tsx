@@ -1,123 +1,228 @@
-import { useEffect, useState } from 'react';
-import { reflectionsAPI, analyticsAPI } from '../api/client';
-import { useStore } from '../store/useStore';
-import { motion } from 'framer-motion';
-
-const QUESTIONS = [
-  { key:'overallScore', text:'How disciplined were you this week overall?' },
-  { key:'nonnegScore', text:'Did you honor your non-negotiables?' },
-  { key:'clarityScore', text:'How was your mental clarity and focus?' },
-  { key:'progressScore', text:'Did you make progress on long-term goals?' },
-] as const;
+import { useState } from 'react';
+import { BookOpen, Flame, Award, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 
 export default function Reflect() {
-  const { reflections, setReflections, setDashboard } = useStore();
-  const [ratings, setRatings] = useState<Record<string, number>>({ overallScore:0, nonnegScore:0, clarityScore:0, progressScore:0 });
   const [wentWell, setWentWell] = useState('');
   const [brokeDown, setBrokeDown] = useState('');
+  const [changeNext, setChangeNext] = useState('');
   const [commitment, setCommitment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [locked, setLocked] = useState(false);
 
-  useEffect(() => { reflectionsAPI.list().then(r => setReflections(r.data)); }, []);
-
-  const canSubmit = Object.values(ratings).every(v => v > 0) && wentWell.length >= 10 && brokeDown.length >= 10 && commitment.length >= 5;
-
-  const submit = async () => {
-    if (!canSubmit) { setError('Please rate all questions and fill in at least 10 characters for reflections.'); return; }
-    setSubmitting(true); setError('');
-    try {
-      await reflectionsAPI.create({ ...ratings, wentWell, brokeDown, commitment } as any);
-      const [rRes, dashRes] = await Promise.all([
-        reflectionsAPI.list(),
-        analyticsAPI.dashboard()
-      ]);
-      setReflections(rRes.data);
-      setDashboard(dashRes.data);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-      setRatings({ overallScore:0, nonnegScore:0, clarityScore:0, progressScore:0 });
-      setWentWell(''); setBrokeDown(''); setCommitment('');
-    } catch (e: any) {
-      setError(e.response?.data?.error || 'Failed to submit');
-    } finally { setSubmitting(false); }
+  const handleLockIn = () => {
+    setLocked(true);
   };
 
-  const Card = ({ children, style = {} }: any) => (
-    <div style={{ background:'var(--card-bg)', border:'1px solid var(--card-border)', borderRadius:'var(--card-radius, 16px)', boxShadow:'var(--card-shadow)', padding:'22px', transition:'all 0.2s ease', ...style }}>{children}</div>
-  );
-
-  const inputStyle = { width:'100%', background:'var(--input-bg)', border:'1px solid var(--input-border)', borderRadius:'8px', padding:'10px 14px', fontSize:'14px', color:'var(--text-main)', outline:'none', fontFamily:'Inter', resize:'vertical' as const };
-
   return (
-    <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'20px', flexWrap:'wrap', gap:'12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <PageHeader
+        title="Weekly Reflection"
+        subtitle="Review weekly execution, extract lessons, and lock in your commitments."
+      />
+
+      {/* WEEK IN REVIEW HEADER BANNER */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(124,58,237,0.04))',
+          border: '1px solid rgba(99,102,241,0.2)',
+          borderRadius: 'var(--card-radius, 16px)',
+          padding: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}
+      >
         <div>
-          <h1 className="font-sekuya" style={{ fontSize:'24px', fontWeight:700, margin:0, color:'var(--text-main)' }}>Weekly Reflection</h1>
-          <div style={{ fontSize:'13px', color:'var(--text-muted)', marginTop:'2px' }}>Honest self-assessment drives real growth.</div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
+            JUL 27 — AUG 02
+          </div>
+          <h2 className="font-sekuya" style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+            YOUR WEEK IN REVIEW
+          </h2>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Score progression: <strong style={{ color: '#6366F1' }}>712 → 748</strong> (+36 pts)
+          </div>
         </div>
-        <button onClick={submit} disabled={submitting}
-          style={{ background:'#6366F1', border:'none', borderRadius:'8px', padding:'8px 18px', color:'#fff', fontWeight:500, cursor:'pointer', opacity: submitting ? 0.6 : 1 }}>
-          {submitting ? 'Submitting…' : 'Submit Reflection'}
-        </button>
+
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Performance</div>
+            <div className="font-sekuya text-gradient-success" style={{ fontSize: '22px', fontWeight: 700 }}>86%</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Streak</div>
+            <div className="font-sekuya text-gradient-streak" style={{ fontSize: '22px', fontWeight: 700 }}>🔥 12d</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Completed</div>
+            <div className="font-sekuya text-gradient-score" style={{ fontSize: '22px', fontWeight: 700 }}>24 / 28</div>
+          </div>
+        </div>
       </div>
 
-      {success && (
-        <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }}
-          style={{ background:'rgba(16,185,129,0.12)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', padding:'12px 16px', fontSize:'13px', color:'#10B981', marginBottom:'16px' }}>
-          ✓ Reflection submitted! Your discipline score has been updated.
-        </motion.div>
-      )}
-      {error && <div style={{ background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', padding:'12px 16px', fontSize:'13px', color:'#EF4444', marginBottom:'16px' }}>{error}</div>}
+      {/* QUESTIONS FORM CARD */}
+      <div
+        style={{
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          borderRadius: 'var(--card-radius, 16px)',
+          boxShadow: 'var(--card-shadow)',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+      >
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', marginBottom: '4px' }}>
+            01
+          </div>
+          <label style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
+            What went well this week?
+          </label>
+          <textarea
+            value={wentWell}
+            onChange={(e) => setWentWell(e.target.value)}
+            disabled={locked}
+            placeholder="Maintained 100% morning routine streak and focused deep work blocks..."
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              borderRadius: '12px',
+              padding: '12px',
+              fontSize: '13px',
+              color: 'var(--text-main)',
+              resize: 'none',
+            }}
+          />
+        </div>
 
-      <div className="grid-responsive-2" style={{ marginBottom:'20px' }}>
-        <Card>
-          <h2 className="font-sekuya" style={{ fontSize:'18px', fontWeight:700, margin:'0 0 16px', color:'var(--text-main)' }}>Self-Assessment</h2>
-          {QUESTIONS.map(q => (
-            <div key={q.key} style={{ background:'var(--input-bg)', border:'1px solid var(--card-border)', borderRadius:'10px', padding:'16px', marginBottom:'12px' }}>
-              <div style={{ fontSize:'14px', fontWeight:500, color:'var(--text-main)', marginBottom:'10px' }}>{q.text}</div>
-              <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                {[1,2,3,4,5].map(n => (
-                  <button key={n} onClick={() => setRatings({...ratings, [q.key]: n})}
-                    style={{ width:'28px', height:'28px', borderRadius:'6px', border:`1px solid ${ratings[q.key]>=n ? '#6366F1' : 'var(--input-border)'}`,
-                      background: ratings[q.key]>=n ? 'rgba(99,102,241,0.15)' : 'none', color: ratings[q.key]>=n ? '#6366F1' : 'var(--text-muted)',
-                      fontSize:'13px', fontWeight:600, cursor:'pointer', fontFamily:'JetBrains Mono' }}>{n}</button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </Card>
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#EF4444', textTransform: 'uppercase', marginBottom: '4px' }}>
+            02
+          </div>
+          <label style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
+            What broke down?
+          </label>
+          <textarea
+            value={brokeDown}
+            onChange={(e) => setBrokeDown(e.target.value)}
+            disabled={locked}
+            placeholder="Late evening screen time led to delayed sleep schedule on Thursday..."
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              borderRadius: '12px',
+              padding: '12px',
+              fontSize: '13px',
+              color: 'var(--text-main)',
+              resize: 'none',
+            }}
+          />
+        </div>
 
-        <Card>
-          <div style={{ fontSize:'15px', fontWeight:600, fontFamily:'Space Grotesk', marginBottom:'16px', color:'var(--text-main)' }}>Written Reflection</div>
-          <div style={{ marginBottom:'16px' }}>
-            <label style={{ display:'block', fontSize:'12px', color:'var(--text-muted)', marginBottom:'6px', textTransform:'uppercase' }}>What went well this week?</label>
-            <textarea value={wentWell} onChange={e=>setWentWell(e.target.value)} style={{ ...inputStyle, minHeight:'80px' }} placeholder="Be specific — vague answers don't create growth."/>
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', marginBottom: '4px' }}>
+            03
           </div>
-          <div style={{ marginBottom:'16px' }}>
-            <label style={{ display:'block', fontSize:'12px', color:'var(--text-muted)', marginBottom:'6px', textTransform:'uppercase' }}>What broke down and why?</label>
-            <textarea value={brokeDown} onChange={e=>setBrokeDown(e.target.value)} style={{ ...inputStyle, minHeight:'80px' }} placeholder="Identify the exact failure point, not the excuse."/>
+          <label style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
+            What will you change next week?
+          </label>
+          <textarea
+            value={changeNext}
+            onChange={(e) => setChangeNext(e.target.value)}
+            disabled={locked}
+            placeholder="Enforce 10:00 PM digital shutdown and prepare workout gear the night before..."
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              borderRadius: '12px',
+              padding: '12px',
+              fontSize: '13px',
+              color: 'var(--text-main)',
+              resize: 'none',
+            }}
+          />
+        </div>
+
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', marginBottom: '4px' }}>
+            04
           </div>
-          <div>
-            <label style={{ display:'block', fontSize:'12px', color:'#6B7280', marginBottom:'6px', textTransform:'uppercase' }}>One concrete commitment for next week</label>
-            <input value={commitment} onChange={e=>setCommitment(e.target.value)} style={inputStyle} placeholder="Make it specific and measurable."/>
+          <label style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
+            What is your commitment for next week?
+          </label>
+          <textarea
+            value={commitment}
+            onChange={(e) => setCommitment(e.target.value)}
+            disabled={locked}
+            placeholder="5x workout sessions logged and 100% Non-Negotiables execution."
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              borderRadius: '12px',
+              padding: '12px',
+              fontSize: '13px',
+              color: 'var(--text-main)',
+              resize: 'none',
+            }}
+          />
+        </div>
+
+        {!locked ? (
+          <button
+            onClick={handleLockIn}
+            style={{
+              marginTop: '10px',
+              background: 'linear-gradient(90deg, #6366F1, #7C3AED)',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '14px 24px',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+            }}
+          >
+            <Lock size={16} />
+            <span>LOCK IN NEXT WEEK</span>
+          </button>
+        ) : (
+          <div
+            style={{
+              background: 'rgba(16,185,129,0.12)',
+              border: '1px solid #10B981',
+              borderRadius: '12px',
+              padding: '14px',
+              textAlign: 'center',
+              color: '#10B981',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <CheckCircle2 size={18} />
+            <span>NEXT WEEK IS LOCKED IN! OPERATOR READY.</span>
           </div>
-        </Card>
+        )}
       </div>
-
-      <Card>
-        <div style={{ fontSize:'15px', fontWeight:600, fontFamily:'Space Grotesk', marginBottom:'16px' }}>Past Reflections</div>
-        {reflections.length === 0 ? (
-          <div style={{ textAlign:'center', padding:'30px', color:'#4B5563', fontSize:'14px' }}>No reflections yet. Submit your first one above.</div>
-        ) : reflections.map(r => (
-          <div key={r.id} style={{ display:'flex', alignItems:'center', gap:'16px', padding:'12px 0', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ fontSize:'12px', color:'#6B7280', minWidth:'90px' }}>{r.weekStart}</div>
-            <div style={{ flex:1, fontSize:'13px', color:'#E2E8F0' }}>{r.commitment}</div>
-            <div style={{ fontFamily:'JetBrains Mono', fontSize:'14px', fontWeight:600, color:'#6366F1' }}>{r.avgScore}/5</div>
-          </div>
-        ))}
-      </Card>
     </div>
   );
 }

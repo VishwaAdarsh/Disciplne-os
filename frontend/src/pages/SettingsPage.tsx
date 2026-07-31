@@ -1,112 +1,212 @@
-import { useEffect, useState } from 'react';
-import { settingsAPI } from '../api/client';
+import { useState } from 'react';
+import { Settings, Sun, Moon, Bell, Shield, User, Save } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 import { useStore } from '../store/useStore';
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div onClick={() => onChange(!checked)} style={{ position:'relative', width:'40px', height:'22px', cursor:'pointer', flexShrink:0 }}>
-      <div style={{ position:'absolute', inset:0, background: checked ? '#6366F1' : 'rgba(255,255,255,0.1)', borderRadius:'20px', transition:'background 0.2s' }}/>
-      <div style={{ position:'absolute', top:'3px', left: checked ? '21px' : '3px', width:'16px', height:'16px', background:'#fff', borderRadius:'50%', transition:'left 0.2s' }}/>
-    </div>
-  );
-}
-
 export default function SettingsPage() {
-  const { user, settings, setSettings, theme, setTheme } = useStore();
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => { settingsAPI.get().then(r => setSettings(r.data)); }, []);
-
-  const update = async (patch: Partial<typeof settings>) => {
-    if (!settings) return;
-    const next = { ...settings, ...patch };
-    setSettings(next as any);
-    await settingsAPI.update(patch as any);
-    setSaved(true); setTimeout(() => setSaved(false), 1500);
-  };
-
-  const Card = ({ children, style = {} }: any) => (
-    <div style={{ background:'var(--card-bg)', border:'1px solid var(--card-border)', borderRadius:'var(--card-radius, 16px)', boxShadow:'var(--card-shadow)', padding:'22px', transition:'all 0.2s ease', ...style }}>{children}</div>
-  );
-
-  if (!settings) return <div style={{ color:'var(--text-muted)' }}>Loading settings…</div>;
+  const { user, theme, setTheme } = useStore();
+  const [resetTime, setResetTime] = useState('04:00 AM');
+  const [reflectionDay, setReflectionDay] = useState('Sunday');
+  const [streakAlerts, setStreakAlerts] = useState(true);
+  const [publicScore, setPublicScore] = useState(false);
 
   return (
-    <div>
-      <div style={{ marginBottom:'20px' }}>
-        <h1 className="font-sekuya" style={{ fontSize:'24px', fontWeight:700, margin:0, color:'var(--text-main)' }}>Settings & Profile</h1>
-        <div style={{ fontSize:'13px', color:'var(--text-muted)', marginTop:'2px' }}>Configure your discipline system.</div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <PageHeader
+        title="Settings & Preferences"
+        subtitle="Configure your DisciplineOS environment, targets, and system parameters."
+      />
 
-      <div className="grid-responsive-2">
-        <Card>
-          <h2 className="font-sekuya" style={{ fontSize:'18px', fontWeight:700, margin:'0 0 16px', color:'var(--text-main)' }}>Profile & Appearance</h2>
-          <div style={{ display:'flex', alignItems:'center', gap:'16px', marginBottom:'20px' }}>
-            <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:'rgba(99,102,241,0.15)', border:'1.5px solid #6366F1', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', fontWeight:600, color:'#6366F1' }}>
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-            </div>
+      <div
+        style={{
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          borderRadius: 'var(--card-radius, 16px)',
+          boxShadow: 'var(--card-shadow)',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+      >
+        {/* PROFILE SECTION */}
+        <div>
+          <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px', color: 'var(--text-main)' }}>
+            Operator Profile
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
             <div>
-              <div style={{ fontSize:'15px', fontWeight:500, color:'var(--text-main)' }}>{user?.name}</div>
-              <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>{user?.email}</div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Name</label>
+              <input
+                type="text"
+                defaultValue={user?.name || 'Adarsh'}
+                style={{
+                  width: '100%',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--input-border)',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '13px',
+                  color: 'var(--text-main)',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Email</label>
+              <input
+                type="email"
+                defaultValue={user?.email || 'adarsh@disciplineos.app'}
+                style={{
+                  width: '100%',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--input-border)',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '13px',
+                  color: 'var(--text-main)',
+                }}
+              />
             </div>
           </div>
+        </div>
 
-          <div style={{ marginBottom:'16px' }}>
-            <label style={{ display:'block', fontSize:'12px', color:'var(--text-muted)', marginBottom:'6px', textTransform:'uppercase' }}>Theme Mode</label>
-            <div style={{ display:'flex', gap:'8px', background:'var(--input-bg)', borderRadius:'8px', padding:'4px', border:'1px solid var(--input-border)' }}>
-              {(['dark', 'light'] as const).map(t => (
-                <button key={t} onClick={() => setTheme(t)}
-                  style={{ flex:1, padding:'8px', borderRadius:'6px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:500,
-                    background: theme === t ? '#6366F1' : 'transparent',
-                    color: theme === t ? '#fff' : 'var(--text-muted)', transition:'all 0.15s' }}>
-                  {t === 'dark' ? '🌙 Dark Mode' : '☀️ Bright Mode'}
+        <hr style={{ border: 'none', borderTop: '1px solid var(--card-border)' }} />
+
+        {/* SYSTEM THEME & TIMING */}
+        <div>
+          <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px', color: 'var(--text-main)' }}>
+            System Parameters
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Theme</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setTheme('light')}
+                  style={{
+                    flex: 1,
+                    background: theme === 'light' ? '#6366F1' : 'var(--input-bg)',
+                    color: theme === 'light' ? '#FFF' : 'var(--text-muted)',
+                    border: '1px solid var(--card-border)',
+                    borderRadius: '10px',
+                    padding: '10px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Sun size={15} /> Light
                 </button>
-              ))}
+
+                <button
+                  onClick={() => setTheme('dark')}
+                  style={{
+                    flex: 1,
+                    background: theme === 'dark' ? '#6366F1' : 'var(--input-bg)',
+                    color: theme === 'dark' ? '#FFF' : 'var(--text-muted)',
+                    border: '1px solid var(--card-border)',
+                    borderRadius: '10px',
+                    padding: '10px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Moon size={15} /> Dark
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Daily Reset Hour</label>
+              <select
+                value={resetTime}
+                onChange={(e) => setResetTime(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--input-border)',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '13px',
+                  color: 'var(--text-main)',
+                }}
+              >
+                <option value="04:00 AM">04:00 AM (Default)</option>
+                <option value="05:00 AM">05:00 AM</option>
+                <option value="12:00 AM">Midnight 12:00 AM</option>
+              </select>
             </div>
           </div>
+        </div>
 
-          <div style={{ marginBottom:'16px' }}>
-            <label style={{ display:'block', fontSize:'12px', color:'var(--text-muted)', marginBottom:'6px', textTransform:'uppercase' }}>Daily Reset Time</label>
-            <select value={settings.resetTime} onChange={e => update({ resetTime: e.target.value })}
-              style={{ width:'100%', background:'var(--input-bg)', border:'1px solid var(--input-border)', borderRadius:'8px', padding:'10px 14px', fontSize:'14px', color:'var(--text-main)' }}>
-              <option value="04:00">4:00 AM</option><option value="05:00">5:00 AM</option><option value="06:00">6:00 AM</option><option value="00:00">Midnight</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display:'block', fontSize:'12px', color:'var(--text-muted)', marginBottom:'6px', textTransform:'uppercase' }}>Weekly Reflection Day</label>
-            <select value={settings.reflectionDay} onChange={e => update({ reflectionDay: e.target.value })}
-              style={{ width:'100%', background:'var(--input-bg)', border:'1px solid var(--input-border)', borderRadius:'8px', padding:'10px 14px', fontSize:'14px', color:'var(--text-main)' }}>
-              <option>Sunday</option><option>Saturday</option><option>Friday</option>
-            </select>
-          </div>
-          {saved && <div style={{ marginTop:'12px', fontSize:'12px', color:'#10B981' }}>✓ Saved</div>}
-        </Card>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--card-border)' }} />
 
-        <Card>
-          <div style={{ fontSize:'15px', fontWeight:600, fontFamily:'Space Grotesk', marginBottom:'16px', color:'var(--text-main)' }}>Accountability Mode</div>
-          {[
-            { key:'streakAlerts', name:'Streak Protection Alerts', desc:'Warn when streak is at risk by 8 PM' },
-            { key:'publicScore', name:'Public Score Sharing', desc:'Share your discipline score link' },
-            { key:'reflectReminder', name:'Weekly Reflection Reminder', desc:'Reminder to reflect on your set day' },
-            { key:'comebackMode', name:'Comeback Mode', desc:'Softer streak reset after 1–2 miss days' },
-          ].map(({ key, name, desc }) => (
-            <div key={key} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'14px 16px', background:'var(--input-bg)', border:'1px solid var(--card-border)', borderRadius:'10px', marginBottom:'10px' }}>
-              <Toggle checked={(settings as any)[key]} onChange={(v) => update({ [key]: v } as any)} />
+        {/* NOTIFICATIONS & TOGGLES */}
+        <div>
+          <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px', color: 'var(--text-main)' }}>
+            Notifications & Alerts
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize:'14px', fontWeight:500, color:'var(--text-main)' }}>{name}</div>
-                <div style={{ fontSize:'12px', color:'var(--text-muted)', marginTop:'2px' }}>{desc}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>Streak Protection Alerts</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Get notified 2 hours before daily reset if tasks remain incomplete.</div>
               </div>
+              <input
+                type="checkbox"
+                checked={streakAlerts}
+                onChange={(e) => setStreakAlerts(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: '#6366F1', cursor: 'pointer' }}
+              />
             </div>
-          ))}
-          {settings.publicScore && (
-            <div style={{ marginTop:'12px', padding:'14px', background:'rgba(99,102,241,0.08)', borderRadius:'8px', border:'1px solid rgba(99,102,241,0.2)' }}>
-              <div style={{ fontSize:'12px', fontWeight:600, color:'#A5B4FC', marginBottom:'6px' }}>Your Shareable Score Link</div>
-              <div style={{ fontFamily:'JetBrains Mono', fontSize:'12px', color:'var(--text-muted)', wordBreak:'break-all' }}>
-                disciplineos.app/score/{user?.id.slice(0,8)}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>Public Operator Score</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Allow your level & streak to appear on community leaderboard.</div>
               </div>
+              <input
+                type="checkbox"
+                checked={publicScore}
+                onChange={(e) => setPublicScore(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: '#6366F1', cursor: 'pointer' }}
+              />
             </div>
-          )}
-        </Card>
+          </div>
+        </div>
+
+        <button
+          onClick={() => alert('Settings saved successfully!')}
+          style={{
+            marginTop: '10px',
+            alignSelf: 'flex-start',
+            background: '#6366F1',
+            color: '#FFF',
+            border: 'none',
+            borderRadius: '10px',
+            padding: '10px 20px',
+            fontSize: '13px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 2px 10px rgba(99, 102, 241, 0.3)',
+          }}
+        >
+          <Save size={15} />
+          <span>SAVE PREFERENCES</span>
+        </button>
       </div>
     </div>
   );

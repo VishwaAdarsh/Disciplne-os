@@ -1,88 +1,163 @@
-import { useEffect, useState } from 'react';
-import { analyticsAPI } from '../api/client';
-import { useStore } from '../store/useStore';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useState } from 'react';
+import { Award, AlertTriangle, Zap, Calendar } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
+import MetricCard from '../components/MetricCard';
+import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
+import BarChartCard from '../components/charts/BarChartCard';
+import PieDistributionCard from '../components/charts/PieDistributionCard';
+import { mockAnalyticsData } from '../mock/analyticsData';
 
 export default function Analytics() {
-  const { dashboard, tasks } = useStore();
-  const [weekly, setWeekly] = useState<{ date: string; rate: number }[]>([]);
+  const [timeframe, setTimeframe] = useState<'Today' | 'This Week' | 'This Month' | '90 Days'>('This Month');
 
-  useEffect(() => { analyticsAPI.weekly().then(r => setWeekly(r.data.weekly)); }, []);
+  const categoryTrendSeries = [
+    { key: 'overall', name: 'Overall Score', color: '#4F46E5' },
+    { key: 'discipline', name: 'Discipline', color: '#6366F1' },
+    { key: 'body', name: 'Body', color: '#10B981' },
+    { key: 'mind', name: 'Mind', color: '#8B5CF6' },
+    { key: 'nutrition', name: 'Nutrition', color: '#F59E0B' },
+  ];
 
-  const Card = ({ children, style = {} }: any) => (
-    <div style={{ background:'var(--card-bg)', border:'1px solid var(--card-border)', borderRadius:'var(--card-radius, 16px)', boxShadow:'var(--card-shadow)', padding:'22px', transition:'all 0.2s ease', ...style }}>{children}</div>
-  );
+  const activityBarData = [
+    { name: 'Week 1', value: 42, color: '#6366F1' },
+    { name: 'Week 2', value: 48, color: '#6366F1' },
+    { name: 'Week 3', value: 54, color: '#6366F1' },
+    { name: 'Week 4', value: 62, color: '#10B981' },
+  ];
 
-  const avgRate = dashboard?.history?.length ? Math.round(dashboard.history.reduce((s,h)=>s+h.rate,0)/dashboard.history.length) : 0;
-  const totalDone = tasks.filter(t=>t.done).length;
-  const heatVals = (dashboard?.history ?? []).slice(-21).map(h => h.rate === 0 ? 0 : h.rate < 30 ? 1 : h.rate < 60 ? 2 : h.rate < 90 ? 3 : 4);
+  const activityDistributionPie = [
+    { name: 'Discipline & Focus', value: 38, color: '#6366F1' },
+    { name: 'Body & Fitness', value: 24, color: '#10B981' },
+    { name: 'Mind & Reflection', value: 18, color: '#8B5CF6' },
+    { name: 'Nutrition Tracking', value: 12, color: '#F59E0B' },
+    { name: 'Goals & Career', value: 8, color: '#06B6D4' },
+  ];
 
   return (
-    <div>
-      <div style={{ marginBottom:'20px' }}>
-        <h1 className="font-sekuya" style={{ fontSize:'24px', fontWeight:700, margin:0, color:'var(--text-main)' }}>Performance Analytics</h1>
-        <div style={{ fontSize:'13px', color:'var(--text-muted)', marginTop:'2px' }}>Data-driven insights into your discipline patterns.</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <PageHeader
+        title="Performance Analytics"
+        subtitle="Deep comparative analytics across all 6 core operating categories."
+        categories={['Today', 'This Week', 'This Month', '90 Days']}
+        activeCategory={timeframe}
+        onSelectCategory={(tf) => setTimeframe(tf as any)}
+      />
+
+      {/* HIGHLIGHT CALLOUTS CARDS GRID WITH SPARKLINES */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+        <MetricCard
+          title="Best Day"
+          value={mockAnalyticsData.highlights.bestDayScore}
+          subtext={mockAnalyticsData.highlights.bestDay}
+          badge="PEAK SCORE"
+          badgeColor="#10B981"
+          accentClass="text-gradient-success"
+          sparklineData={[82, 85, 88, 90, 91, 92]}
+          sparklineColor="#10B981"
+          icon={<Award size={18} color="#10B981" />}
+        />
+
+        <MetricCard
+          title="Best Category"
+          value={mockAnalyticsData.highlights.bestCategory}
+          subtext={`Avg score: ${mockAnalyticsData.highlights.bestCategoryScore}`}
+          badge="TOP RATED"
+          badgeColor="#6366F1"
+          accentClass="text-gradient-brand"
+          sparklineData={[72, 78, 82, 84, 85, 86]}
+          sparklineColor="#6366F1"
+          icon={<Zap size={18} color="#6366F1" />}
+        />
+
+        <MetricCard
+          title="Needs Attention"
+          value={mockAnalyticsData.highlights.needsAttention}
+          subtext={`Current score: ${mockAnalyticsData.highlights.needsAttentionScore}`}
+          badge="FOCUS AREA"
+          badgeColor="#EF4444"
+          accentClass="text-gradient-danger"
+          sparklineData={[60, 62, 64, 65, 66, 68]}
+          sparklineColor="#EF4444"
+          icon={<AlertTriangle size={18} color="#EF4444" />}
+        />
+
+        <MetricCard
+          title="Longest Streak"
+          value={`${mockAnalyticsData.highlights.longestStreak} Days`}
+          subtext="Personal record streak"
+          badge="RECORD"
+          badgeColor="#F59E0B"
+          accentClass="text-gradient-streak"
+          sparklineData={[12, 14, 16, 18, 20, 21]}
+          sparklineColor="#F59E0B"
+          icon={<Calendar size={18} color="#F59E0B" />}
+        />
       </div>
 
-      <div className="grid-responsive-3" style={{ marginBottom:'20px' }}>
-        <Card style={{ padding:'16px' }}>
-          <div style={{ fontSize:'11px', color:'var(--text-muted)', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>Avg Daily Completion</div>
-          <div className="font-sekuya text-gradient-score" style={{ fontSize:'26px', fontWeight:700 }}>{avgRate}%</div>
-        </Card>
-        <Card style={{ padding:'16px' }}>
-          <div style={{ fontSize:'11px', color:'var(--text-muted)', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>Longest Streak</div>
-          <div className="font-sekuya text-gradient-streak" style={{ fontSize:'26px', fontWeight:700 }}>{dashboard?.streak.best ?? 0}d</div>
-        </Card>
-        <Card style={{ padding:'16px' }}>
-          <div style={{ fontSize:'11px', color:'var(--text-muted)', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>Tasks Done Today</div>
-          <div className="font-sekuya text-gradient-success" style={{ fontSize:'26px', fontWeight:700 }}>{totalDone}</div>
-        </Card>
+      {/* COMPARISON CARDS ROW */}
+      <div className="grid-responsive-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Today vs Yesterday</div>
+          <div className="font-sekuya text-gradient-score" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
+            {mockAnalyticsData.comparisons.todayVsYesterday.score} pts
+          </div>
+          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
+            {mockAnalyticsData.comparisons.todayVsYesterday.change}
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Week vs Last Week</div>
+          <div className="font-sekuya text-gradient-brand" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
+            {mockAnalyticsData.comparisons.thisWeekVsLastWeek.score} pts
+          </div>
+          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
+            {mockAnalyticsData.comparisons.thisWeekVsLastWeek.change}
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Month vs Last Month</div>
+          <div className="font-sekuya text-gradient-xp" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
+            {mockAnalyticsData.comparisons.thisMonthVsLastMonth.score} pts
+          </div>
+          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
+            {mockAnalyticsData.comparisons.thisMonthVsLastMonth.change}
+          </div>
+        </div>
       </div>
 
-      <Card style={{ marginBottom:'20px' }}>
-        <h2 className="font-sekuya" style={{ fontSize:'18px', fontWeight:700, marginBottom:'4px', color:'var(--text-main)', margin:0 }}>Daily Completion Rate — Last 30 Days</h2>
-        <div style={{ fontSize:'12px', color:'var(--text-muted)', marginBottom:'12px' }}>Percentage of tasks completed each day</div>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={dashboard?.history ?? []}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false}/>
-            <XAxis dataKey="date" tick={{ fill:'var(--text-muted)', fontSize:10 }} tickFormatter={d => d.slice(5)} minTickGap={30}/>
-            <YAxis domain={[0,100]} tick={{ fill:'var(--text-muted)', fontSize:10 }} tickFormatter={v=>v+'%'}/>
-            <Tooltip contentStyle={{ background:'var(--card-bg)', border:'1px solid var(--card-border)', borderRadius:'8px', color:'var(--text-main)', fontSize:'12px' }}/>
-            <Line type="monotone" dataKey="rate" stroke="#6366F1" strokeWidth={2} dot={false}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
+      {/* OVERALL MULTI-CATEGORY TREND CHART */}
+      <AreaTrendChartCard
+        title={`Overall Performance Multi-Category Trend (${timeframe})`}
+        subtitle="Comparative trajectory across Discipline, Body, Mind, and Nutrition"
+        data={mockAnalyticsData.overallTrend}
+        series={categoryTrendSeries}
+        height={240}
+        unit=" pts"
+        timeframes={['7D', '30D', '90D']}
+      />
 
-      <div className="grid-responsive-2">
-        <Card>
-          <div style={{ fontSize:'15px', fontWeight:600, fontFamily:'Space Grotesk', marginBottom:'4px', color:'var(--text-main)' }}>Weekly Breakdown</div>
-          <div style={{ fontSize:'12px', color:'var(--text-muted)', marginBottom:'12px' }}>Last 7 days</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={weekly}>
-              <XAxis dataKey="date" tick={{ fill:'var(--text-muted)', fontSize:10 }} tickFormatter={d => d.slice(5)}/>
-              <YAxis domain={[0,100]} tick={{ fill:'var(--text-muted)', fontSize:10 }} tickFormatter={v=>v+'%'}/>
-              <Tooltip contentStyle={{ background:'var(--card-bg)', border:'1px solid var(--card-border)', borderRadius:'8px', color:'var(--text-main)', fontSize:'12px' }}/>
-              <Line type="monotone" dataKey="rate" stroke="#F59E0B" strokeWidth={2} dot={{ fill:'#F59E0B', r:3 }}/>
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
-        <Card>
-          <div style={{ fontSize:'15px', fontWeight:600, fontFamily:'Space Grotesk', marginBottom:'4px', color:'var(--text-main)' }}>Activity Heatmap</div>
-          <div style={{ fontSize:'12px', color:'var(--text-muted)', marginBottom:'12px' }}>21-day completion intensity</div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'4px' }}>
-            {heatVals.map((v,i) => {
-              const colors = ['var(--input-bg)','rgba(99,102,241,0.25)','rgba(99,102,241,0.5)','rgba(99,102,241,0.75)','#6366F1'];
-              return <div key={i} style={{ height:'14px', borderRadius:'3px', background: colors[v] }}/>;
-            })}
-          </div>
-          <div style={{ display:'flex', gap:'8px', alignItems:'center', fontSize:'11px', color:'var(--text-muted)', marginTop:'14px' }}>
-            Less
-            {['var(--input-bg)','rgba(99,102,241,0.25)','rgba(99,102,241,0.5)','rgba(99,102,241,0.75)','#6366F1'].map((c,i) => (
-              <div key={i} style={{ width:'10px', height:'10px', borderRadius:'2px', background:c }}/>
-            ))}
-            More
-          </div>
-        </Card>
+      {/* CHARTS ROW: ACTIVITY BAR CHART & ACTIVITY DISTRIBUTION PIE */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <BarChartCard
+          title="Weekly Activity Volume"
+          subtitle="Total completed actions & sessions logged per week"
+          data={activityBarData}
+          defaultColor="#6366F1"
+          unit=" logs"
+          height={210}
+          badge="GROWTH"
+          badgeColor="#10B981"
+        />
+
+        <PieDistributionCard
+          title="Category Activity Distribution"
+          subtitle="Part-to-whole share of total logged operator actions"
+          data={activityDistributionPie}
+          unit="%"
+          height={210}
+        />
       </div>
     </div>
   );
