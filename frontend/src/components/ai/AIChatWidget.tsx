@@ -28,12 +28,12 @@ export const AIChatWidget: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
         display: 'flex',
         flexDirection: 'column',
         height: '520px',
@@ -52,14 +52,17 @@ export const AIChatWidget: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
             }}
           >
             💬
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700 }}>AI Performance Coach</h3>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>Context-aware execution assistant</p>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              AI Performance Coach
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)' }}>Context-aware execution assistant</p>
           </div>
         </div>
 
@@ -68,9 +71,9 @@ export const AIChatWidget: React.FC = () => {
           style={{
             padding: '4px 10px',
             borderRadius: '8px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#94a3b8',
+            background: 'var(--surface-secondary, #f8fafc)',
+            border: '1px solid var(--card-border, #e5e7eb)',
+            color: 'var(--text-muted, #94a3b8)',
             fontSize: '0.78rem',
             cursor: 'pointer',
           }}
@@ -89,9 +92,10 @@ export const AIChatWidget: React.FC = () => {
               padding: '6px 12px',
               borderRadius: '20px',
               border: '1px solid rgba(99, 102, 241, 0.3)',
-              background: 'rgba(99, 102, 241, 0.12)',
-              color: '#818cf8',
+              background: 'rgba(99, 102, 241, 0.08)',
+              color: '#6366f1',
               fontSize: '0.78rem',
+              fontWeight: 500,
               whiteSpace: 'nowrap',
               cursor: 'pointer',
             }}
@@ -128,13 +132,14 @@ export const AIChatWidget: React.FC = () => {
                 style={{
                   maxWidth: '82%',
                   borderRadius: isCoach ? '14px 14px 14px 2px' : '14px 14px 2px 14px',
-                  background: isCoach ? 'rgba(15, 23, 42, 0.7)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                  border: isCoach ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+                  background: isCoach ? 'var(--surface-secondary, #f8fafc)' : 'linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)',
+                  border: isCoach ? '1px solid var(--soft-border, #eef2f7)' : 'none',
                   padding: '12px 16px',
-                  color: '#f8fafc',
+                  color: isCoach ? 'var(--text-main, #0f172a)' : '#ffffff',
                   fontSize: '0.88rem',
                   lineHeight: 1.45,
                   whiteSpace: 'pre-wrap',
+                  boxShadow: isCoach ? 'var(--shadow-sm)' : 'none',
                 }}
               >
                 {msg.text}
@@ -151,7 +156,7 @@ export const AIChatWidget: React.FC = () => {
                           borderRadius: '6px',
                           background: '#10b981',
                           border: 'none',
-                          color: '#022c22',
+                          color: '#ffffff',
                           fontWeight: 700,
                           fontSize: '0.75rem',
                           cursor: 'pointer',
@@ -166,7 +171,7 @@ export const AIChatWidget: React.FC = () => {
                 <div
                   style={{
                     fontSize: '0.7rem',
-                    color: isCoach ? '#64748b' : 'rgba(255,255,255,0.7)',
+                    color: isCoach ? 'var(--text-muted, #94a3b8)' : 'rgba(255,255,255,0.8)',
                     marginTop: '6px',
                     textAlign: 'right',
                   }}
@@ -179,8 +184,8 @@ export const AIChatWidget: React.FC = () => {
         })}
 
         {isThinking && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#818cf8', fontSize: '0.82rem' }}>
-            <span style={{ animation: 'spin 1s linear infinite' }}>🤖</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#6366f1', fontSize: '0.82rem' }}>
+            <span>🤖</span>
             <span>AI Coach is analyzing live context & formulating advice...</span>
           </div>
         )}
@@ -199,9 +204,9 @@ export const AIChatWidget: React.FC = () => {
             flex: 1,
             padding: '10px 16px',
             borderRadius: '10px',
-            background: 'rgba(15, 23, 42, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: '#fff',
+            background: 'var(--surface-primary, #ffffff)',
+            border: '1px solid var(--input-border, #e5e7eb)',
+            color: 'var(--text-main, #0f172a)',
             fontSize: '0.88rem',
             outline: 'none',
           }}
@@ -212,7 +217,7 @@ export const AIChatWidget: React.FC = () => {
           style={{
             padding: '10px 20px',
             borderRadius: '10px',
-            background: isThinking || !inputQuery.trim() ? 'rgba(99, 102, 241, 0.3)' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+            background: isThinking || !inputQuery.trim() ? 'rgba(99, 102, 241, 0.3)' : 'linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)',
             border: 'none',
             color: '#fff',
             fontWeight: 700,

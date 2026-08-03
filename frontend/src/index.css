@@ -10,43 +10,105 @@
   font-display: swap;
 }
 
+/* ====================================================
+   GLOBAL LIGHT THEME DESIGN TOKENS (DEFAULT :root)
+   Clean Apple + Linear + Notion + Arc Inspired Light Theme
+   ==================================================== */
 :root {
+  /* Surface Tokens */
+  --bg: #F8FAFC;
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --hover-surface: #F3F6FB;
+  --card-border: #E5E7EB;
+  --soft-border: #EEF2F7;
+
+  /* Typography Tokens */
+  --text-main: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+
+  /* Semantic Accents */
   --accent: #6366F1;
   --accent-light: #818CF8;
-  --accent-dim: rgba(99, 102, 241, 0.1);
-  --amber: #F59E0B;
-  --amber-dim: rgba(245, 158, 11, 0.12);
+  --accent-secondary: #7C3AED;
+  --accent-dim: rgba(99, 102, 241, 0.08);
+
+  /* Status Colors */
   --success: #10B981;
-  --success-dim: rgba(16, 185, 129, 0.12);
+  --success-dim: rgba(16, 185, 129, 0.1);
+  --warning: #F59E0B;
+  --warning-dim: rgba(245, 158, 11, 0.1);
   --danger: #EF4444;
-  --danger-dim: rgba(239, 68, 68, 0.12);
-  --muted: #64748B;
-  
-  --bg: #F7F8FC;
-  --card-bg: #FFFFFF;
-  --card-border: #E2E8F0;
-  --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --danger-dim: rgba(239, 68, 68, 0.1);
+  --info: #3B82F6;
+  --info-dim: rgba(59, 130, 246, 0.1);
+
+  /* Inputs & Navigation */
+  --input-bg: #FFFFFF;
+  --input-border: #E5E7EB;
+  --input-focus-ring: rgba(99, 102, 241, 0.25);
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-border: #E5E7EB;
+
+  /* Shadows & Elevation */
+  --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
   --card-radius: 16px;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --input-bg: #F8FAFC;
-  --input-border: #E2E8F0;
-  --nav-bg: rgba(255, 255, 255, 0.88);
-  --nav-border: #E2E8F0;
 }
 
+/* ====================================================
+   DARK THEME OVERRIDES
+   ==================================================== */
 [data-theme='dark'] {
   --bg: #0A0A0F;
+  --surface-primary: #13131E;
+  --surface-secondary: rgba(255, 255, 255, 0.04);
   --card-bg: #13131E;
+  --hover-surface: rgba(255, 255, 255, 0.06);
   --card-border: rgba(255, 255, 255, 0.08);
-  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  --card-radius: 16px;
+  --soft-border: rgba(255, 255, 255, 0.05);
+
   --text-main: #F8FAFC;
+  --text-secondary: #CBD5E1;
   --text-muted: #94A3B8;
+
+  --accent-dim: rgba(99, 102, 241, 0.15);
   --input-bg: rgba(255, 255, 255, 0.04);
   --input-border: rgba(255, 255, 255, 0.12);
   --nav-bg: rgba(10, 10, 15, 0.92);
   --nav-border: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* ====================================================
+   BASE & TYPOGRAPHY STYLES
+   ==================================================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  transition: background 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* Typography Classes */
@@ -61,14 +123,14 @@
 
 /* Semantic Text Gradients */
 .text-gradient-brand {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #C026D3 100%);
+  background: linear-gradient(135deg, #6366F1 0%, #7C3AED 50%, #C026D3 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .text-gradient-score {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+  background: linear-gradient(135deg, #6366F1 0%, #7C3AED 50%, #3B82F6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -102,10 +164,50 @@
   color: transparent;
 }
 
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; min-height: 100vh; transition: background 0.2s ease, color 0.2s ease; -webkit-font-smoothing: antialiased; }
-h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
-.mono { font-family: 'JetBrains Mono', monospace; }
+/* ====================================================
+   BUTTONS & INPUTS POLISH
+   ==================================================== */
+button {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+input, select, textarea {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+  outline: none;
+}
+
+/* ====================================================
+   THIN MODERN SCROLLBAR
+   ==================================================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
 
 /* No Scrollbar Utility */
 .no-scrollbar::-webkit-scrollbar {
@@ -172,6 +274,3 @@ h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em;
     display: none !important;
   }
 }
-
-
-

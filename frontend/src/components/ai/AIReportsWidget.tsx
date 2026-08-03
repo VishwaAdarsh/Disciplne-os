@@ -15,12 +15,12 @@ export const AIReportsWidget: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
@@ -35,14 +35,19 @@ export const AIReportsWidget: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
             }}
           >
             📊
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700 }}>AI Performance Reports</h3>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>Synthesized intelligence & reflection theme analysis</p>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              AI Performance Reports
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)' }}>
+              Synthesized intelligence & reflection theme analysis
+            </p>
           </div>
         </div>
 
@@ -54,9 +59,9 @@ export const AIReportsWidget: React.FC = () => {
               style={{
                 padding: '6px 12px',
                 borderRadius: '8px',
-                border: activeType === t ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: activeType === t ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-                color: activeType === t ? '#34d399' : '#cbd5e1',
+                border: activeType === t ? '1px solid #10b981' : '1px solid var(--card-border, #e5e7eb)',
+                background: activeType === t ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-primary, #ffffff)',
+                color: activeType === t ? '#10b981' : 'var(--text-secondary, #475569)',
                 fontSize: '0.8rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -73,14 +78,14 @@ export const AIReportsWidget: React.FC = () => {
       {latestReport ? (
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'var(--surface-secondary, #f8fafc)',
             borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            border: '1px solid var(--card-border, #e5e7eb)',
             padding: '20px',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h4 style={{ margin: 0, fontSize: '1rem', color: '#38bdf8' }}>{latestReport.title}</h4>
+            <h4 style={{ margin: 0, fontSize: '1rem', color: '#2563eb' }}>{latestReport.title}</h4>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(latestReport.summaryMarkdown);
@@ -89,11 +94,12 @@ export const AIReportsWidget: React.FC = () => {
               style={{
                 padding: '4px 10px',
                 borderRadius: '6px',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#fff',
+                background: 'var(--surface-primary, #ffffff)',
+                border: '1px solid var(--card-border, #e5e7eb)',
+                color: 'var(--text-main, #0f172a)',
                 fontSize: '0.78rem',
                 cursor: 'pointer',
+                fontWeight: 600,
               }}
             >
               📋 Copy Markdown
@@ -104,7 +110,7 @@ export const AIReportsWidget: React.FC = () => {
             style={{
               fontFamily: 'monospace',
               fontSize: '0.85rem',
-              color: '#cbd5e1',
+              color: 'var(--text-secondary, #475569)',
               whiteSpace: 'pre-wrap',
               lineHeight: 1.5,
               maxHeight: '260px',
@@ -119,10 +125,10 @@ export const AIReportsWidget: React.FC = () => {
           style={{
             padding: '28px',
             textAlign: 'center',
-            background: 'rgba(15, 23, 42, 0.3)',
+            background: 'var(--surface-secondary, #f8fafc)',
             borderRadius: '12px',
-            border: '1px dashed rgba(255, 255, 255, 0.08)',
-            color: '#64748b',
+            border: '1px dashed var(--card-border, #e5e7eb)',
+            color: 'var(--text-muted, #94a3b8)',
           }}
         >
           Click one of the buttons above to generate a synthesized AI Report.

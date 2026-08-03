@@ -8,12 +8,12 @@ export const SmartScheduleWidget: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -28,14 +28,19 @@ export const SmartScheduleWidget: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
             }}
           >
             📅
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700 }}>AI Smart Scheduling</h3>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>Optimal time-blocked routine based on peak energy</p>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              AI Smart Scheduling
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)' }}>
+              Optimal time-blocked routine based on peak energy
+            </p>
           </div>
         </div>
       </div>
@@ -47,8 +52,8 @@ export const SmartScheduleWidget: React.FC = () => {
             style={{
               padding: '14px',
               borderRadius: '12px',
-              background: 'rgba(15, 23, 42, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              background: 'var(--surface-secondary, #f8fafc)',
+              border: '1px solid var(--soft-border, #eef2f7)',
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
@@ -60,7 +65,8 @@ export const SmartScheduleWidget: React.FC = () => {
                 width: '36px',
                 height: '36px',
                 borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'var(--surface-primary, #ffffff)',
+                border: '1px solid var(--card-border, #e5e7eb)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -70,9 +76,11 @@ export const SmartScheduleWidget: React.FC = () => {
             </div>
 
             <div>
-              <div style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 700 }}>{slot.timeSlot}</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc', marginTop: '2px' }}>{slot.taskTitle}</div>
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 700 }}>{slot.timeSlot}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main, #0f172a)', marginTop: '2px' }}>
+                {slot.taskTitle}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px' }}>
                 Duration: {slot.recommendedDurationMins} mins
               </div>
             </div>

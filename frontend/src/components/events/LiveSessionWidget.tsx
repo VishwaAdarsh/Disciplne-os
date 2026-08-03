@@ -58,12 +58,12 @@ export const LiveSessionWidget: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       {/* Header */}
@@ -79,14 +79,17 @@ export const LiveSessionWidget: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
             }}
           >
             ⏱️
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700 }}>Live Active Sessions</h3>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              Live Active Sessions
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)' }}>
               Persistent timers across page refresh & navigation
             </p>
           </div>
@@ -97,13 +100,13 @@ export const LiveSessionWidget: React.FC = () => {
           style={{
             padding: '8px 14px',
             borderRadius: '10px',
-            background: showLauncher ? 'rgba(239, 68, 68, 0.2)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            background: showLauncher ? 'rgba(239, 68, 68, 0.12)' : 'linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)',
             border: 'none',
-            color: showLauncher ? '#fca5a5' : '#ffffff',
+            color: showLauncher ? '#ef4444' : '#ffffff',
             fontWeight: 600,
             fontSize: '0.85rem',
             cursor: 'pointer',
-            boxShadow: showLauncher ? 'none' : '0 4px 12px rgba(99, 102, 241, 0.3)',
+            boxShadow: showLauncher ? 'none' : '0 4px 12px rgba(99, 102, 241, 0.25)',
           }}
         >
           {showLauncher ? 'Close Launcher' : '+ Start Session'}
@@ -114,14 +117,14 @@ export const LiveSessionWidget: React.FC = () => {
       {showLauncher && (
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.75)',
+            background: 'var(--surface-secondary, #f8fafc)',
             borderRadius: '12px',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
+            border: '1px solid var(--card-border, #e5e7eb)',
             padding: '16px',
             marginBottom: '20px',
           }}
         >
-          <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#818cf8' }}>Launch Live Session</h4>
+          <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#6366f1' }}>Launch Live Session</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '14px' }}>
             {[
               { type: 'deepwork', label: 'Deep Work', icon: '💻' },
@@ -135,9 +138,9 @@ export const LiveSessionWidget: React.FC = () => {
                 style={{
                   padding: '10px',
                   borderRadius: '10px',
-                  border: selectedType === item.type ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
-                  background: selectedType === item.type ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-                  color: selectedType === item.type ? '#34d399' : '#cbd5e1',
+                  border: selectedType === item.type ? '1px solid #10b981' : '1px solid var(--card-border, #e5e7eb)',
+                  background: selectedType === item.type ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-primary, #ffffff)',
+                  color: selectedType === item.type ? '#10b981' : 'var(--text-secondary, #475569)',
                   cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: '0.85rem',
@@ -163,9 +166,9 @@ export const LiveSessionWidget: React.FC = () => {
                 minWidth: '200px',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                background: 'rgba(15, 23, 42, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#fff',
+                background: 'var(--surface-primary, #ffffff)',
+                border: '1px solid var(--input-border, #e5e7eb)',
+                color: 'var(--text-main, #0f172a)',
                 fontSize: '0.85rem',
               }}
             />
@@ -175,9 +178,9 @@ export const LiveSessionWidget: React.FC = () => {
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                background: 'rgba(15, 23, 42, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#fff',
+                background: 'var(--surface-primary, #ffffff)',
+                border: '1px solid var(--input-border, #e5e7eb)',
+                color: 'var(--text-main, #0f172a)',
                 fontSize: '0.85rem',
               }}
             >
@@ -195,7 +198,7 @@ export const LiveSessionWidget: React.FC = () => {
                 borderRadius: '8px',
                 background: '#10b981',
                 border: 'none',
-                color: '#022c22',
+                color: '#ffffff',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
@@ -213,14 +216,14 @@ export const LiveSessionWidget: React.FC = () => {
           style={{
             padding: '24px',
             textAlign: 'center',
-            background: 'rgba(15, 23, 42, 0.3)',
+            background: 'var(--surface-secondary, #f8fafc)',
             borderRadius: '12px',
-            border: '1px dashed rgba(255, 255, 255, 0.08)',
-            color: '#64748b',
+            border: '1px dashed var(--card-border, #e5e7eb)',
+            color: 'var(--text-muted, #94a3b8)',
           }}
         >
           <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>⏸️</div>
-          <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>No Active Sessions Running</div>
+          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>No Active Sessions Running</div>
           <div style={{ fontSize: '0.8rem', marginTop: '2px' }}>
             Click "+ Start Session" to launch a live session timer.
           </div>
@@ -235,7 +238,7 @@ export const LiveSessionWidget: React.FC = () => {
               <div
                 key={session.id}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--surface-secondary, #f8fafc)',
                   borderRadius: '14px',
                   border: isPaused ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(16, 185, 129, 0.4)',
                   padding: '16px 20px',
@@ -263,8 +266,8 @@ export const LiveSessionWidget: React.FC = () => {
                         style={{
                           padding: '3px 8px',
                           borderRadius: '6px',
-                          background: isPaused ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                          color: isPaused ? '#fbbf24' : '#34d399',
+                          background: isPaused ? 'rgba(245, 158, 11, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                          color: isPaused ? '#d97706' : '#10b981',
                           fontSize: '0.75rem',
                           fontWeight: 700,
                           textTransform: 'uppercase',
@@ -272,10 +275,12 @@ export const LiveSessionWidget: React.FC = () => {
                       >
                         {isPaused ? 'Paused' : 'Running'}
                       </span>
-                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{session.sessionName}</h4>
+                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+                        {session.sessionName}
+                      </h4>
                     </div>
 
-                    <div style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: '4px' }}>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary, #475569)', marginTop: '4px' }}>
                       Target: {session.targetMinutes}m · Breaks taken: {session.breaksCount}
                     </div>
                   </div>
@@ -283,10 +288,10 @@ export const LiveSessionWidget: React.FC = () => {
                   {/* Timer display */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.6rem', fontWeight: 800, fontFamily: 'monospace', color: '#38bdf8' }}>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, fontFamily: 'monospace', color: '#6366f1' }}>
                         {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{percent}% target</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>{percent}% target</div>
                     </div>
 
                     {/* Action buttons */}
@@ -299,7 +304,7 @@ export const LiveSessionWidget: React.FC = () => {
                             borderRadius: '8px',
                             background: '#10b981',
                             border: 'none',
-                            color: '#022c22',
+                            color: '#ffffff',
                             fontWeight: 700,
                             cursor: 'pointer',
                           }}
@@ -312,9 +317,9 @@ export const LiveSessionWidget: React.FC = () => {
                           style={{
                             padding: '8px 12px',
                             borderRadius: '8px',
-                            background: 'rgba(245, 158, 11, 0.2)',
-                            border: '1px solid rgba(245, 158, 11, 0.4)',
-                            color: '#fbbf24',
+                            background: 'rgba(245, 158, 11, 0.12)',
+                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                            color: '#d97706',
                             fontWeight: 700,
                             cursor: 'pointer',
                           }}
@@ -328,9 +333,9 @@ export const LiveSessionWidget: React.FC = () => {
                         style={{
                           padding: '8px 14px',
                           borderRadius: '8px',
-                          background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                          background: 'linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)',
                           border: 'none',
-                          color: '#fff',
+                          color: '#ffffff',
                           fontWeight: 700,
                           cursor: 'pointer',
                         }}
@@ -343,9 +348,9 @@ export const LiveSessionWidget: React.FC = () => {
                         style={{
                           padding: '8px',
                           borderRadius: '8px',
-                          background: 'rgba(239, 68, 68, 0.15)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
-                          color: '#fca5a5',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          color: '#ef4444',
                           cursor: 'pointer',
                         }}
                         title="Cancel Session"

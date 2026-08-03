@@ -5,10 +5,8 @@ export const EventEngineInspector: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const {
     eventHistory,
-    eventQueue,
     offlineQueue,
     isOffline,
-    isProcessing,
     emitEvent,
     clearHistory,
     syncOfflineQueue,
@@ -79,7 +77,7 @@ export const EventEngineInspector: React.FC = () => {
           fontWeight: 700,
           fontSize: '0.85rem',
           cursor: 'pointer',
-          boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)',
+          boxShadow: '0 8px 25px rgba(99, 102, 241, 0.35)',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -109,7 +107,7 @@ export const EventEngineInspector: React.FC = () => {
             position: 'fixed',
             inset: 0,
             zIndex: 10000,
-            background: 'rgba(15, 23, 42, 0.85)',
+            background: 'rgba(15, 23, 42, 0.4)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -122,14 +120,14 @@ export const EventEngineInspector: React.FC = () => {
               width: '100%',
               maxWidth: '850px',
               maxHeight: '90vh',
-              background: '#1e293b',
+              background: 'var(--card-bg, #ffffff)',
               borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--card-border, #e5e7eb)',
               padding: '28px',
-              color: '#f8fafc',
+              color: 'var(--text-main, #0f172a)',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              boxShadow: 'var(--shadow-lg)',
               overflow: 'hidden',
             }}
           >
@@ -146,15 +144,16 @@ export const EventEngineInspector: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    color: '#ffffff',
                   }}
                 >
                   📡
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800 }}>
-                    Event & Real-Time Engine Telemetry [SPR-208]
+                  <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main, #0f172a)' }}>
+                    Event & Real-Time Engine Telemetry
                   </h3>
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
                     Nervous system event log inspector & synthetic simulator
                   </p>
                 </div>
@@ -165,7 +164,7 @@ export const EventEngineInspector: React.FC = () => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: 'var(--text-muted, #94a3b8)',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
                 }}
@@ -183,21 +182,21 @@ export const EventEngineInspector: React.FC = () => {
                 marginBottom: '24px',
               }}
             >
-              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Total Processed</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{stats.totalCount}</div>
+              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-secondary, #f8fafc)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)' }}>Total Processed</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563eb' }}>{stats.totalCount}</div>
               </div>
-              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Processed Today</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399' }}>{stats.todayCount}</div>
+              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-secondary, #f8fafc)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)' }}>Processed Today</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#10b981' }}>{stats.todayCount}</div>
               </div>
-              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Active Sessions</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24' }}>{stats.activeSessionsCount}</div>
+              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-secondary, #f8fafc)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)' }}>Active Sessions</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#d97706' }}>{stats.activeSessionsCount}</div>
               </div>
-              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Network Status</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: isOffline ? '#fca5a5' : '#4ade80' }}>
+              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-secondary, #f8fafc)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)' }}>Network Status</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: isOffline ? '#ef4444' : '#10b981' }}>
                   {isOffline ? 'Offline' : 'Online'}
                 </div>
               </div>
@@ -208,12 +207,12 @@ export const EventEngineInspector: React.FC = () => {
               style={{
                 padding: '16px',
                 borderRadius: '12px',
-                background: 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
+                background: 'rgba(99, 102, 241, 0.08)',
+                border: '1px solid rgba(99, 102, 241, 0.25)',
                 marginBottom: '20px',
               }}
             >
-              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#818cf8', marginBottom: '10px' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#6366f1', marginBottom: '10px' }}>
                 ⚡ Event Bus Simulator: Inject Synthetic Events
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -222,9 +221,9 @@ export const EventEngineInspector: React.FC = () => {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    background: 'rgba(99, 102, 241, 0.25)',
+                    background: 'rgba(99, 102, 241, 0.12)',
                     border: '1px solid #6366f1',
-                    color: '#818cf8',
+                    color: '#6366f1',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     fontWeight: 600,
@@ -237,9 +236,9 @@ export const EventEngineInspector: React.FC = () => {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    background: 'rgba(16, 185, 129, 0.25)',
+                    background: 'rgba(16, 185, 129, 0.12)',
                     border: '1px solid #10b981',
-                    color: '#34d399',
+                    color: '#10b981',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     fontWeight: 600,
@@ -252,9 +251,9 @@ export const EventEngineInspector: React.FC = () => {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    background: 'rgba(245, 158, 11, 0.25)',
+                    background: 'rgba(245, 158, 11, 0.12)',
                     border: '1px solid #f59e0b',
-                    color: '#fbbf24',
+                    color: '#d97706',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     fontWeight: 600,
@@ -267,9 +266,9 @@ export const EventEngineInspector: React.FC = () => {
                   style={{
                     padding: '8px 14px',
                     borderRadius: '8px',
-                    background: 'rgba(168, 85, 247, 0.25)',
+                    background: 'rgba(168, 85, 247, 0.12)',
                     border: '1px solid #a855f7',
-                    color: '#c084fc',
+                    color: '#7c3aed',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     fontWeight: 600,
@@ -283,7 +282,9 @@ export const EventEngineInspector: React.FC = () => {
             {/* Event Log JSON Stream */}
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#cbd5e1' }}>Live Event Payload Buffer</span>
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+                  Live Event Payload Buffer
+                </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {offlineQueue.length > 0 && (
                     <button
@@ -293,7 +294,7 @@ export const EventEngineInspector: React.FC = () => {
                         borderRadius: '6px',
                         background: '#10b981',
                         border: 'none',
-                        color: '#022c22',
+                        color: '#ffffff',
                         fontSize: '0.75rem',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -307,9 +308,9 @@ export const EventEngineInspector: React.FC = () => {
                     style={{
                       padding: '4px 10px',
                       borderRadius: '6px',
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      border: '1px solid rgba(239, 68, 68, 0.4)',
-                      color: '#fca5a5',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.25)',
+                      color: '#ef4444',
                       fontSize: '0.75rem',
                       cursor: 'pointer',
                     }}
@@ -322,19 +323,19 @@ export const EventEngineInspector: React.FC = () => {
               <div
                 style={{
                   flex: 1,
-                  background: '#0f172a',
+                  background: 'var(--surface-secondary, #f8fafc)',
                   borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--soft-border, #eef2f7)',
                   padding: '14px',
                   fontFamily: 'monospace',
                   fontSize: '0.78rem',
-                  color: '#38bdf8',
+                  color: 'var(--text-main, #0f172a)',
                   overflowY: 'auto',
                   maxHeight: '300px',
                 }}
               >
                 {eventHistory.length === 0 ? (
-                  <span style={{ color: '#64748b' }}>// Event log empty...</span>
+                  <span style={{ color: 'var(--text-muted, #94a3b8)' }}>// Event log empty...</span>
                 ) : (
                   eventHistory.map((evt) => (
                     <div
@@ -342,13 +343,13 @@ export const EventEngineInspector: React.FC = () => {
                       style={{
                         paddingBottom: '8px',
                         marginBottom: '8px',
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        borderBottom: '1px solid var(--soft-border, #eef2f7)',
                       }}
                     >
-                      <span style={{ color: '#a855f7' }}>[{evt.timestamp.substring(11, 19)}]</span>{' '}
-                      <span style={{ color: '#f59e0b' }}>[{evt.module.toUpperCase()}]</span>{' '}
-                      <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{evt.eventType}</span> — {evt.title}
-                      <div style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '2px' }}>
+                      <span style={{ color: '#7c3aed', fontWeight: 600 }}>[{evt.timestamp.substring(11, 19)}]</span>{' '}
+                      <span style={{ color: '#d97706', fontWeight: 600 }}>[{evt.module.toUpperCase()}]</span>{' '}
+                      <span style={{ color: 'var(--text-main, #0f172a)', fontWeight: 700 }}>{evt.eventType}</span> — {evt.title}
+                      <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.72rem', marginTop: '2px' }}>
                         ID: {evt.eventId} | ScoreImpact: +{evt.scoreImpact || 0} | Status: {evt.status}
                       </div>
                     </div>

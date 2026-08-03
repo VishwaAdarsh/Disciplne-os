@@ -3,12 +3,12 @@ import { useEventEngineStore } from '../../store/eventEngineStore';
 import type { EventModule } from '../../types/events';
 
 const moduleColors: Record<EventModule | 'system', { bg: string; text: string; border: string }> = {
-  discipline: { bg: 'rgba(99, 102, 241, 0.12)', text: '#818cf8', border: 'rgba(99, 102, 241, 0.3)' },
-  body: { bg: 'rgba(16, 185, 129, 0.12)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
-  mind: { bg: 'rgba(236, 72, 153, 0.12)', text: '#f472b6', border: 'rgba(236, 72, 153, 0.3)' },
-  nutrition: { bg: 'rgba(245, 158, 11, 0.12)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
-  goals: { bg: 'rgba(139, 92, 246, 0.12)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
-  system: { bg: 'rgba(107, 114, 128, 0.12)', text: '#9ca3af', border: 'rgba(107, 114, 128, 0.3)' },
+  discipline: { bg: 'rgba(99, 102, 241, 0.08)', text: '#6366f1', border: 'rgba(99, 102, 241, 0.25)' },
+  body: { bg: 'rgba(16, 185, 129, 0.08)', text: '#10b981', border: 'rgba(16, 185, 129, 0.25)' },
+  mind: { bg: 'rgba(236, 72, 153, 0.08)', text: '#ec4899', border: 'rgba(236, 72, 153, 0.25)' },
+  nutrition: { bg: 'rgba(245, 158, 11, 0.08)', text: '#d97706', border: 'rgba(245, 158, 11, 0.25)' },
+  goals: { bg: 'rgba(139, 92, 246, 0.08)', text: '#7c3aed', border: 'rgba(139, 92, 246, 0.25)' },
+  system: { bg: 'rgba(107, 114, 128, 0.08)', text: '#4b5563', border: 'rgba(107, 114, 128, 0.25)' },
 };
 
 export const ActivityTimelineWidget: React.FC = () => {
@@ -43,12 +43,12 @@ export const ActivityTimelineWidget: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       {/* Header */}
@@ -73,14 +73,17 @@ export const ActivityTimelineWidget: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
             }}
           >
             🧠
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Activity Timeline</h3>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              Activity Timeline
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)' }}>
               Real-time system nervous feed · {stats.todayCount} event{stats.todayCount !== 1 ? 's' : ''} today
             </p>
           </div>
@@ -92,9 +95,9 @@ export const ActivityTimelineWidget: React.FC = () => {
             style={{
               padding: '6px 12px',
               borderRadius: '20px',
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              color: '#fca5a5',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#ef4444',
               fontSize: '0.8rem',
               fontWeight: 600,
               display: 'flex',
@@ -122,9 +125,9 @@ export const ActivityTimelineWidget: React.FC = () => {
               padding: '10px 16px',
               paddingLeft: '38px',
               borderRadius: '10px',
-              background: 'rgba(15, 23, 42, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: '#f8fafc',
+              background: 'var(--surface-primary, #ffffff)',
+              border: '1px solid var(--input-border, #e5e7eb)',
+              color: 'var(--text-main, #0f172a)',
               fontSize: '0.9rem',
               outline: 'none',
               boxSizing: 'border-box',
@@ -146,9 +149,9 @@ export const ActivityTimelineWidget: React.FC = () => {
                 style={{
                   padding: '6px 14px',
                   borderRadius: '8px',
-                  border: isActive ? '1px solid #6366f1' : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isActive ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-                  color: isActive ? '#818cf8' : '#94a3b8',
+                  border: isActive ? '1px solid #6366f1' : '1px solid var(--card-border, #e5e7eb)',
+                  background: isActive ? 'rgba(99, 102, 241, 0.12)' : 'var(--surface-primary, #ffffff)',
+                  color: isActive ? '#6366f1' : 'var(--text-secondary, #475569)',
                   fontSize: '0.82rem',
                   fontWeight: isActive ? 600 : 400,
                   cursor: 'pointer',
@@ -173,10 +176,11 @@ export const ActivityTimelineWidget: React.FC = () => {
                 style={{
                   padding: '5px 12px',
                   borderRadius: '20px',
-                  border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
-                  background: isActive ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.4)',
-                  color: isActive ? '#38bdf8' : '#cbd5e1',
+                  border: isActive ? '1px solid #3b82f6' : '1px solid var(--card-border, #e5e7eb)',
+                  background: isActive ? 'rgba(59, 130, 246, 0.12)' : 'var(--surface-primary, #ffffff)',
+                  color: isActive ? '#2563eb' : 'var(--text-secondary, #475569)',
                   fontSize: '0.8rem',
+                  fontWeight: isActive ? 600 : 400,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -198,14 +202,14 @@ export const ActivityTimelineWidget: React.FC = () => {
             style={{
               padding: '40px 20px',
               textAlign: 'center',
-              color: '#64748b',
-              background: 'rgba(15, 23, 42, 0.3)',
+              color: 'var(--text-muted, #94a3b8)',
+              background: 'var(--surface-secondary, #f8fafc)',
               borderRadius: '12px',
-              border: '1px dashed rgba(255, 255, 255, 0.08)',
+              border: '1px dashed var(--card-border, #e5e7eb)',
             }}
           >
             <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📡</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>No Events Found</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>No Events Found</div>
             <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>
               Perform actions across modules or adjust search filters to view events.
             </div>
@@ -231,9 +235,10 @@ export const ActivityTimelineWidget: React.FC = () => {
                   gap: '14px',
                   padding: '14px 16px',
                   borderRadius: '12px',
-                  background: 'rgba(15, 23, 42, 0.5)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'var(--surface-secondary, #f8fafc)',
+                  border: '1px solid var(--soft-border, #eef2f7)',
                   transition: 'all 0.2s ease',
+                  borderLeft: `4px solid ${modStyle.text}`,
                 }}
               >
                 {/* Icon box */}
@@ -257,14 +262,18 @@ export const ActivityTimelineWidget: React.FC = () => {
                 {/* Event Content */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#f1f5f9' }}>{evt.title}</span>
-                    <span style={{ fontSize: '0.78rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main, #0f172a)' }}>
+                      {evt.title}
+                    </span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)', whiteSpace: 'nowrap' }}>
                       {formattedDate} · {formattedTime}
                     </span>
                   </div>
 
                   {evt.description && (
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>{evt.description}</p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary, #475569)' }}>
+                      {evt.description}
+                    </p>
                   )}
 
                   {/* Module badge & score impact tag */}
@@ -291,7 +300,7 @@ export const ActivityTimelineWidget: React.FC = () => {
                           fontSize: '0.72rem',
                           padding: '2px 8px',
                           borderRadius: '6px',
-                          background: 'rgba(16, 185, 129, 0.15)',
+                          background: 'rgba(16, 185, 129, 0.12)',
                           color: '#10b981',
                           fontWeight: 700,
                         }}

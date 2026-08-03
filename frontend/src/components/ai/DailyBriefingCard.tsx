@@ -11,12 +11,12 @@ export const DailyBriefingCard: React.FC = () => {
   return (
     <div
       style={{
-        background: 'var(--card-bg, #1e293b)',
+        background: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+        border: '1px solid var(--card-border, #e5e7eb)',
         padding: '24px',
-        color: '#f8fafc',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        color: 'var(--text-main, #0f172a)',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       {/* Tab Header */}
@@ -32,20 +32,23 @@ export const DailyBriefingCard: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(168, 85, 247, 0.4)',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)',
             }}
           >
             🤖
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>AI Intelligence Briefing</h3>
-            <p style={{ margin: 0, fontSize: '0.83rem', color: '#94a3b8' }}>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main, #0f172a)' }}>
+              AI Intelligence Briefing
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--text-muted, #94a3b8)' }}>
               Proactive personal performance operating briefing
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '10px' }}>
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--surface-secondary, #f8fafc)', padding: '4px', borderRadius: '10px', border: '1px solid var(--card-border, #e5e7eb)' }}>
           <button
             onClick={() => setTab('briefing')}
             style={{
@@ -53,7 +56,7 @@ export const DailyBriefingCard: React.FC = () => {
               borderRadius: '8px',
               border: 'none',
               background: tab === 'briefing' ? '#6366f1' : 'transparent',
-              color: tab === 'briefing' ? '#ffffff' : '#94a3b8',
+              color: tab === 'briefing' ? '#ffffff' : 'var(--text-secondary, #475569)',
               fontWeight: 600,
               fontSize: '0.82rem',
               cursor: 'pointer',
@@ -68,7 +71,7 @@ export const DailyBriefingCard: React.FC = () => {
               borderRadius: '8px',
               border: 'none',
               background: tab === 'evening' ? '#a855f7' : 'transparent',
-              color: tab === 'evening' ? '#ffffff' : '#94a3b8',
+              color: tab === 'evening' ? '#ffffff' : 'var(--text-secondary, #475569)',
               fontWeight: 600,
               fontSize: '0.82rem',
               cursor: 'pointer',
@@ -84,8 +87,8 @@ export const DailyBriefingCard: React.FC = () => {
           {/* Greeting & Score Header */}
           <div
             style={{
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)',
-              border: '1px solid rgba(99, 102, 241, 0.3)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
               borderRadius: '14px',
               padding: '20px',
               marginBottom: '20px',
@@ -97,33 +100,33 @@ export const DailyBriefingCard: React.FC = () => {
             }}
           >
             <div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9' }}>{briefing.greeting}</div>
-              <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '4px' }}>
-                Top Priority: <strong style={{ color: '#38bdf8' }}>{briefing.topPriorityTask}</strong>
+              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main, #0f172a)' }}>{briefing.greeting}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #475569)', marginTop: '4px' }}>
+                Top Priority: <strong style={{ color: '#2563eb' }}>{briefing.topPriorityTask}</strong>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399' }}>{briefing.performancePercent}%</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Today's Index</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>{briefing.performancePercent}%</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Today's Index</div>
               </div>
-              <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
+              <div style={{ width: '1px', height: '30px', background: 'var(--card-border, #e5e7eb)' }} />
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fbbf24' }}>🔥 {briefing.currentStreakDays}</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Active Streak</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#d97706' }}>🔥 {briefing.currentStreakDays}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Active Streak</div>
               </div>
-              <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
+              <div style={{ width: '1px', height: '30px', background: 'var(--card-border, #e5e7eb)' }} />
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#818cf8' }}>{briefing.estimatedActiveTime}</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Est. Execution</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6366f1' }}>{briefing.estimatedActiveTime}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Est. Execution</div>
               </div>
             </div>
           </div>
 
           {/* Today's Focus List */}
           <div style={{ marginBottom: '20px' }}>
-            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.92rem', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.92rem', color: 'var(--text-secondary, #475569)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               🎯 Recommended Execution Targets
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -136,9 +139,10 @@ export const DailyBriefingCard: React.FC = () => {
                     gap: '10px',
                     padding: '10px 14px',
                     borderRadius: '10px',
-                    background: 'rgba(15, 23, 42, 0.4)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    background: 'var(--surface-secondary, #f8fafc)',
+                    border: '1px solid var(--soft-border, #eef2f7)',
                     fontSize: '0.9rem',
+                    color: 'var(--text-main, #0f172a)',
                   }}
                 >
                   <span style={{ color: '#6366f1', fontWeight: 700 }}>•</span>
@@ -153,14 +157,14 @@ export const DailyBriefingCard: React.FC = () => {
             style={{
               padding: '14px 18px',
               borderRadius: '12px',
-              background: 'rgba(15, 23, 42, 0.6)',
+              background: 'var(--surface-secondary, #f8fafc)',
               borderLeft: '4px solid #a855f7',
               fontSize: '0.88rem',
               fontStyle: 'italic',
-              color: '#cbd5e1',
+              color: 'var(--text-secondary, #475569)',
             }}
           >
-            "{briefing.quoteOfTheDay.quote}" — <span style={{ fontStyle: 'normal', fontWeight: 600, color: '#a855f7' }}>{briefing.quoteOfTheDay.author}</span>
+            "{briefing.quoteOfTheDay.quote}" — <span style={{ fontStyle: 'normal', fontWeight: 600, color: '#7c3aed' }}>{briefing.quoteOfTheDay.author}</span>
           </div>
         </div>
       ) : (
@@ -168,39 +172,41 @@ export const DailyBriefingCard: React.FC = () => {
         <div>
           <div
             style={{
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)',
-              border: '1px solid rgba(168, 85, 247, 0.3)',
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%)',
+              border: '1px solid rgba(168, 85, 247, 0.2)',
               borderRadius: '14px',
               padding: '20px',
               marginBottom: '20px',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>Daily Performance Score: {evening.performanceScore}/100</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main, #0f172a)' }}>
+                Daily Performance Score: {evening.performanceScore}/100
+              </div>
               <div style={{ fontSize: '1.2rem' }}>{evening.moodEmoji}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-              <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(15, 23, 42, 0.5)' }}>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Tasks</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#38bdf8' }}>{evening.tasksCompleted}</div>
+              <div style={{ padding: '10px', borderRadius: '8px', background: 'var(--surface-primary, #ffffff)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Tasks</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#2563eb' }}>{evening.tasksCompleted}</div>
               </div>
-              <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(15, 23, 42, 0.5)' }}>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Workout</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#34d399' }}>{evening.workoutStatus}</div>
+              <div style={{ padding: '10px', borderRadius: '8px', background: 'var(--surface-primary, #ffffff)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Workout</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#10b981' }}>{evening.workoutStatus}</div>
               </div>
-              <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(15, 23, 42, 0.5)' }}>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Water</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fbbf24' }}>{evening.waterIntakeStr}</div>
+              <div style={{ padding: '10px', borderRadius: '8px', background: 'var(--surface-primary, #ffffff)', border: '1px solid var(--soft-border, #eef2f7)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)' }}>Water</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#d97706' }}>{evening.waterIntakeStr}</div>
               </div>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '0.88rem' }}>
+            <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', fontSize: '0.88rem', color: 'var(--text-main, #0f172a)' }}>
               <strong>🏆 Key Win:</strong> {evening.keyWin}
             </div>
-            <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', fontSize: '0.88rem' }}>
+            <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.25)', fontSize: '0.88rem', color: 'var(--text-main, #0f172a)' }}>
               <strong>💡 Tomorrow's Optimization:</strong> {evening.tomorrowSuggestion}
             </div>
           </div>
