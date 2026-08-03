@@ -7,6 +7,7 @@ import type {
   TaskCategory,
 } from '../types/discipline';
 import { useOverviewStore } from './overviewStore';
+import { useEventEngineStore } from './eventEngineStore';
 
 const LEVEL_THRESHOLDS = [
   { level: 1, title: 'Explorer', maxXp: 250 },
@@ -253,20 +254,27 @@ export const useDisciplineStore = create<DisciplineStoreState>((set, get) => ({
       notificationToast: toastMsg,
     });
 
-    // Push event to Overview Engine
+    // Push event to Event & Real-Time Engine
     if (newCompleted) {
-      useOverviewStore.getState().pushEvent({
-        type: 'TASK_COMPLETED',
-        title: `${task.title} completed`,
-        category: 'discipline',
+      useEventEngineStore.getState().emitEvent({
+        module: 'discipline',
+        eventType: 'TASK_COMPLETED',
+        title: `Completed: ${task.title}`,
+        description: `Earned +${task.xpReward} XP for task completion`,
         icon: task.icon || '✓',
+        payload: { taskId: task.id, xpReward: task.xpReward, streak: task.streak + 1 },
+        scoreImpact: Math.min(10, Math.ceil(task.xpReward / 5)),
       });
+
       if (allNonnegDone) {
-        useOverviewStore.getState().pushEvent({
-          type: 'TASK_COMPLETED',
+        useEventEngineStore.getState().emitEvent({
+          module: 'discipline',
+          eventType: 'HABIT_COMPLETED',
           title: `Perfect Day Achieved! 🏆`,
-          category: 'discipline',
+          description: `All non-negotiable tasks completed today!`,
           icon: '🔥',
+          payload: { bonusXp: 50 },
+          scoreImpact: 15,
         });
       }
     }

@@ -1,18 +1,20 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { LayoutDashboard, CheckSquare, Heart, Brain, Utensils, Target, Sun, Moon, Bell, LogOut, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Heart, Brain, Utensils, Target, Sun, Moon, Bell, LogOut, MoreHorizontal, Sparkles } from 'lucide-react';
 import NotificationsModal from './NotificationsModal';
 import MoreMobileNav from './MoreMobileNav';
 
 const DESKTOP_NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/ai-coach', label: 'AI Coach', icon: Sparkles },
   { to: '/discipline', label: 'Discipline', icon: CheckSquare },
   { to: '/body', label: 'Body', icon: Heart },
   { to: '/mind', label: 'Mind', icon: Brain },
   { to: '/nutrition', label: 'Nutrition', icon: Utensils },
   { to: '/goals', label: 'Goals', icon: Target },
 ];
+
 
 const MOBILE_PRIMARY_NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },

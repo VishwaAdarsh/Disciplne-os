@@ -11,6 +11,7 @@ import type {
   MindScoreBreakdown,
 } from '../types/mind';
 import { useOverviewStore } from './overviewStore';
+import { useEventEngineStore } from './eventEngineStore';
 
 interface MindState {
   mindScore: number;
@@ -274,14 +275,17 @@ export const useMindStore = create<MindState>((set, get) => ({
     get().recalculateScore();
     get().generateRuleInsights();
 
-    // Push event to central Overview store
-    useOverviewStore.getState().pushEvent({
-      title: `Daily Mind Check-In (${label}, Focus ${data.focus}/10)`,
-      category: 'mind',
-      icon: '🧠',
-      type: 'MOOD_LOGGED',
+    useEventEngineStore.getState().emitEvent({
+      module: 'mind',
+      eventType: 'MOOD_LOGGED',
+      title: `Daily Mind Check-In (${label})`,
+      description: `Focus: ${data.focus}/10 · Energy: ${data.energy}/10 · Stress: ${data.stress}/10`,
+      icon: '🧘',
+      payload: { mood: label, focus: data.focus, energy: data.energy, stress: data.stress },
+      scoreImpact: 3,
     });
   },
+
 
   startMeditation: (title, type, targetMinutes = 10) => {
     set({
@@ -363,13 +367,17 @@ export const useMindStore = create<MindState>((set, get) => ({
     get().recalculateScore();
     get().generateRuleInsights();
 
-    useOverviewStore.getState().pushEvent({
-      title: `Completed ${durationMinutes} min Meditation`,
-      category: 'mind',
+    useEventEngineStore.getState().emitEvent({
+      module: 'mind',
+      eventType: 'MEDITATION_COMPLETED',
+      title: `Meditation Completed: ${activeMeditation.title}`,
+      description: `${durationMinutes} min ${activeMeditation.type} session`,
       icon: '🧘',
-      type: 'SESSION_FINISHED',
+      payload: { durationMinutes, type: activeMeditation.type },
+      scoreImpact: 6,
     });
   },
+
 
   cancelMeditation: () => {
     set({

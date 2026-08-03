@@ -11,6 +11,7 @@ import type {
   BodyScoreBreakdown,
 } from '../types/body';
 import { useOverviewStore } from './overviewStore';
+import { useEventEngineStore } from './eventEngineStore';
 
 interface BodyState {
   bodyScore: number;
@@ -364,14 +365,18 @@ export const useBodyStore = create<BodyState>((set, get) => ({
 
     get().recalculateScore();
 
-    // Push to central Overview store
-    useOverviewStore.getState().pushEvent({
-      title: `Finished Workout: ${activeSession.name} (${durationMinutes}m)`,
-      category: 'body',
-      icon: '⚡',
-      type: 'WORKOUT_COMPLETED',
+    // Push to central Event Engine
+    useEventEngineStore.getState().emitEvent({
+      module: 'body',
+      eventType: 'WORKOUT_COMPLETED',
+      title: `Finished Workout: ${activeSession.name}`,
+      description: `${durationMinutes} mins · ${estimatedCalories} kcal · ${intensity} Intensity`,
+      icon: '💪',
+      payload: { name: activeSession.name, durationMinutes, estimatedCalories, intensity },
+      scoreImpact: 8,
     });
   },
+
 
   cancelWorkout: () => {
     set({
@@ -456,13 +461,17 @@ export const useBodyStore = create<BodyState>((set, get) => ({
 
     get().recalculateScore();
 
-    useOverviewStore.getState().pushEvent({
-      title: `Added +${amountMl} ml Water (${newLiters}L / ${water.targetLiters}L)`,
-      category: 'body',
+    useEventEngineStore.getState().emitEvent({
+      module: 'body',
+      eventType: 'WATER_LOGGED',
+      title: `Water Logged (+${amountMl} ml)`,
+      description: `Current total: ${newLiters}L / ${water.targetLiters}L`,
       icon: '💧',
-      type: 'WATER_LOGGED',
+      payload: { amountMl, newLiters, targetLiters: water.targetLiters },
+      scoreImpact: 2,
     });
   },
+
 
   updateSteps: (newSteps) => {
     const { steps, activityFeed } = get();

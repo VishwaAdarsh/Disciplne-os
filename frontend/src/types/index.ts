@@ -54,6 +54,8 @@ export * from './nutrition';
 export * from './goals';
 export * from './performance';
 export * from './events';
+export * from './ai';
+
 
 
 

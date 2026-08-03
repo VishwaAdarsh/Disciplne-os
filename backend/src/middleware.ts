@@ -1,29 +1,43 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { sendError } from './utils/response';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'discipline-os-super-secret-jwt-key-2026';
 
 export interface AuthRequest extends Request {
   userId?: string;
+  userRole?: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 }
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'No token provided' });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    sendError(res, 'Authentication token required', 401);
     return;
   }
-  const token = auth.slice(7);
+
+  const token = authHeader.substring(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role?: 'USER' | 'ADMIN' | 'SUPER_ADMIN' };
     req.userId = payload.userId;
+    req.userRole = payload.role || 'USER';
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+  } catch (err) {
+    sendError(res, 'Invalid or expired token', 401);
   }
 }
 
-export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+export function requireRole(allowedRoles: Array<'USER' | 'ADMIN' | 'SUPER_ADMIN'>) {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.userRole || !allowedRoles.includes(req.userRole)) {
+      sendError(res, 'Forbidden: Insufficient privileges', 403);
+      return;
+    }
+    next();
+  };
+}
+
+export function globalErrorHandler(err: Error, req: Request, res: Response, next: NextFunction): void {
+  console.error('[System Error]:', err);
+  sendError(res, err.message || 'Internal system exception occurred', 500);
 }

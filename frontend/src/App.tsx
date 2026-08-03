@@ -14,6 +14,7 @@ import Analytics from './pages/Analytics';
 import Reflect from './pages/Reflect';
 import AchievementsPage from './pages/AchievementsPage';
 import SettingsPage from './pages/SettingsPage';
+import AICoachPage from './pages/AICoachPage';
 
 function App() {
   const { user, token, setUser, logout } = useStore();
@@ -46,6 +47,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/ai-coach" element={<AICoachPage />} />
           <Route path="/discipline" element={<DisciplinePage />} />
           <Route path="/tasks" element={<DisciplinePage />} />
           <Route path="/body" element={<BodyPage />} />
@@ -63,5 +65,6 @@ function App() {
     </BrowserRouter>
   );
 }
+
 
 export default App;

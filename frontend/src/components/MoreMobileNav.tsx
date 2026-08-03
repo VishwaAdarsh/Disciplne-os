@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut } from 'lucide-react';
+import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut, Sparkles } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 interface MoreMobileNavProps {
@@ -17,6 +17,7 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
   const level = Math.floor(score / 100) + 1;
 
   const moreItems = [
+    { to: '/ai-coach', label: 'AI Coach', icon: Sparkles, desc: 'Flagship Intelligence Engine & Chat' },
     { to: '/nutrition', label: 'Nutrition', icon: Utensils, desc: 'Macro targets & meal logs' },
     { to: '/goals', label: 'Goals', icon: Target, desc: 'Milestone tracking & projects' },
     { to: '/analytics', label: 'Analytics', icon: BarChart2, desc: 'Deep performance comparison' },
@@ -24,6 +25,7 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
     { to: '/achievements', label: 'Achievements', icon: Award, desc: 'Operator badges & streaks' },
     { to: '/settings', label: 'Settings', icon: Settings, desc: 'Preferences & reset schedule' },
   ];
+
 
   return (
     <div

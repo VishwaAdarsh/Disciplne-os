@@ -16,6 +16,12 @@ import PerformanceComparisonCard from '../components/performance/PerformanceComp
 import PerformanceRecommendationsCard from '../components/performance/PerformanceRecommendationsCard';
 import PerformanceReportsCard from '../components/performance/PerformanceReportsCard';
 
+// Event & Real-Time Engine [SPR-208]
+import { LiveSessionWidget } from '../components/events/LiveSessionWidget';
+import { ActivityTimelineWidget } from '../components/events/ActivityTimelineWidget';
+import { EventEngineInspector } from '../components/events/EventEngineInspector';
+
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { data, isLoading, error, refreshOverview } = useOverviewStore();
@@ -177,6 +183,10 @@ export default function Dashboard() {
         recentActivities={data.liveActivity.recentActivities}
       />
 
+      {/* 7. EVENT ENGINE REAL-TIME NERVOUS SYSTEM (SPR-208) */}
+      <LiveSessionWidget />
+      <ActivityTimelineWidget />
+
       {/* 8. 30-DAY PERFORMANCE TREND */}
       <AreaTrendChartCard
         title="30-Day Performance Trajectory"
@@ -187,6 +197,10 @@ export default function Dashboard() {
         height={220}
         unit=" pts"
       />
+
+      {/* FLOATING TELEMETRY INSPECTOR */}
+      <EventEngineInspector />
     </div>
   );
 }
+

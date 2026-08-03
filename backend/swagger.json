@@ -1,0 +1,68 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "DisciplineOS REST API v1 Architecture",
+    "version": "1.0.0",
+    "description": "API blueprint for DisciplineOS Personal Performance Operating System [SPR-210]"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful returning accessToken" }
+        }
+      }
+    },
+    "/performance/current": {
+      "get": {
+        "summary": "Get current 0-1000 Performance KPI & module breakdown",
+        "responses": {
+          "200": { "description": "Current performance state" }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "summary": "Fetch immutable event ledger stream",
+        "responses": {
+          "200": { "description": "Event stream array" }
+        }
+      },
+      "post": {
+        "summary": "Record new system event into immutable ledger",
+        "responses": {
+          "201": { "description": "Event stored" }
+        }
+      }
+    },
+    "/ai/chat": {
+      "post": {
+        "summary": "Send query to AI Coach Context Engine",
+        "responses": {
+          "200": { "description": "AI Coach response" }
+        }
+      }
+    }
+  }
+}

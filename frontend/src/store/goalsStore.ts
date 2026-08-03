@@ -9,6 +9,7 @@ import type {
   GoalScoreBreakdown,
 } from '../types/goals';
 import { useOverviewStore } from './overviewStore';
+import { useEventEngineStore } from './eventEngineStore';
 
 interface GoalsState {
   goalScore: number;
@@ -257,14 +258,17 @@ export const useGoalsStore = create<GoalsState>((set, get) => ({
     get().recalculateScore();
     get().generateRuleInsights();
 
-    // Push event to Overview store
-    useOverviewStore.getState().pushEvent({
-      title: `Created Goal: ${goalData.title}`,
-      category: 'goals',
+    useEventEngineStore.getState().emitEvent({
+      module: 'goals',
+      eventType: 'GOAL_CREATED',
+      title: `Goal Created: ${goalData.title}`,
+      description: `Category: ${goalData.category} · Priority: ${goalData.priority}`,
       icon: '🎯',
-      type: 'GOAL_UPDATED',
+      payload: { title: goalData.title, category: goalData.category, priority: goalData.priority },
+      scoreImpact: 5,
     });
   },
+
 
   updateGoal: (id, updates) => {
     const { goals } = get();
@@ -308,13 +312,18 @@ export const useGoalsStore = create<GoalsState>((set, get) => ({
     get().recalculateScore();
     get().generateRuleInsights();
 
-    useOverviewStore.getState().pushEvent({
+    const sysType = status === 'Completed' ? 'GOAL_COMPLETED' : status === 'Archived' ? 'GOAL_ARCHIVED' : 'GOAL_PAUSED';
+    useEventEngineStore.getState().emitEvent({
+      module: 'goals',
+      eventType: sysType,
       title: `Goal ${status}: ${target.title}`,
-      category: 'goals',
+      description: `Status changed to ${status}`,
       icon: status === 'Completed' ? '🏆' : '🎯',
-      type: 'GOAL_UPDATED',
+      payload: { goalId: target.id, status },
+      scoreImpact: status === 'Completed' ? 15 : 0,
     });
   },
+
 
   toggleMilestone: (goalId, milestoneId) => {
     const { goals, activityFeed } = get();

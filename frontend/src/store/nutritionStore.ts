@@ -7,6 +7,7 @@ import type {
   NutritionScoreBreakdown,
 } from '../types/nutrition';
 import { useOverviewStore } from './overviewStore';
+import { useEventEngineStore } from './eventEngineStore';
 
 interface NutritionState {
   nutritionScore: number;
@@ -268,14 +269,17 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
     get().recalculateScore();
     get().generateRuleInsights();
 
-    // Push event to Overview store
-    useOverviewStore.getState().pushEvent({
-      title: `Logged ${mealData.category}: ${mealData.name} (${mealData.calories} kcal)`,
-      category: 'nutrition',
-      icon: '🥗',
-      type: 'MEAL_LOGGED',
+    useEventEngineStore.getState().emitEvent({
+      module: 'nutrition',
+      eventType: 'MEAL_ADDED',
+      title: `Meal Added (${mealData.category}): ${mealData.name}`,
+      description: `${mealData.calories} kcal · ${mealData.proteinGrams}g Protein`,
+      icon: '🍳',
+      payload: { name: mealData.name, category: mealData.category, calories: mealData.calories, protein: mealData.proteinGrams },
+      scoreImpact: 3,
     });
   },
+
 
   toggleMealLogged: (id) => {
     const { meals } = get();

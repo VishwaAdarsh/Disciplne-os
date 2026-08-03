@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TaskCategory {
+  nonneg
+  habit
+  goal
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+enum SessionStatus {
+  idle
+  running
+  paused
+  finished
+  saved
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  role         Role          @default(USER)
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  profile             Profile?
+  tasks               Task[]
+  focusSessions       FocusSession[]
+  bodyLogs            BodyLog[]
+  mindLogs            MindLog[]
+  nutritionLogs       NutritionLog[]
+  goals               Goal[]
+  events              Event[]
+  performanceSnapshots PerformanceSnapshot[]
+  notifications       Notification[]
+  aiConversations     AIConversation[]
+  reflections         Reflection[]
+  settings            UserSettings?
+}
+
+model Profile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio               String?
+  targetWeightKg    Float?
+  dailyStepTarget   Int      @default(10000)
+  dailyWaterTargetL Float    @default(3.0)
+  dailySleepTargetH Float    @default(8.0)
+  updatedAt         DateTime @updatedAt
+}
+
+model Task {
+  id               String       @id @default(uuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  category         TaskCategory @default(nonneg)
+  priority         Priority     @default(medium)
+  estimatedMinutes Int          @default(30)
+  timeSchedule     String?
+  icon             String       @default("⚡")
+  color            String       @default("#6366F1")
+  completed        Boolean      @default(false)
+  skipped          Boolean      @default(false)
+  streak           Int          @default(0)
+  xpReward         Int          @default(20)
+  completedAt      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model FocusSession {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionName   String
+  sessionType   String        @default("deepwork")
+  status        SessionStatus @default(idle)
+  targetMinutes Int           @default(30)
+  elapsedSecs   Int           @default(0)
+  startTime     DateTime?
+  breaksCount   Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model BodyLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutTitle    String?
+  workoutMinutes  Int      @default(0)
+  caloriesBurned  Int      @default(0)
+  waterLiters     Float    @default(0.0)
+  stepsCount      Int      @default(0)
+  sleepHours      Float    @default(0.0)
+  sleepQuality    Int      @default(0)
+  weightKg        Float?
+  logDate         String
+  createdAt       DateTime @default(now())
+}
+
+model MindLog {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moodLabel      String
+  focusRating    Int      @default(5)
+  energyRating   Int      @default(5)
+  stressRating   Int      @default(5)
+  meditationMins Int      @default(0)
+  journalSnippet String?
+  logDate        String
+  createdAt      DateTime @default(now())
+}
+
+model NutritionLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealName    String
+  mealType    String   @default("Breakfast")
+  calories    Int      @default(0)
+  proteinGrams Float   @default(0.0)
+  carbsGrams   Float   @default(0.0)
+  fatGrams     Float   @default(0.0)
+  logDate     String
+  createdAt   DateTime @default(now())
+}
+
+model Goal {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  category        String      @default("Career")
+  color           String      @default("#6366F1")
+  priority        Priority    @default(high)
+  status          String      @default("Active")
+  progressPercent Int         @default(0)
+  deadline        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  milestones      Milestone[]
+}
+
+model Milestone {
+  id        String   @id @default(uuid())
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title     String
+  completed Boolean  @default(false)
+  dueDate   String?
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module      String
+  eventType   String
+  title       String
+  description String?
+  icon        String   @default("⚡")
+  payloadJson String   @default("{}")
+  scoreImpact Int      @default(0)
+  status      String   @default("completed")
+  createdAt   DateTime @default(now())
+}
+
+model PerformanceSnapshot {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallScore     Int
+  disciplineScore  Int
+  bodyScore        Int
+  mindScore        Int
+  nutritionScore   Int
+  goalsScore       Int
+  levelTitle       String   @default("Explorer")
+  snapshotDate     String
+  createdAt        DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AIConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender    String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Reflection {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart      String
+  overallScore   Int
+  nonnegScore    Int
+  clarityScore   Int      @default(80)
+  progressScore  Int      @default(80)
+  wentWell       String
+  brokeDown      String
+  commitment     String
+  createdAt      DateTime @default(now())
+}
+
+model UserSettings {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resetTime        String   @default("04:00 AM")
+  reflectionDay    String   @default("Sunday")
+  streakAlerts     Boolean  @default(true)
+  publicScore      Boolean  @default(true)
+  reflectReminder Boolean  @default(true)
+  comebackMode     Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
