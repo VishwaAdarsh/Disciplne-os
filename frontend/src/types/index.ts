@@ -52,6 +52,8 @@ export * from './body';
 export * from './mind';
 export * from './nutrition';
 export * from './goals';
+export * from './performance';
+
 
 
 
