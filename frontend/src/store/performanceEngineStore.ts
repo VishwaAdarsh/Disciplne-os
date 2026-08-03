@@ -334,7 +334,7 @@ export const usePerformanceEngineStore = create<PerformanceState>((set, get) => 
 
     syncFromAllModules: () => {
       // Pull scores from state stores
-      const dScore = useDisciplineStore.getState().disciplineScore || 82;
+      const dScore = useDisciplineStore.getState().analytics?.disciplineScore || 82;
       const gScore = useGoalsStore.getState().goalScore || 84;
       const bScore = useBodyStore.getState().bodyScore || 78;
       const mScore = useMindStore.getState().mindScore || 82;

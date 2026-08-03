@@ -58,7 +58,7 @@ export default function GoalsAnalyticsTab() {
           </div>
 
           <div style={{ background: 'var(--surface-bg, #1F2937)', padding: '12px', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#10B981', fontWeight 700 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#10B981', fontWeight: 700 }}>
               <Zap size={14} /> Velocity
             </div>
             <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '4px' }}>{breakdown.milestoneVelocityScore}%</div>

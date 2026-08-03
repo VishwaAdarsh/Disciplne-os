@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Award, CheckCircle2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
-import { mockAchievementsData } from '../mock/achievementsData';
+import { usePerformanceEngineStore } from '../store/performanceEngineStore';
 
 export default function AchievementsPage() {
+  const { achievements } = usePerformanceEngineStore();
   const [filter, setFilter] = useState('All');
 
-  const unlockedCount = mockAchievementsData.filter((a) => a.unlocked).length;
-  const filtered = filter === 'All' ? mockAchievementsData : mockAchievementsData.filter((a) => a.category === filter);
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const filtered = filter === 'All' ? achievements : achievements.filter((a) => a.category === filter);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -41,26 +42,26 @@ export default function AchievementsPage() {
             </span>
           </div>
           <h2 className="font-sekuya" style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-            {unlockedCount} of {mockAchievementsData.length} Unlocked
+            {unlockedCount} of {achievements.length} Unlocked
           </h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Maintain consistent execution to unlock higher tier operator badges.
+            Maintain consistent execution across all modules to unlock higher tier operator badges.
           </div>
         </div>
 
         <div className="font-sekuya text-gradient-xp" style={{ fontSize: '32px', fontWeight: 700 }}>
-          {Math.round((unlockedCount / mockAchievementsData.length) * 100)}%
+          {Math.round((unlockedCount / Math.max(1, achievements.length)) * 100)}%
         </div>
       </div>
 
       {/* ACHIEVEMENTS CARDS GRID */}
-      <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
+      <div className="mobile-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
         {filtered.map((item) => (
           <div
             key={item.id}
             style={{
-              background: 'var(--card-bg)',
-              border: item.unlocked ? '1px solid rgba(124,58,237,0.3)' : '1px solid var(--card-border)',
+              background: 'var(--card-bg, #111827)',
+              border: item.unlocked ? '1px solid rgba(124,58,237,0.4)' : '1px solid var(--card-border, #1F2937)',
               borderRadius: 'var(--card-radius, 16px)',
               boxShadow: 'var(--card-shadow)',
               padding: '20px',
@@ -68,21 +69,21 @@ export default function AchievementsPage() {
               flexDirection: 'column',
               justifyContent: 'space-between',
               gap: '14px',
-              opacity: item.unlocked ? 1 : 0.75,
+              opacity: item.unlocked ? 1 : 0.7,
             }}
           >
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     borderRadius: '12px',
-                    background: item.unlocked ? 'rgba(124,58,237,0.12)' : 'var(--input-bg)',
+                    background: item.unlocked ? 'rgba(124,58,237,0.15)' : 'var(--surface-bg, rgba(255,255,255,0.03))',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '20px',
+                    fontSize: '22px',
                   }}
                 >
                   {item.icon}
@@ -94,7 +95,7 @@ export default function AchievementsPage() {
                     fontWeight: 700,
                     padding: '3px 10px',
                     borderRadius: '12px',
-                    background: item.unlocked ? 'rgba(16,185,129,0.12)' : 'var(--input-bg)',
+                    background: item.unlocked ? 'rgba(16,185,129,0.15)' : 'var(--surface-bg, rgba(255,255,255,0.03))',
                     color: item.unlocked ? '#10B981' : 'var(--text-muted)',
                   }}
                 >
@@ -102,28 +103,29 @@ export default function AchievementsPage() {
                 </span>
               </div>
 
-              <h3 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: '4px 0', color: 'var(--text-main)' }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 800, color: 'var(--text-main)' }}>
                 {item.title}
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: 1.4 }}>
+              </h4>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
                 {item.description}
               </p>
             </div>
 
             <div>
-              {!item.unlocked ? (
+              {item.unlocked ? (
+                <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={12} />
+                  <span>Unlocked on {item.unlockedDate || 'Recent'}</span>
+                </div>
+              ) : (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                     <span>Progress</span>
                     <span>{item.progressPercent}%</span>
                   </div>
-                  <div style={{ background: 'var(--input-bg)', borderRadius: '20px', height: '6px', overflow: 'hidden' }}>
-                    <div style={{ width: `${item.progressPercent}%`, height: '100%', background: '#7C3AED', borderRadius: '20px' }} />
+                  <div style={{ height: '4px', background: 'var(--card-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${item.progressPercent}%`, background: '#7C3AED' }} />
                   </div>
-                </div>
-              ) : (
-                <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={13} /> Unlocked on {item.unlockedDate}
                 </div>
               )}
             </div>

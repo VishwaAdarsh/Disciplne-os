@@ -1,25 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShieldCheck, CheckCircle, AlertTriangle, RefreshCw, ChevronRight } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
-import PerformanceComparisonCard from '../components/PerformanceComparisonCard';
-import PerformanceSummary from '../components/PerformanceSummary';
-import RadialScoreCard from '../components/RadialScoreCard';
 import MetricCard from '../components/MetricCard';
 import LiveActivityCard from '../components/LiveActivityCard';
-import PersonalInsightsCard from '../components/PersonalInsightsCard';
 import QuickActionsBar from '../components/QuickActionsBar';
-import WeeklyPreviewCard from '../components/WeeklyPreviewCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
 import { OverviewDashboardSkeleton } from '../components/OverviewSkeletons';
 import { useOverviewStore } from '../store/overviewStore';
+import { usePerformanceEngineStore } from '../store/performanceEngineStore';
+
+// Performance Engine Components
+import PerformanceSummaryWidget from '../components/performance/PerformanceSummaryWidget';
+import PerformanceComparisonCard from '../components/performance/PerformanceComparisonCard';
+import PerformanceRecommendationsCard from '../components/performance/PerformanceRecommendationsCard';
+import PerformanceReportsCard from '../components/performance/PerformanceReportsCard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { data, isLoading, error, refreshOverview } = useOverviewStore();
+  const { performanceScore, dailyChange, highestScore, levelInfo } = usePerformanceEngineStore();
+
   const [activeCategory, setActiveCategory] = useState('All');
-  const [timeframe, setTimeframe] = useState<'7D' | '30D' | '90D'>('30D');
 
   const nonnegs = data.nonNegotiables;
   const completedCount = nonnegs.filter((n) => n.completed).length;
@@ -49,7 +51,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      {/* ERROR STATE BANNER (PRD Section 21) */}
+      {/* ERROR STATE BANNER */}
       {error && (
         <div
           style={{
@@ -89,7 +91,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 1. GREETING SECTION (PRD Section 5) */}
+      {/* 1. GREETING & PAGE HEADER */}
       <PageHeader
         user={data.user}
         title="Performance Overview"
@@ -99,30 +101,20 @@ export default function Dashboard() {
         categories={['All', 'Discipline', 'Body', 'Mind', 'Nutrition', 'Goals']}
       />
 
-      {/* 2. QUICK ACTIONS BAR (PRD Section 15) */}
+      {/* 2. CORE INTELLIGENCE PERFORMANCE SCORE BANNER (0-1000 KPI) */}
+      <PerformanceSummaryWidget />
+
+      {/* 3. QUICK ACTIONS BAR */}
       <QuickActionsBar />
 
-      {/* 3. PERFORMANCE COMPARISON SECTION (PRD Section 6) */}
-      <PerformanceComparisonCard comparisons={data.comparisons} />
+      {/* 4. PERFORMANCE TRAJECTORY COMPARISON & RECOMMENDATIONS GRID */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <PerformanceComparisonCard />
+        <PerformanceRecommendationsCard />
+      </div>
 
-      {/* 4. OVERALL PERFORMANCE SCORE & CATEGORY SCORES (PRD Section 7 & 8) */}
-      <PerformanceSummary
-        comparisons={data.comparisons}
-        categoryScores={data.categoryScores}
-      />
-
-      {/* 5. TODAY'S KPI CARDS (PRD Section 9) */}
+      {/* 5. TODAY'S KPI CARDS */}
       <div className="mobile-kpi-grid grid-responsive-3" style={{ gap: '12px' }}>
-        {/* OVERALL PERFORMANCE SCORE / DISCIPLINE SCORE */}
-        <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
-          <RadialScoreCard
-            score={data.kpis.disciplineScore}
-            maxScore={data.kpis.maxDisciplineScore}
-            tier={data.kpis.scoreTier}
-            weeklyChange={data.kpis.scoreChangeThisWeek}
-          />
-        </div>
-
         {/* CURRENT STREAK CARD */}
         <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
           <MetricCard
@@ -135,21 +127,6 @@ export default function Dashboard() {
             sparklineData={streakData}
             sparklineColor="#F59E0B"
             isUp={true}
-            footer={
-              <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                {Array.from({ length: 14 }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      flex: 1,
-                      height: '6px',
-                      borderRadius: '4px',
-                      background: i < data.kpis.currentStreak ? '#F59E0B' : 'var(--card-border)',
-                    }}
-                  />
-                ))}
-              </div>
-            }
           />
         </div>
 
@@ -157,29 +134,23 @@ export default function Dashboard() {
         <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
           <MetricCard
             title="Operator Level"
-            value={`LEVEL 0${data.kpis.operatorLevel}`}
-            subtext={`${data.kpis.targetXp - data.kpis.currentXp} XP until Level 0${data.kpis.operatorLevel + 1}`}
-            badge="LVL PROGRESS"
-            badgeColor="#8B5CF6"
+            value={`${levelInfo.level.toUpperCase()}`}
+            subtext={`Score: ${performanceScore} / 1000 (Best: ${highestScore})`}
+            badge={`${dailyChange >= 0 ? '+' : ''}${dailyChange} TODAY`}
+            badgeColor={levelInfo.color}
             accentClass="text-gradient-xp"
             sparklineData={xpData}
-            sparklineColor="#8B5CF6"
+            sparklineColor={levelInfo.color}
             isUp={true}
-            progressPercent={(data.kpis.currentXp / data.kpis.targetXp) * 100}
-            progressColor="linear-gradient(90deg, #7C3AED, #C026D3)"
-            footer={
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
-                <span>{data.kpis.currentXp} XP</span>
-                <span>{data.kpis.targetXp} XP</span>
-              </div>
-            }
+            progressPercent={levelInfo.progressPercent}
+            progressColor={`linear-gradient(90deg, ${levelInfo.color}, #C026D3)`}
           />
         </div>
 
         {/* TODAY PROGRESS CARD */}
         <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
           <MetricCard
-            title="Today's Progress"
+            title="Today's Tasks"
             value={`${completedCount} / ${nonnegs.length}`}
             subtext={`${Math.round((completedCount / nonnegs.length) * 100)}% complete today`}
             badge={completedCount === nonnegs.length ? 'ALL COMPLETE' : 'IN PROGRESS'}
@@ -194,7 +165,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 6. LIVE SESSION CARD & ACTIVITY TIMELINE (PRD Section 10 & 12) */}
+      {/* 6. AUTOMATED PERFORMANCE REPORT CARD */}
+      <PerformanceReportsCard />
+
+      {/* 7. LIVE SESSION CARD & ACTIVITY TIMELINE */}
       <LiveActivityCard
         hasActiveSession={data.liveActivity.hasActiveSession}
         activeTask={data.liveActivity.activeTask}
@@ -203,136 +177,16 @@ export default function Dashboard() {
         recentActivities={data.liveActivity.recentActivities}
       />
 
-      {/* 7. TODAY'S TASKS PREVIEW & 30-DAY PERFORMANCE TREND (PRD Section 11 & 13) */}
-      <div className="grid-responsive-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-        {/* TODAY'S TASKS PREVIEW CARD (PRD Section 11 - Read-Only Navigation) */}
-        <div
-          onClick={() => navigate('/discipline')}
-          style={{
-            background: 'var(--card-bg)',
-            border: '1px solid var(--card-border)',
-            borderRadius: 'var(--card-radius, 16px)',
-            boxShadow: 'var(--card-shadow)',
-            padding: '22px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            cursor: 'pointer',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldCheck size={18} color="#F59E0B" />
-              <h2 className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                Today's Non-Negotiables
-              </h2>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
-              <span>{completedCount} / {nonnegs.length}</span>
-              <ChevronRight size={14} />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {nonnegs.map((item) => (
-              <motion.div
-                key={item.id}
-                whileHover={{ x: 2 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  border: item.completed ? '1px solid rgba(16,185,129,0.25)' : '1px solid var(--card-border)',
-                  background: item.completed ? 'rgba(16,185,129,0.04)' : 'var(--input-bg)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: item.completed ? 'none' : '2px solid var(--text-muted)',
-                    background: item.completed ? '#10B981' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  {item.completed && <CheckCircle size={14} color="#FFF" />}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: item.completed ? 'var(--text-muted)' : 'var(--text-main)',
-                      textDecoration: item.completed ? 'line-through' : 'none',
-                    }}
-                  >
-                    {item.title}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    ⏰ {item.time}
-                  </div>
-                </div>
-
-                <div className="font-sekuya text-gradient-streak" style={{ fontSize: '12px', fontWeight: 700 }}>
-                  🔥 {item.streakDays}d
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* 30-DAY PERFORMANCE TREND CHART (PRD Section 13 & 20) */}
-        {data.history30Days.length > 0 ? (
-          <AreaTrendChartCard
-            title="Performance Score Trend"
-            subtitle="30-day historical performance score tracking"
-            data={data.history30Days.map((h) => ({ date: h.day, score: h.score }))}
-            dataKey="score"
-            color="#6366F1"
-            height={240}
-            unit=" pts"
-            timeframes={['7D', '30D', '90D']}
-          />
-        ) : (
-          /* Empty Chart State (PRD Section 20) */
-          <div
-            style={{
-              background: 'var(--card-bg)',
-              border: '1px solid var(--card-border)',
-              borderRadius: 'var(--card-radius, 16px)',
-              padding: '22px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              textAlign: 'center',
-              minHeight: '240px',
-              color: 'var(--text-muted)',
-            }}
-          >
-            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
-              No historical data yet
-            </div>
-            <div style={{ fontSize: '13px', maxWidth: '280px' }}>
-              Complete today's activities to build your first trend.
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 8. AI INSIGHTS & WEEKLY PREVIEW SECTION (PRD Section 14 & 16) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-        <PersonalInsightsCard insights={data.insights} />
-        <WeeklyPreviewCard weeklyPreview={data.weeklyPreview} />
-      </div>
+      {/* 8. 30-DAY PERFORMANCE TREND */}
+      <AreaTrendChartCard
+        title="30-Day Performance Trajectory"
+        subtitle="Overall performance index trend line"
+        data={data.history30Days}
+        dataKey="score"
+        color="#6366F1"
+        height={220}
+        unit=" pts"
+      />
     </div>
   );
 }
