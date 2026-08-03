@@ -1,190 +1,213 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, CheckCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle, AlertTriangle, RefreshCw, ChevronRight } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import PerformanceComparisonCard from '../components/PerformanceComparisonCard';
 import PerformanceSummary from '../components/PerformanceSummary';
 import RadialScoreCard from '../components/RadialScoreCard';
 import MetricCard from '../components/MetricCard';
 import LiveActivityCard from '../components/LiveActivityCard';
 import PersonalInsightsCard from '../components/PersonalInsightsCard';
-import DonutChartCard from '../components/charts/DonutChartCard';
-import BarChartCard from '../components/charts/BarChartCard';
+import QuickActionsBar from '../components/QuickActionsBar';
+import WeeklyPreviewCard from '../components/WeeklyPreviewCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
-import { mockOverviewData } from '../mock/dashboardData';
+import { OverviewDashboardSkeleton } from '../components/OverviewSkeletons';
+import { useOverviewStore } from '../store/overviewStore';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { data, isLoading, error, refreshOverview } = useOverviewStore();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [nonnegs, setNonnegs] = useState(mockOverviewData.nonNegotiables);
+  const [timeframe, setTimeframe] = useState<'7D' | '30D' | '90D'>('30D');
 
-  const toggleTask = (id: string) => {
-    setNonnegs((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item))
-    );
-  };
-
+  const nonnegs = data.nonNegotiables;
   const completedCount = nonnegs.filter((n) => n.completed).length;
 
-  const streakData = [8, 9, 10, 10, 11, 11, 12];
-  const xpData = [500, 560, 620, 680, 710, 750, 780];
+  const streakData = [8, 9, 10, 10, 11, 11, data.kpis.currentStreak];
+  const xpData = [500, 560, 620, 680, 710, 750, data.kpis.currentXp];
   const taskSparklineData = [1, 2, 2, 3, 3, 3, completedCount];
 
-  const categoryBalanceData = [
-    { name: 'Discipline', value: mockOverviewData.categoryScores.discipline, color: '#6366F1' },
-    { name: 'Body', value: mockOverviewData.categoryScores.body, color: '#10B981' },
-    { name: 'Mind', value: mockOverviewData.categoryScores.mind, color: '#8B5CF6' },
-    { name: 'Nutrition', value: mockOverviewData.categoryScores.nutrition, color: '#F59E0B' },
-    { name: 'Goals', value: mockOverviewData.categoryScores.goals, color: '#06B6D4' },
-  ];
+  // Category filter navigation
+  const handleCategorySelect = (category: string) => {
+    setActiveCategory(category);
+    const routes: Record<string, string> = {
+      Discipline: '/discipline',
+      Body: '/body',
+      Mind: '/mind',
+      Nutrition: '/nutrition',
+      Goals: '/goals',
+    };
+    if (routes[category]) {
+      navigate(routes[category]);
+    }
+  };
 
-  const taskDonutData = [
-    { name: 'Completed', value: completedCount, color: '#10B981' },
-    { name: 'Remaining', value: Math.max(0, nonnegs.length - completedCount), color: '#6366F1' },
-  ];
-
-  const weeklyBarData = mockOverviewData.history30Days.slice(-7).map((d) => ({
-    name: d.day,
-    value: d.score,
-    color: d.isToday ? '#10B981' : '#6366F1',
-  }));
+  if (isLoading) {
+    return <OverviewDashboardSkeleton />;
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      {/* TOP AREA: Greeting & Category Filter Pills */}
+      {/* ERROR STATE BANNER (PRD Section 21) */}
+      {error && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '12px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            color: '#EF4444',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertTriangle size={18} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>{error}</span>
+          </div>
+          <button
+            onClick={refreshOverview}
+            style={{
+              background: '#EF4444',
+              color: '#FFF',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <RefreshCw size={14} />
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
+
+      {/* 1. GREETING SECTION (PRD Section 5) */}
       <PageHeader
-        greeting={mockOverviewData.greeting + ', ' + mockOverviewData.user}
+        user={data.user}
         title="Performance Overview"
-        subtitle={mockOverviewData.subtitle}
-        dateStr={mockOverviewData.dateStr}
+        subtitle={data.subtitle}
         activeCategory={activeCategory}
-        onSelectCategory={setActiveCategory}
+        onSelectCategory={handleCategorySelect}
         categories={['All', 'Discipline', 'Body', 'Mind', 'Nutrition', 'Goals']}
       />
 
-      {/* PERFORMANCE SUMMARY SECTION */}
+      {/* 2. QUICK ACTIONS BAR (PRD Section 15) */}
+      <QuickActionsBar />
+
+      {/* 3. PERFORMANCE COMPARISON SECTION (PRD Section 6) */}
+      <PerformanceComparisonCard comparisons={data.comparisons} />
+
+      {/* 4. OVERALL PERFORMANCE SCORE & CATEGORY SCORES (PRD Section 7 & 8) */}
       <PerformanceSummary
-        comparisons={mockOverviewData.comparisons}
-        categoryScores={mockOverviewData.categoryScores}
+        comparisons={data.comparisons}
+        categoryScores={data.categoryScores}
       />
 
-      {/* PRIMARY KPI CARDS GRID */}
+      {/* 5. TODAY'S KPI CARDS (PRD Section 9) */}
       <div className="mobile-kpi-grid grid-responsive-3" style={{ gap: '12px' }}>
-        {/* DISCIPLINE SCORE RADIAL CARD */}
-        <RadialScoreCard
-          score={mockOverviewData.kpis.disciplineScore}
-          maxScore={mockOverviewData.kpis.maxDisciplineScore}
-          tier={mockOverviewData.kpis.scoreTier}
-          weeklyChange={mockOverviewData.kpis.scoreChangeThisWeek}
-        />
+        {/* OVERALL PERFORMANCE SCORE / DISCIPLINE SCORE */}
+        <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
+          <RadialScoreCard
+            score={data.kpis.disciplineScore}
+            maxScore={data.kpis.maxDisciplineScore}
+            tier={data.kpis.scoreTier}
+            weeklyChange={data.kpis.scoreChangeThisWeek}
+          />
+        </div>
 
         {/* CURRENT STREAK CARD */}
-        <MetricCard
-          title="Current Streak"
-          value={`🔥 ${mockOverviewData.kpis.currentStreak} DAYS`}
-          subtext={`Longest Streak: ${mockOverviewData.kpis.longestStreak} days`}
-          badge="ON FIRE"
-          badgeColor="#F59E0B"
-          accentClass="text-gradient-streak"
-          sparklineData={streakData}
-          sparklineColor="#F59E0B"
-          isUp={true}
-          footer={
-            <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-              {Array.from({ length: 14 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    height: '6px',
-                    borderRadius: '4px',
-                    background: i < mockOverviewData.kpis.currentStreak ? '#F59E0B' : 'var(--card-border)',
-                  }}
-                />
-              ))}
-            </div>
-          }
-        />
+        <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
+          <MetricCard
+            title="Current Streak"
+            value={`🔥 ${data.kpis.currentStreak} DAYS`}
+            subtext={`Longest Streak: ${data.kpis.longestStreak} days`}
+            badge="ON FIRE"
+            badgeColor="#F59E0B"
+            accentClass="text-gradient-streak"
+            sparklineData={streakData}
+            sparklineColor="#F59E0B"
+            isUp={true}
+            footer={
+              <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      height: '6px',
+                      borderRadius: '4px',
+                      background: i < data.kpis.currentStreak ? '#F59E0B' : 'var(--card-border)',
+                    }}
+                  />
+                ))}
+              </div>
+            }
+          />
+        </div>
 
         {/* OPERATOR LEVEL CARD */}
-        <MetricCard
-          title="Operator Level"
-          value={`LEVEL 0${mockOverviewData.kpis.operatorLevel}`}
-          subtext={`${mockOverviewData.kpis.targetXp - mockOverviewData.kpis.currentXp} XP until Level 0${mockOverviewData.kpis.operatorLevel + 1}`}
-          badge="LVL PROGRESS"
-          badgeColor="#8B5CF6"
-          accentClass="text-gradient-xp"
-          sparklineData={xpData}
-          sparklineColor="#8B5CF6"
-          isUp={true}
-          progressPercent={(mockOverviewData.kpis.currentXp / mockOverviewData.kpis.targetXp) * 100}
-          progressColor="linear-gradient(90deg, #7C3AED, #C026D3)"
-          footer={
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
-              <span>{mockOverviewData.kpis.currentXp} XP</span>
-              <span>{mockOverviewData.kpis.targetXp} XP</span>
-            </div>
-          }
-        />
+        <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
+          <MetricCard
+            title="Operator Level"
+            value={`LEVEL 0${data.kpis.operatorLevel}`}
+            subtext={`${data.kpis.targetXp - data.kpis.currentXp} XP until Level 0${data.kpis.operatorLevel + 1}`}
+            badge="LVL PROGRESS"
+            badgeColor="#8B5CF6"
+            accentClass="text-gradient-xp"
+            sparklineData={xpData}
+            sparklineColor="#8B5CF6"
+            isUp={true}
+            progressPercent={(data.kpis.currentXp / data.kpis.targetXp) * 100}
+            progressColor="linear-gradient(90deg, #7C3AED, #C026D3)"
+            footer={
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                <span>{data.kpis.currentXp} XP</span>
+                <span>{data.kpis.targetXp} XP</span>
+              </div>
+            }
+          />
+        </div>
 
-        {/* TODAY NON-NEGOTIABLES SUMMARY CARD */}
-        <MetricCard
-          title="Today Non-Negotiables"
-          value={`${completedCount} / ${nonnegs.length}`}
-          subtext={`${Math.round((completedCount / nonnegs.length) * 100)}% complete today`}
-          badge={completedCount === nonnegs.length ? 'ALL COMPLETE' : 'IN PROGRESS'}
-          badgeColor={completedCount === nonnegs.length ? '#10B981' : '#6366F1'}
-          accentClass={completedCount === nonnegs.length ? 'text-gradient-success' : 'text-gradient-score'}
-          sparklineData={taskSparklineData}
-          sparklineColor="#10B981"
-          isUp={true}
-          progressPercent={(completedCount / nonnegs.length) * 100}
-          progressColor="linear-gradient(90deg, #10B981, #14B8A6)"
-        />
+        {/* TODAY PROGRESS CARD */}
+        <div onClick={() => navigate('/discipline')} style={{ cursor: 'pointer' }}>
+          <MetricCard
+            title="Today's Progress"
+            value={`${completedCount} / ${nonnegs.length}`}
+            subtext={`${Math.round((completedCount / nonnegs.length) * 100)}% complete today`}
+            badge={completedCount === nonnegs.length ? 'ALL COMPLETE' : 'IN PROGRESS'}
+            badgeColor={completedCount === nonnegs.length ? '#10B981' : '#6366F1'}
+            accentClass={completedCount === nonnegs.length ? 'text-gradient-success' : 'text-gradient-score'}
+            sparklineData={taskSparklineData}
+            sparklineColor="#10B981"
+            isUp={true}
+            progressPercent={(completedCount / nonnegs.length) * 100}
+            progressColor="linear-gradient(90deg, #10B981, #14B8A6)"
+          />
+        </div>
       </div>
 
-      {/* CHARTS GRID: DONUT & BAR VISUALIZATIONS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-        <DonutChartCard
-          title="Today's Non-Negotiable Tasks"
-          subtitle="Real-time execution status breakdown"
-          data={taskDonutData}
-          centerLabel={`${Math.round((completedCount / nonnegs.length) * 100)}%`}
-          centerSublabel="Complete"
-          height={200}
-        />
-
-        <DonutChartCard
-          title="Category Score Balance"
-          subtitle="Relative distribution across 5 core pillars"
-          data={categoryBalanceData}
-          centerLabel={`${mockOverviewData.comparisons.today}`}
-          centerSublabel="Overall Score"
-          height={200}
-        />
-
-        <BarChartCard
-          title="7-Day Performance Scores"
-          subtitle="Daily performance scores over past week"
-          data={weeklyBarData}
-          defaultColor="#6366F1"
-          unit=" pts"
-          height={200}
-          badge="THIS WEEK"
-          badgeColor="#10B981"
-        />
-      </div>
-
-      {/* LIVE ACTIVITY SECTION */}
+      {/* 6. LIVE SESSION CARD & ACTIVITY TIMELINE (PRD Section 10 & 12) */}
       <LiveActivityCard
-        activeTask={mockOverviewData.liveActivity.activeTask}
-        initialSeconds={mockOverviewData.liveActivity.elapsedSeconds}
-        startTime={mockOverviewData.liveActivity.startTime}
-        recentActivities={mockOverviewData.liveActivity.recentActivities}
+        hasActiveSession={data.liveActivity.hasActiveSession}
+        activeTask={data.liveActivity.activeTask}
+        initialSeconds={data.liveActivity.elapsedSeconds}
+        startTime={data.liveActivity.startTime}
+        recentActivities={data.liveActivity.recentActivities}
       />
 
-      {/* TODAY'S NON-NEGOTIABLES & 30-DAY PERFORMANCE ROW */}
+      {/* 7. TODAY'S TASKS PREVIEW & 30-DAY PERFORMANCE TREND (PRD Section 11 & 13) */}
       <div className="grid-responsive-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-        {/* TODAY'S NON-NEGOTIABLES CARD */}
+        {/* TODAY'S TASKS PREVIEW CARD (PRD Section 11 - Read-Only Navigation) */}
         <div
+          onClick={() => navigate('/discipline')}
           style={{
             background: 'var(--card-bg)',
             border: '1px solid var(--card-border)',
@@ -194,18 +217,20 @@ export default function Dashboard() {
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
+            cursor: 'pointer',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ShieldCheck size={18} color="#F59E0B" />
-              <h2 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+              <h2 className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
                 Today's Non-Negotiables
               </h2>
             </div>
-            <span style={{ fontSize: '11px', background: 'rgba(16,185,129,0.12)', color: '#10B981', padding: '3px 10px', borderRadius: '12px', fontWeight: 700 }}>
-              {completedCount} / {nonnegs.length} completed
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
+              <span>{completedCount} / {nonnegs.length}</span>
+              <ChevronRight size={14} />
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -213,16 +238,14 @@ export default function Dashboard() {
               <motion.div
                 key={item.id}
                 whileHover={{ x: 2 }}
-                onClick={() => toggleTask(item.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '14px 16px',
+                  padding: '12px 14px',
                   borderRadius: '12px',
                   border: item.completed ? '1px solid rgba(16,185,129,0.25)' : '1px solid var(--card-border)',
                   background: item.completed ? 'rgba(16,185,129,0.04)' : 'var(--input-bg)',
-                  cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -253,8 +276,8 @@ export default function Dashboard() {
                   >
                     {item.title}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', gap: '10px' }}>
-                    <span>⏰ {item.time}</span>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    ⏰ {item.time}
                   </div>
                 </div>
 
@@ -266,21 +289,50 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 30-DAY PERFORMANCE AREA TREND CHART */}
-        <AreaTrendChartCard
-          title="30-Day Performance Score Trend"
-          subtitle="Daily performance scores with peak trendline tracking"
-          data={mockOverviewData.history30Days.map((h) => ({ date: h.day, score: h.score }))}
-          dataKey="score"
-          color="#6366F1"
-          height={240}
-          unit=" pts"
-          timeframes={['7D', '30D', '90D']}
-        />
+        {/* 30-DAY PERFORMANCE TREND CHART (PRD Section 13 & 20) */}
+        {data.history30Days.length > 0 ? (
+          <AreaTrendChartCard
+            title="Performance Score Trend"
+            subtitle="30-day historical performance score tracking"
+            data={data.history30Days.map((h) => ({ date: h.day, score: h.score }))}
+            dataKey="score"
+            color="#6366F1"
+            height={240}
+            unit=" pts"
+            timeframes={['7D', '30D', '90D']}
+          />
+        ) : (
+          /* Empty Chart State (PRD Section 20) */
+          <div
+            style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
+              borderRadius: 'var(--card-radius, 16px)',
+              padding: '22px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
+              minHeight: '240px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
+              No historical data yet
+            </div>
+            <div style={{ fontSize: '13px', maxWidth: '280px' }}>
+              Complete today's activities to build your first trend.
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* PERSONAL INSIGHTS SECTION */}
-      <PersonalInsightsCard insights={mockOverviewData.insights} />
+      {/* 8. AI INSIGHTS & WEEKLY PREVIEW SECTION (PRD Section 14 & 16) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+        <PersonalInsightsCard insights={data.insights} />
+        <WeeklyPreviewCard weeklyPreview={data.weeklyPreview} />
+      </div>
     </div>
   );
 }

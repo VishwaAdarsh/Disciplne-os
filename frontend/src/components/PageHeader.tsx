@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 
 interface PageHeaderProps {
+  user?: string;
   greeting?: string;
   title: string;
   subtitle?: string;
@@ -12,27 +13,67 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({
-  greeting,
+  user = 'Adarsh',
+  greeting: propGreeting,
   title,
   subtitle,
-  dateStr,
+  dateStr: propDateStr,
   activeCategory,
   onSelectCategory,
   categories = ['All', 'Discipline', 'Body', 'Mind', 'Nutrition', 'Goals'],
   actionRight,
 }: PageHeaderProps) {
+  const [timeStr, setTimeStr] = useState('');
+  const [dynamicGreeting, setDynamicGreeting] = useState('');
+  const [formattedDate, setFormattedDate] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+
+      // Dynamic Greeting based on PRD Section 5
+      let period = 'Good Morning';
+      if (hours >= 12 && hours < 17) {
+        period = 'Good Afternoon';
+      } else if (hours >= 17 && hours < 21) {
+        period = 'Good Evening';
+      } else if (hours >= 21 || hours < 5) {
+        period = 'Good Night';
+      }
+      setDynamicGreeting(`${period}, ${user}`);
+
+      // Time string format 07:15 AM
+      const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setTimeStr(formattedTime);
+
+      // Date string format: Monday • 4 August
+      const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const dayNum = now.getDate();
+      const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+      setFormattedDate(`${dayName} • ${dayNum} ${monthName}`);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const displayGreeting = propGreeting || dynamicGreeting;
+  const displayDate = propDateStr || formattedDate;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '4px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          {dateStr && (
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
-              {dateStr}
-            </div>
-          )}
-          {greeting && (
-            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>
-              {greeting}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
+            <span>{displayDate}</span>
+            <span style={{ color: 'var(--card-border)' }}>|</span>
+            <span style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
+          </div>
+          {displayGreeting && (
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>
+              {displayGreeting}
             </div>
           )}
           <h1 className="font-sekuya" style={{ fontSize: '26px', fontWeight: 700, margin: '2px 0 0', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>

@@ -42,6 +42,7 @@ export interface OverviewMockData {
     nonnegTotal: number;
   };
   liveActivity: {
+    hasActiveSession: boolean;
     activeTask: string;
     elapsedSeconds: number;
     startTime: string;
@@ -74,13 +75,19 @@ export interface OverviewMockData {
     description: string;
     impact: string;
   }>;
+  weeklyPreview: {
+    performance: number;
+    goalCompletion: number;
+    currentStreak: number;
+    reflectionStatus: 'Pending Sunday' | 'Completed';
+  };
 }
 
 export const mockOverviewData: OverviewMockData = {
   greeting: "Good Morning",
   user: "Adarsh",
-  dateStr: "Thursday, July 31",
-  subtitle: "Here's how your performance is shaping up today.",
+  dateStr: "Monday, 4 August",
+  subtitle: "Performance Command Center - Real-Time aggregated state",
   comparisons: {
     today: 82,
     todayTrend: "↑ 6%",
@@ -113,30 +120,30 @@ export const mockOverviewData: OverviewMockData = {
     nonnegTotal: 4,
   },
   liveActivity: {
+    hasActiveSession: true,
     activeTask: "Deep Work",
     elapsedSeconds: 5058, // 01:24:18
     startTime: "10:02 AM",
     isPaused: false,
     recentActivities: [
-      { id: "1", time: "10:31 AM", icon: "💧", text: "+250 ml water", category: "nutrition" },
-      { id: "2", time: "09:15 AM", icon: "✓", text: "Morning Routine completed", category: "discipline" },
-      { id: "3", time: "08:42 AM", icon: "🥗", text: "Breakfast logged (420 kcal)", category: "nutrition" },
-      { id: "4", time: "07:54 AM", icon: "🧠", text: "Mood check-in: Good", category: "mind" },
-      { id: "5", time: "07:20 AM", icon: "💪", text: "Workout completed (45m)", category: "body" },
+      { id: "1", time: "11:32 AM", icon: "💪", text: "Workout Completed", category: "body" },
+      { id: "2", time: "11:05 AM", icon: "💧", text: "Water +250ml", category: "nutrition" },
+      { id: "3", time: "10:55 AM", icon: "📖", text: "Study Session Finished", category: "discipline" },
+      { id: "4", time: "10:10 AM", icon: "🧠", text: "Mood Logged", category: "mind" },
+      { id: "5", time: "09:40 AM", icon: "🥗", text: "Breakfast Logged", category: "nutrition" },
     ]
   },
   nonNegotiables: [
     { id: "nn-1", title: "Morning Routine", time: "6:00 AM", streakDays: 14, completed: true },
     { id: "nn-2", title: "Deep Work", time: "2 hours", streakDays: 8, completed: true },
-    { id: "nn-3", title: "Study", time: "2 hours", streakDays: 11, completed: true },
-    { id: "nn-4", title: "Workout", time: "30 minutes (7:00 PM)", streakDays: 5, completed: false },
+    { id: "nn-3", title: "Workout", time: "45 mins", streakDays: 5, completed: false },
+    { id: "nn-4", title: "Read", time: "30 mins", streakDays: 11, completed: false },
   ],
   history30Days: Array.from({ length: 30 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (29 - i));
     const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    // Realistic curve climbing from ~60 to ~85 with occasional fluctuations
     const baseScore = 65 + Math.floor(Math.sin(i * 0.4) * 12) + Math.floor(i * 0.6);
     return {
       day: dayName,
@@ -149,30 +156,43 @@ export const mockOverviewData: OverviewMockData = {
     {
       id: "ins-1",
       category: "Insights",
-      title: "Sleep & Productivity Correlation",
-      description: "Your productivity is 18% higher on days you sleep at least 7 hours.",
-      impact: "+18% Output"
+      title: "Workout Consistency",
+      description: "Workout consistency improved 18% over the past two weeks.",
+      impact: "↑18% Improvement"
     },
     {
       id: "ins-2",
       category: "Insights",
-      title: "Strongest Habit Anchor",
-      description: "Morning routines are your strongest habit with 93% consistency over 30 days.",
-      impact: "93% Consistency"
+      title: "Peak Focus Window",
+      description: "Your focus is highest before 10 AM with 94% task completion rate.",
+      impact: "Morning Peak"
     },
     {
       id: "ins-3",
       category: "Suggestions",
-      title: "Workout Frequency Drop",
-      description: "Workout consistency dropped 12% this week. Aim for an earlier evening slot.",
-      impact: "-12% Drop"
+      title: "Nutrition Habit Alert",
+      description: "You skip breakfast 3x/week. Regular morning meals stabilize focus.",
+      impact: "Nutrition Gap"
     },
     {
       id: "ins-4",
       category: "Tips",
-      title: "Peak Performance Day",
-      description: "Your highest-performing day of the week is Tuesday with an average score of 89.",
-      impact: "Tuesday Peak"
+      title: "Sleep & Productivity",
+      description: "Sleep above 7h improves daily discipline score by an average of 14 pts.",
+      impact: "+14 Score Boost"
+    },
+    {
+      id: "ins-5",
+      category: "Insights",
+      title: "Streak Milestone",
+      description: "Deep Work streak reached 12 consecutive days!",
+      impact: "🔥 12 Days"
     }
-  ]
+  ],
+  weeklyPreview: {
+    performance: 78,
+    goalCompletion: 72,
+    currentStreak: 12,
+    reflectionStatus: 'Pending Sunday'
+  }
 };
