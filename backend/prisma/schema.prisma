@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// ENUMS
+// ==========================================
+
 enum Role {
   USER
   ADMIN
@@ -33,55 +37,131 @@ enum SessionStatus {
   saved
 }
 
-model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  name         String
-  passwordHash String
-  role         Role          @default(USER)
-  avatarUrl    String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+// ==========================================
+// 1. AUTHENTICATION & USER
+// ==========================================
 
-  profile             Profile?
-  tasks               Task[]
-  focusSessions       FocusSession[]
-  bodyLogs            BodyLog[]
-  mindLogs            MindLog[]
-  nutritionLogs       NutritionLog[]
-  goals               Goal[]
-  events              Event[]
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  emailVerified Boolean   @default(false)
+  provider      String    @default("credentials")
+  role          Role      @default(USER)
+  status        String    @default("active")
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  profile              Profile?
+  settings             UserSettings?
+  tasks                Task[]
+  habits               Habit[]
+  focusSessions        FocusSession[]
+  taskHistory          TaskHistory[]
+  bodyLogs             BodyLog[]
+  workouts             Workout[]
+  weightLogs           WeightLog[]
+  mindLogs             MindLog[]
+  journals             Journal[]
+  meditationSessions   MeditationSession[]
+  meals                Meal[]
+  waterLogs            WaterLog[]
+  nutritionLogs        NutritionLog[]
+  goals                Goal[]
+  goalHistory          GoalHistory[]
+  events               Event[]
   performanceSnapshots PerformanceSnapshot[]
-  notifications       Notification[]
-  aiConversations     AIConversation[]
-  reflections         Reflection[]
-  settings            UserSettings?
+  performanceScores    PerformanceScore[]
+  achievements         Achievement[]
+  notifications        Notification[]
+  aiConversations      AIConversation[]
+  aiReports            AIReport[]
+  aiInsights           AIInsight[]
+  reflections          Reflection[]
+  files                File[]
+  dailyStatistics      DailyStatistic[]
+  weeklyStatistics     WeeklyStatistic[]
+  monthlyStatistics    MonthlyStatistic[]
+
+  @@index([email])
+  @@index([createdAt])
 }
+
+// ==========================================
+// 2. USER PROFILE
+// ==========================================
 
 model Profile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio               String?
-  targetWeightKg    Float?
-  dailyStepTarget   Int      @default(10000)
-  dailyWaterTargetL Float    @default(3.0)
-  dailySleepTargetH Float    @default(8.0)
-  updatedAt         DateTime @updatedAt
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName            String?
+  username            String?   @unique
+  avatar              String?
+  bio                 String?
+  timezone            String    @default("UTC")
+  country             String?
+  language            String    @default("en")
+  birthday            String?
+  targetWeightKg      Float?
+  dailyStepTarget     Int       @default(10000)
+  dailyWaterTargetL   Float     @default(3.0)
+  dailySleepTargetH   Float     @default(8.0)
+  onboardingCompleted Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
 }
+
+// ==========================================
+// 3. SETTINGS
+// ==========================================
+
+model UserSettings {
+  id                      String    @id @default(uuid())
+  userId                  String    @unique
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme                   String    @default("dark")
+  notificationPreferences String    @default("{}")
+  resetTime               String    @default("04:00 AM")
+  measurementUnits        String    @default("metric")
+  privacy                 String    @default("private")
+  aiSettings              String    @default("{}")
+  reflectionDay           String    @default("Sunday")
+  streakAlerts            Boolean   @default(true)
+  publicScore             Boolean   @default(true)
+  reflectReminder        Boolean   @default(true)
+  comebackMode            Boolean   @default(false)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  deletedAt               DateTime?
+}
+
+// ==========================================
+// 4. DISCIPLINE MODULE
+// ==========================================
 
 model Task {
   id               String       @id @default(uuid())
   userId           String
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId           String?
+  goal             Goal?        @relation(fields: [goalId], references: [id], onDelete: SetNull)
   title            String
   description      String?
   category         TaskCategory @default(nonneg)
   priority         Priority     @default(medium)
+  duration         Int          @default(30)
   estimatedMinutes Int          @default(30)
   timeSchedule     String?
+  scheduledTime    String?
+  recurrence       String       @default("daily")
   icon             String       @default("⚡")
   color            String       @default("#6366F1")
+  status           String       @default("pending")
   completed        Boolean      @default(false)
   skipped          Boolean      @default(false)
   streak           Int          @default(0)
@@ -89,93 +169,370 @@ model Task {
   completedAt      String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  focusSessions FocusSession[]
+  taskHistory   TaskHistory[]
+
+  @@index([userId])
+  @@index([goalId])
+  @@index([userId, completed])
+  @@index([createdAt])
+}
+
+model Habit {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habitName         String
+  category          String    @default("General")
+  frequency         String    @default("daily")
+  targetDaysPerWeek Int       @default(7)
+  streak            Int       @default(0)
+  completionRate    Float     @default(0.0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  @@index([userId])
 }
 
 model FocusSession {
   id            String        @id @default(uuid())
   userId        String
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId        String?
+  task          Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
   sessionName   String
   sessionType   String        @default("deepwork")
   status        SessionStatus @default(idle)
   targetMinutes Int           @default(30)
   elapsedSecs   Int           @default(0)
   startTime     DateTime?
+  endTime       DateTime?
   breaksCount   Int           @default(0)
+  pauses        Int           @default(0)
+  completed     Boolean       @default(false)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([createdAt])
 }
 
-model BodyLog {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workoutTitle    String?
-  workoutMinutes  Int      @default(0)
-  caloriesBurned  Int      @default(0)
-  waterLiters     Float    @default(0.0)
-  stepsCount      Int      @default(0)
-  sleepHours      Float    @default(0.0)
-  sleepQuality    Int      @default(0)
-  weightKg        Float?
-  logDate         String
-  createdAt       DateTime @default(now())
-}
-
-model MindLog {
-  id             String   @id @default(uuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  moodLabel      String
-  focusRating    Int      @default(5)
-  energyRating   Int      @default(5)
-  stressRating   Int      @default(5)
-  meditationMins Int      @default(0)
-  journalSnippet String?
-  logDate        String
-  createdAt      DateTime @default(now())
-}
-
-model NutritionLog {
+model TaskHistory {
   id          String   @id @default(uuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mealName    String
-  mealType    String   @default("Breakfast")
-  calories    Int      @default(0)
-  proteinGrams Float   @default(0.0)
-  carbsGrams   Float   @default(0.0)
-  fatGrams     Float   @default(0.0)
-  logDate     String
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title       String
+  category    String
+  completedAt DateTime @default(now())
+  xpEarned    Int      @default(0)
+  status      String   @default("completed")
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([completedAt])
 }
 
+// ==========================================
+// 5. BODY MODULE
+// ==========================================
+
+model BodyLog {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutTitle   String?
+  workoutMinutes Int       @default(0)
+  caloriesBurned Int       @default(0)
+  waterLiters    Float     @default(0.0)
+  stepsCount     Int       @default(0)
+  sleepHours     Float     @default(0.0)
+  sleepQuality   Int       @default(0)
+  weightKg       Float?
+  recovery       Int       @default(80)
+  logDate        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+  deletedAt      DateTime?
+
+  @@index([userId])
+  @@index([userId, logDate])
+}
+
+model Workout {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutType String
+  duration    Int
+  intensity   String    @default("medium")
+  calories    Int       @default(0)
+  notes       String?
+  logDate     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([userId])
+  @@index([userId, logDate])
+}
+
+model WeightLog {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight    Float
+  bodyFat   Float?
+  bmi       Float?
+  loggedAt  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([loggedAt])
+}
+
+// ==========================================
+// 6. MIND MODULE
+// ==========================================
+
+model MindLog {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moodLabel      String
+  focusRating    Int       @default(5)
+  energyRating   Int       @default(5)
+  stressRating   Int       @default(5)
+  meditationMins Int       @default(0)
+  journalSnippet String?
+  logDate        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+  deletedAt      DateTime?
+
+  @@index([userId])
+  @@index([userId, logDate])
+}
+
+model Journal {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  moodTag   String    @default("neutral")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model MeditationSession {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  duration  Int
+  type      String    @default("mindfulness")
+  completed Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// 7. NUTRITION MODULE
+// ==========================================
+
+model Meal {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealName     String
+  mealType     String    @default("Breakfast")
+  calories     Int       @default(0)
+  proteinGrams Float     @default(0.0)
+  carbsGrams   Float     @default(0.0)
+  fatGrams     Float     @default(0.0)
+  mealTime     String?
+  logDate      String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@index([userId])
+  @@index([userId, logDate])
+}
+
+model WaterLog {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  loggedAt  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([loggedAt])
+}
+
+model NutritionLog {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealName     String
+  mealType     String   @default("Breakfast")
+  calories     Int      @default(0)
+  proteinGrams Float    @default(0.0)
+  carbsGrams   Float    @default(0.0)
+  fatGrams     Float    @default(0.0)
+  logDate      String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, logDate])
+}
+
+// ==========================================
+// 8. GOALS MODULE
+// ==========================================
+
 model Goal {
-  id              String      @id @default(uuid())
+  id              String    @id @default(uuid())
   userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title           String
   description     String?
-  category        String      @default("Career")
-  color           String      @default("#6366F1")
-  priority        Priority    @default(high)
-  status          String      @default("Active")
-  progressPercent Int         @default(0)
+  category        String    @default("Career")
+  color           String    @default("#6366F1")
+  priority        Priority  @default(high)
+  status          String    @default("Active")
+  progressPercent Int       @default(0)
   deadline        String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  milestones      Milestone[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  tasks       Task[]
+  milestones  Milestone[]
+  goalHistory GoalHistory[]
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Milestone {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   goalId    String
-  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   title     String
-  completed Boolean  @default(false)
+  order     Int       @default(0)
+  completed Boolean   @default(false)
   dueDate   String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
+
+  @@index([goalId])
 }
+
+model GoalHistory {
+  id               String   @id @default(uuid())
+  goalId           String
+  goal             Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  previousStatus   String
+  newStatus        String
+  progressSnapshot Int
+  createdAt        DateTime @default(now())
+
+  @@index([goalId])
+  @@index([userId])
+}
+
+// ==========================================
+// 9. PERFORMANCE MODULE
+// ==========================================
+
+model PerformanceSnapshot {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallScore    Int
+  disciplineScore Int
+  bodyScore       Int
+  mindScore       Int
+  nutritionScore  Int
+  goalsScore      Int
+  levelTitle      String   @default("Explorer")
+  snapshotDate    String
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, snapshotDate])
+}
+
+model PerformanceScore {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            String
+  overallScore    Int
+  disciplineScore Int
+  bodyScore       Int
+  mindScore       Int
+  nutritionScore  Int
+  goalScore       Int
+  level           Int      @default(1)
+  xp              Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+model Achievement {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementKey String
+  title          String
+  description    String
+  icon           String   @default("🏆")
+  unlockedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Level {
+  id          String   @id @default(uuid())
+  levelNumber Int      @unique
+  title       String
+  minXp       Int
+  maxXp       Int
+  badgeIcon   String   @default("⭐")
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// 10. EVENT STORE
+// ==========================================
 
 model Event {
   id          String   @id @default(uuid())
@@ -188,69 +545,172 @@ model Event {
   icon        String   @default("⚡")
   payloadJson String   @default("{}")
   scoreImpact Int      @default(0)
+  source      String   @default("user")
   status      String   @default("completed")
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([module])
+  @@index([userId, createdAt])
 }
 
-model PerformanceSnapshot {
-  id               String   @id @default(uuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  overallScore     Int
-  disciplineScore  Int
-  bodyScore        Int
-  mindScore        Int
-  nutritionScore   Int
-  goalsScore       Int
-  levelTitle       String   @default("Explorer")
-  snapshotDate     String
-  createdAt        DateTime @default(now())
-}
-
-model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  message   String
-  type      String   @default("info")
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
+// ==========================================
+// 11. AI MODULE
+// ==========================================
 
 model AIConversation {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sender    String
-  message   String
-  createdAt DateTime @default(now())
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender     String
+  message    String
+  tokensUsed Int       @default(0)
+  modelUsed  String    @default("gemini-1.5-pro")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  deletedAt  DateTime?
+
+  @@index([userId])
+  @@index([createdAt])
 }
+
+model AIReport {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reportType  String
+  title       String
+  summary     String
+  payloadJson String    @default("{}")
+  periodStart String
+  periodEnd   String
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AIInsight {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module      String
+  insightType String
+  content     String
+  scoreImpact Int       @default(0)
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  @@index([userId])
+  @@index([userId, read])
+}
+
+// ==========================================
+// 12. NOTIFICATION MODULE
+// ==========================================
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String    @default("info")
+  status    String    @default("unread")
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([userId, read])
+}
+
+// ==========================================
+// 13. FILE STORE
+// ==========================================
+
+model File {
+  id              String    @id @default(uuid())
+  ownerId         String
+  user            User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  filename        String
+  url             String
+  mimeType        String
+  sizeBytes       Int
+  storageProvider String    @default("s3")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  @@index([ownerId])
+}
+
+// ==========================================
+// 14. ANALYTICS PRE-AGGREGATIONS
+// ==========================================
+
+model DailyStatistic {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  metricsJson String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+model WeeklyStatistic {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart   String
+  metricsJson String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, weekStart])
+}
+
+model MonthlyStatistic {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthStart  String
+  metricsJson String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, monthStart])
+}
+
+// ==========================================
+// 15. REFLECTION MODULE
+// ==========================================
 
 model Reflection {
-  id             String   @id @default(uuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekStart      String
-  overallScore   Int
-  nonnegScore    Int
-  clarityScore   Int      @default(80)
-  progressScore  Int      @default(80)
-  wentWell       String
-  brokeDown      String
-  commitment     String
-  createdAt      DateTime @default(now())
-}
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart     String
+  overallScore  Int
+  nonnegScore   Int
+  clarityScore  Int       @default(80)
+  progressScore Int       @default(80)
+  wentWell      String
+  brokeDown     String
+  commitment    String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  deletedAt     DateTime?
 
-model UserSettings {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resetTime        String   @default("04:00 AM")
-  reflectionDay    String   @default("Sunday")
-  streakAlerts     Boolean  @default(true)
-  publicScore      Boolean  @default(true)
-  reflectReminder Boolean  @default(true)
-  comebackMode     Boolean  @default(false)
-  updatedAt        DateTime @updatedAt
+  @@index([userId])
+  @@index([userId, weekStart])
 }

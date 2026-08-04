@@ -3,7 +3,7 @@
   "info": {
     "title": "DisciplineOS REST API v1 Architecture",
     "version": "1.0.0",
-    "description": "API blueprint for DisciplineOS Personal Performance Operating System [SPR-210]"
+    "description": "Comprehensive API contracts specification for DisciplineOS Personal Performance Operating System [ARCH-002]"
   },
   "servers": [
     {
@@ -11,18 +11,153 @@
       "description": "Local Development Server"
     }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation executed successfully" },
+          "data": { "type": "object" },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "timestamp": { "type": "string", "format": "date-time" },
+              "requestId": { "type": "string" }
+            }
+          }
+        }
+      },
+      "PaginatedSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Collection retrieved successfully" },
+          "data": { "type": "array", "items": { "type": "object" } },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer", "example": 100 },
+              "page": { "type": "integer", "example": 1 },
+              "limit": { "type": "integer", "example": 20 },
+              "pages": { "type": "integer", "example": 5 },
+              "hasNext": { "type": "boolean", "example": true },
+              "hasPrevious": { "type": "boolean", "example": false },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "requestId": { "type": "string" }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "VALIDATION_ERROR" },
+              "message": { "type": "string", "example": "Invalid request body parameters" },
+              "details": { "type": "array", "items": { "type": "object" } },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "requestId": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "userId": { "type": "string", "format": "uuid" },
+          "goalId": { "type": "string", "format": "uuid", "nullable": true },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "category": { "type": "string", "enum": ["nonneg", "habit", "goal"] },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+          "duration": { "type": "integer", "example": 30 },
+          "completed": { "type": "boolean", "example": false },
+          "streak": { "type": "integer", "example": 5 },
+          "xpReward": { "type": "integer", "example": 20 },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PerformanceScore": {
+        "type": "object",
+        "properties": {
+          "overallScore": { "type": "integer", "example": 850 },
+          "disciplineScore": { "type": "integer", "example": 900 },
+          "bodyScore": { "type": "integer", "example": 820 },
+          "mindScore": { "type": "integer", "example": 840 },
+          "nutritionScore": { "type": "integer", "example": 800 },
+          "goalScore": { "type": "integer", "example": 890 },
+          "level": { "type": "integer", "example": 12 },
+          "xp": { "type": "integer", "example": 12400 },
+          "levelTitle": { "type": "string", "example": "Consistent Performer" }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "userId": { "type": "string", "format": "uuid" },
+          "module": { "type": "string", "example": "discipline" },
+          "eventType": { "type": "string", "example": "task_completed" },
+          "title": { "type": "string" },
+          "scoreImpact": { "type": "integer", "example": 20 },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
   "paths": {
-    "/auth/login": {
+    "/auth/register": {
       "post": {
-        "summary": "User Login",
+        "summary": "Register a new user",
+        "tags": ["Auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": ["email", "name", "password"],
                 "properties": {
-                  "email": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "name": { "type": "string" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created successfully" },
+          "409": { "description": "Email already registered" },
+          "422": { "description": "Validation error" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
                   "password": { "type": "string" }
                 }
               }
@@ -30,13 +165,116 @@
           }
         },
         "responses": {
-          "200": { "description": "Login successful returning accessToken" }
+          "200": { "description": "Login successful returning accessToken" },
+          "401": { "description": "Invalid credentials" }
         }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get authenticated user session details",
+        "tags": ["Auth"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Authenticated user profile" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/users/profile": {
+      "get": {
+        "summary": "Fetch user profile",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Profile retrieved" } }
+      },
+      "patch": {
+        "summary": "Update user profile",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Profile updated" } }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "summary": "List user tasks with filters & pagination",
+        "tags": ["Discipline"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          { "name": "priority", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated task collection" } }
+      },
+      "post": {
+        "summary": "Create new task",
+        "tags": ["Discipline"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Task created" } }
+      }
+    },
+    "/tasks/{id}/complete": {
+      "patch": {
+        "summary": "Toggle task completion",
+        "tags": ["Discipline"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": { "200": { "description": "Task status updated" } }
+      }
+    },
+    "/body/logs": {
+      "get": {
+        "summary": "Fetch daily body log",
+        "tags": ["Body"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "date", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Body log retrieved" } }
+      }
+    },
+    "/mind/logs": {
+      "get": {
+        "summary": "Fetch daily mind log",
+        "tags": ["Mind"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "date", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Mind log retrieved" } }
+      }
+    },
+    "/nutrition/meals": {
+      "post": {
+        "summary": "Log a meal",
+        "tags": ["Nutrition"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Meal logged" } }
+      }
+    },
+    "/goals": {
+      "get": {
+        "summary": "Fetch goals & milestones",
+        "tags": ["Goals"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Goals array retrieved" } }
+      },
+      "post": {
+        "summary": "Create strategic goal",
+        "tags": ["Goals"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Goal created" } }
       }
     },
     "/performance/current": {
       "get": {
         "summary": "Get current 0-1000 Performance KPI & module breakdown",
+        "tags": ["Performance"],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": { "description": "Current performance state" }
         }
@@ -45,23 +283,39 @@
     "/events": {
       "get": {
         "summary": "Fetch immutable event ledger stream",
-        "responses": {
-          "200": { "description": "Event stream array" }
-        }
+        "tags": ["Events"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Event stream array" } }
       },
       "post": {
         "summary": "Record new system event into immutable ledger",
-        "responses": {
-          "201": { "description": "Event stored" }
-        }
+        "tags": ["Events"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Event stored" } }
       }
     },
     "/ai/chat": {
       "post": {
         "summary": "Send query to AI Coach Context Engine",
-        "responses": {
-          "200": { "description": "AI Coach response" }
-        }
+        "tags": ["AI Engine"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "AI Coach response" } }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Fetch user notifications",
+        "tags": ["Notifications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Notifications list" } }
+      }
+    },
+    "/analytics/daily": {
+      "get": {
+        "summary": "Fetch daily pre-aggregated statistics",
+        "tags": ["Analytics"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Daily statistics retrieved" } }
       }
     }
   }

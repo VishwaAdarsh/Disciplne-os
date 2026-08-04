@@ -15,18 +15,22 @@ export function initDB() {
       name TEXT NOT NULL,
       password TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT
     );
 
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
+      goal_id TEXT,
       name TEXT NOT NULL,
       type TEXT NOT NULL,
       time_target TEXT,
       why TEXT,
       is_active INTEGER DEFAULT 1,
       created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
@@ -62,6 +66,8 @@ export function initDB() {
       broke_down TEXT NOT NULL,
       commitment TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
@@ -74,8 +80,15 @@ export function initDB() {
       public_score INTEGER DEFAULT 0,
       reflect_reminder INTEGER DEFAULT 1,
       comeback_mode INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
+    CREATE INDEX IF NOT EXISTS idx_reflections_user_id ON reflections(user_id);
+    CREATE INDEX IF NOT EXISTS idx_task_completions_user_id ON task_completions(user_id);
   `);
   console.log('✅ Database initialized');
 }
