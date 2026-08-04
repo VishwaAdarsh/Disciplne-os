@@ -15,6 +15,14 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       useStore.getState().logout();
     }
+    if (!err.response || err.code === 'ERR_NETWORK' || err.response?.status === 502 || err.response?.status === 504) {
+      if (err.response) {
+        err.response.data = {
+          success: false,
+          message: 'Backend server is offline on port 3001. Please start the backend service.',
+        };
+      }
+    }
     return Promise.reject(err);
   }
 );

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type {
-  PerformanceLevelName,
   PerformanceLevelInfo,
   CategoryWeights,
   ModuleScores,

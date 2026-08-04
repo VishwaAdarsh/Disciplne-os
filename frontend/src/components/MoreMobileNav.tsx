@@ -9,7 +9,7 @@ interface MoreMobileNavProps {
 
 export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
   const { pathname } = useLocation();
-  const { theme, setTheme, logout, dashboard } = useStore();
+  const { user, theme, setTheme, logout, dashboard } = useStore();
 
   if (!isOpen) return null;
 
@@ -26,6 +26,12 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
     { to: '/settings', label: 'Settings', icon: Settings, desc: 'Preferences & reset schedule' },
   ];
 
+  const handleSignOut = () => {
+    onClose();
+    localStorage.removeItem('dos_token');
+    localStorage.removeItem('dos_refresh_token');
+    logout();
+  };
 
   return (
     <div
@@ -53,15 +59,27 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
           overflowY: 'auto',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
-              More Modules
-            </span>
-            <span className="font-sekuya text-gradient-xp" style={{ fontSize: '11px', background: 'rgba(124,58,237,0.12)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
-              LVL 0{level}
-            </span>
+        {/* User Profile Header in Mobile Sheet */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', padding: '12px', background: 'var(--input-bg)', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '14px' }}>
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.2 }}>{user?.name || 'Operator'}</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user?.email || 'authenticated session'}</span>
+            </div>
           </div>
+
+          <span className="font-sekuya text-gradient-xp" style={{ fontSize: '11px', background: 'rgba(124,58,237,0.12)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+            LVL 0{level}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <span className="font-sekuya" style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-main)' }}>
+            More Modules
+          </span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
             <X size={20} />
           </button>
@@ -97,7 +115,7 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
           })}
         </div>
 
-        {/* Quick Settings Bar in Sheet */}
+        {/* Quick Settings & Sign Out Bar */}
         <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--card-border)', paddingTop: '14px' }}>
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -122,10 +140,7 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
           </button>
 
           <button
-            onClick={() => {
-              onClose();
-              logout();
-            }}
+            onClick={handleSignOut}
             style={{
               flex: 1,
               display: 'flex',

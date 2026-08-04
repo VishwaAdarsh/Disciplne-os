@@ -21,27 +21,45 @@ function App() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (token && !user) {
+    if (token) {
       authAPI.me()
-        .then(r => setUser(r.data.user))
+        .then((r) => {
+          const u = r.data?.data?.user || r.data?.user;
+          if (u) {
+            setUser(u);
+          }
+        })
         .catch(() => {
-          // Provide fallback demo operator so visual preview works smoothly
-          setUser({ id: 'demo-1', email: 'adarsh@disciplineos.app', name: 'Adarsh' });
+          // Token expired or invalid
+          logout();
         })
         .finally(() => setChecking(false));
     } else {
-      if (!user && !token) {
-        // Set mock operator for visual phase preview
-        setUser({ id: 'demo-1', email: 'adarsh@disciplineos.app', name: 'Adarsh' });
-      }
       setChecking(false);
     }
-  }, [token]);
+  }, [token, setUser, logout]);
 
   if (checking) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-muted)' }}>Loading DisciplineOS...</div>;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--text-muted)' }}>
+        Loading DisciplineOS...
+      </div>
+    );
   }
 
+  // Unauthenticated routing view
+  if (!user || !token) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  // Authenticated application routing view
   return (
     <BrowserRouter>
       <Layout>
@@ -58,13 +76,12 @@ function App() {
           <Route path="/reflect" element={<Reflect />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
     </BrowserRouter>
   );
 }
-
 
 export default App;

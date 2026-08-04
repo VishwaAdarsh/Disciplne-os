@@ -33,42 +33,42 @@ export default function DisciplineAnalyticsCard({ analytics }: DisciplineAnalyti
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Top Analytics KPI Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>
             <Activity size={14} color="#6366F1" /> DISCIPLINE SCORE
           </div>
-          <div className="font-sekuya text-gradient-score" style={{ fontSize: '28px', fontWeight: 800 }}>
+          <div className="font-sekuya text-gradient-score" style={{ fontSize: '24px', fontWeight: 800 }}>
             {disciplineScore} / 100
           </div>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Contributed to Performance Engine</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Contributed to Engine</span>
         </div>
 
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>
             <CheckCircle size={14} color="#10B981" /> EXECUTION RATE
           </div>
-          <div className="font-sekuya" style={{ fontSize: '28px', fontWeight: 800, color: '#10B981' }}>
+          <div className="font-sekuya" style={{ fontSize: '24px', fontWeight: 800, color: '#10B981' }}>
             {completionRate}%
           </div>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Daily tasks completed</span>
         </div>
 
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>
             <Flame size={14} color="#F59E0B" /> STREAK STATUS
           </div>
-          <div className="font-sekuya text-gradient-streak" style={{ fontSize: '28px', fontWeight: 800 }}>
+          <div className="font-sekuya text-gradient-streak" style={{ fontSize: '24px', fontWeight: 800 }}>
             🔥 {currentStreak} Days
           </div>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Best: {bestStreak} Days</span>
         </div>
 
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>
             <Clock size={14} color="#8B5CF6" /> TOTAL FOCUS
           </div>
-          <div className="font-sekuya text-gradient-xp" style={{ fontSize: '28px', fontWeight: 800 }}>
+          <div className="font-sekuya text-gradient-xp" style={{ fontSize: '24px', fontWeight: 800 }}>
             {totalFocusHours} hrs
           </div>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Logged today</span>
@@ -82,13 +82,13 @@ export default function DisciplineAnalyticsCard({ analytics }: DisciplineAnalyti
           border: '1px solid var(--card-border)',
           borderRadius: 'var(--card-radius, 16px)',
           boxShadow: 'var(--card-shadow)',
-          padding: '20px 22px',
+          padding: '16px 18px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '14px',
+          gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Calendar size={18} color="#6366F1" />
             <h2 className="font-sekuya" style={{ fontSize: '15px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
@@ -98,7 +98,7 @@ export default function DisciplineAnalyticsCard({ analytics }: DisciplineAnalyti
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Consistency Matrix</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
           {heatmapData.map((d, i) => {
             let bg = 'rgba(99, 102, 241, 0.1)';
             if (d.rate >= 90) bg = '#10B981';
@@ -109,13 +109,13 @@ export default function DisciplineAnalyticsCard({ analytics }: DisciplineAnalyti
                 key={i}
                 title={`${d.date}: ${d.rate}% completed`}
                 style={{
-                  height: '32px',
+                  height: '28px',
                   borderRadius: '6px',
                   background: bg,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: 700,
                   color: d.rate >= 70 ? '#FFFFFF' : 'var(--text-main)',
                 }}

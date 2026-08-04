@@ -1,16 +1,20 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { sendError } from './utils/response';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'discipline-os-super-secret-jwt-key-2026';
+import config from './config';
+import type { JwtPayload } from './types/foundation';
 
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+  sessionId?: string;
+  requestId?: string;
 }
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
+  req.requestId = (req.headers['x-request-id'] as string) || `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     sendError(res, 'Authentication token required', 401);
     return;
@@ -18,12 +22,13 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
 
   const token = authHeader.substring(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role?: 'USER' | 'ADMIN' | 'SUPER_ADMIN' };
+    const payload = jwt.verify(token, config.jwt.secret) as JwtPayload;
     req.userId = payload.userId;
     req.userRole = payload.role || 'USER';
+    req.sessionId = payload.sessionId;
     next();
   } catch (err) {
-    sendError(res, 'Invalid or expired token', 401);
+    sendError(res, 'Invalid or expired access token', 401);
   }
 }
 

@@ -101,9 +101,11 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
           borderRadius: '18px',
-          padding: '24px',
+          padding: '20px 18px',
           width: '460px',
           maxWidth: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
           display: 'flex',
           flexDirection: 'column',
@@ -119,7 +121,7 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
           >
             <X size={18} />
           </button>
@@ -169,7 +171,7 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
                 Category
@@ -219,7 +221,7 @@ export default function CreateTaskModal({ isOpen, onClose, taskToEdit }: CreateT
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '10px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
                 Icon

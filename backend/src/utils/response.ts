@@ -5,6 +5,13 @@ export interface ApiResponse<T = any> {
   message: string;
   data?: T;
   meta?: Record<string, any>;
+  error?: {
+    code: string;
+    message: string;
+    details?: any[];
+    timestamp?: string;
+    requestId?: string;
+  };
   errors?: any[];
 }
 
@@ -33,6 +40,12 @@ export function sendError(
   const payload: ApiResponse = {
     success: false,
     message,
+    error: {
+      code: statusCode === 409 ? 'CONFLICT' : statusCode === 401 ? 'UNAUTHORIZED' : statusCode === 400 ? 'BAD_REQUEST' : 'SERVER_ERROR',
+      message,
+      details: errors,
+      timestamp: new Date().toISOString(),
+    },
     ...(errors ? { errors } : {}),
   };
   return res.status(statusCode).json(payload);

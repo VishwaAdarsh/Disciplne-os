@@ -46,8 +46,8 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '12px',
-        padding: '14px 16px',
+        gap: '10px',
+        padding: '12px 14px',
         borderRadius: '14px',
         border: task.completed
           ? '1px solid rgba(16,185,129,0.3)'
@@ -85,15 +85,18 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
       </div>
 
       {/* Task Content */}
-      <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => toggleTask(task.id)}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '15px' }}>{task.icon}</span>
+      <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => toggleTask(task.id)}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <span style={{ fontSize: '15px', flexShrink: 0 }}>{task.icon}</span>
           <span
             style={{
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 600,
               color: task.completed ? 'var(--text-muted)' : 'var(--text-main)',
               textDecoration: task.completed ? 'line-through' : 'none',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {task.title}
@@ -101,17 +104,17 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
         </div>
 
         {task.description && (
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {task.description}
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
           <span
             style={{
               fontSize: '10px',
               fontWeight: 700,
-              padding: '2px 8px',
+              padding: '2px 7px',
               borderRadius: '10px',
               background: cMeta.bg,
               color: cMeta.color,
@@ -124,7 +127,7 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
             style={{
               fontSize: '10px',
               fontWeight: 700,
-              padding: '2px 6px',
+              padding: '2px 5px',
               borderRadius: '8px',
               background: pMeta.bg,
               color: pMeta.color,
@@ -156,7 +159,7 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
       </div>
 
       {/* Action Buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
         {/* Start Focus Session Action */}
         <button
           onClick={() => startFocusSession(task.title, task.estimatedMinutes)}
@@ -166,13 +169,14 @@ export default function DisciplineTaskCard({ task, onEdit }: DisciplineTaskCardP
             color: '#6366F1',
             border: 'none',
             borderRadius: '8px',
-            padding: '6px 10px',
+            padding: '6px 9px',
             fontSize: '11px',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
+            whiteSpace: 'nowrap',
           }}
         >
           <Play size={12} />

@@ -15,7 +15,6 @@ const DESKTOP_NAV = [
   { to: '/goals', label: 'Goals', icon: Target },
 ];
 
-
 const MOBILE_PRIMARY_NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/discipline', label: 'Discipline', icon: CheckSquare },
@@ -31,6 +30,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('dos_token');
+    localStorage.removeItem('dos_refresh_token');
+    logout();
   };
 
   const streak = dashboard?.streak?.current ?? 12;
@@ -93,7 +98,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           })}
         </div>
 
-        {/* Right: Quick Stats, Theme Toggle, Notifications, Profile Avatar */}
+        {/* Right: Quick Stats, Theme Toggle, Notifications, User Profile & Logout */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Flame Streak Indicator */}
           <div
@@ -174,31 +179,56 @@ export default function Layout({ children }: { children: ReactNode }) {
             <span style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444' }} />
           </button>
 
-          {/* Profile Avatar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366F1, #7C3AED)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#FFFFFF',
-              }}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
-            </div>
+          {/* Profile Details & Sign Out Button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Link to="/settings" title="Profile & Settings" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #6366F1, #7C3AED)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: '#FFFFFF',
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
+              </div>
+              <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.2 }}>
+                  {user?.name || 'Operator'}
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                  {user?.email || 'authenticated'}
+                </span>
+              </div>
+            </Link>
+
             <button
               className="hide-mobile"
-              onClick={logout}
-              title="Sign out"
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+              onClick={handleSignOut}
+              title="Sign Out of Operating System"
+              style={{
+                background: 'var(--input-bg)',
+                border: '1px solid var(--input-border)',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: 600,
+                transition: 'all 0.15s ease',
+              }}
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>

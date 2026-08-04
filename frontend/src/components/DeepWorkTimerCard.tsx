@@ -43,39 +43,39 @@ export default function DeepWorkTimerCard() {
         background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(124,58,237,0.04))',
         border: '1px solid rgba(99,102,241,0.25)',
         borderRadius: 'var(--card-radius, 16px)',
-        padding: '24px',
+        padding: '18px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '18px',
+        gap: '16px',
         boxShadow: '0 4px 20px rgba(99,102,241,0.08)',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Zap size={20} color="#6366F1" />
+          <Zap size={20} color="#6366F1" style={{ flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
               Deep Work Engine
             </div>
-            <h2 className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+            <h2 className="font-sekuya" style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
               {sessionName}
             </h2>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>
             <Coffee size={14} /> Breaks: <strong style={{ color: 'var(--text-main)' }}>{breaksCount}</strong>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>
             <Clock size={14} /> Daily Focus: <strong style={{ color: '#10B981' }}>{formatHoursMins(dailyTotalSeconds)}</strong>
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
-          <div className="font-sekuya text-gradient-brand" style={{ fontSize: '42px', fontWeight: 800, letterSpacing: '1px' }}>
+          <div className="font-sekuya text-gradient-brand" style={{ fontSize: 'clamp(30px, 7vw, 40px)', fontWeight: 800, letterSpacing: '1px' }}>
             {formatTimer(elapsedSeconds)}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -83,7 +83,7 @@ export default function DeepWorkTimerCard() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }}>
           {status === 'idle' && (
             <button
               onClick={() => startFocusSession(sessionName, targetMinutes)}
@@ -92,17 +92,17 @@ export default function DeepWorkTimerCard() {
                 color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '10px',
-                padding: '12px 20px',
-                fontSize: '13px',
+                padding: '10px 16px',
+                fontSize: '12px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
                 boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
               }}
             >
-              <Play size={16} />
+              <Play size={15} />
               <span>START FOCUS</span>
             </button>
           )}
