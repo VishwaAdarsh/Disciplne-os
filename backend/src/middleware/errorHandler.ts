@@ -1,39 +1,47 @@
 /**
- * Standardized Backend Error Handling Middleware (SPR-301 / ARCH-002)
+ * Standardized Backend Error Handling Middleware (SPR-304 / ARCH-002)
  */
 
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
-import { HTTP_STATUS, ERROR_CODES } from '../constants';
-import type { ApiErrorEnvelope } from '../types/foundation';
+import { AppError } from '../errors/AppError';
+import { sendError } from '../responses/apiResponse';
+import { HTTP_STATUS } from '../constants';
 
-export function standardizedErrorHandler(
+export function globalErrorHandler(
   err: any,
   req: Request,
   res: Response,
   _next: NextFunction
 ): void {
-  const statusCode = err.status || err.statusCode || HTTP_STATUS.SERVER_ERROR;
-  const errorCode = err.code || ERROR_CODES.INTERNAL_ERROR;
-  const requestId = (req.headers['x-request-id'] as string) || `req_${Date.now()}`;
+  const requestId = (req.headers['x-request-id'] as string) || (req as any).requestId || `req_${Date.now()}`;
 
-  logger.error(`API Error: ${req.method} ${req.originalUrl} [${statusCode}]`, err, {
+  let statusCode: number = HTTP_STATUS.SERVER_ERROR;
+  let message = 'An unexpected error occurred';
+  let errors: Array<{ field?: string; message: string }> = [];
+
+  if (err instanceof AppError) {
+    statusCode = err.statusCode;
+    message = err.message;
+    errors = err.errors;
+  } else if (err?.name === 'ZodError') {
+    statusCode = HTTP_STATUS.VALIDATION_ERROR;
+    message = 'Validation failed';
+    errors = err.issues.map((issue: any) => ({
+      field: issue.path.join('.'),
+      message: issue.message,
+    }));
+  } else if (err instanceof Error) {
+    message = err.message;
+  }
+
+  logger.error(`API Error: ${req.method} ${req.originalUrl} [${statusCode}] - ${message}`, err, {
     requestId,
-    code: errorCode,
+    statusCode,
+    errors,
   });
 
-  const responseEnvelope: ApiErrorEnvelope = {
-    success: false,
-    error: {
-      code: errorCode,
-      message: err.message || 'An internal server error occurred.',
-      details: err.details || undefined,
-      timestamp: new Date().toISOString(),
-      requestId,
-    },
-  };
-
-  res.status(statusCode).json(responseEnvelope);
+  sendError(res, message, statusCode, errors);
 }
 
-export default standardizedErrorHandler;
+export default globalErrorHandler;

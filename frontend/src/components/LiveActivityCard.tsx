@@ -164,7 +164,7 @@ export default function LiveActivityCard({
             borderRadius: '14px',
             padding: '18px',
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
           }}
         >

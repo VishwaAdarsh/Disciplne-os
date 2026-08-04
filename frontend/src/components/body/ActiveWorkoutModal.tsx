@@ -13,7 +13,7 @@ export default function ActiveWorkoutModal() {
 
   // Interval timer tick
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (activeSession.status === 'running') {
       interval = setInterval(() => {
         tickWorkoutTimer();

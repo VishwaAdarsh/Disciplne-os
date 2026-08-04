@@ -4,6 +4,7 @@ import { mockOverviewData, type OverviewMockData } from '../mock/dashboardData';
 export type EventType =
   | 'TASK_COMPLETED'
   | 'WORKOUT_COMPLETED'
+  | 'STEPS_LOGGED'
   | 'WATER_LOGGED'
   | 'MEAL_LOGGED'
   | 'MOOD_LOGGED'
