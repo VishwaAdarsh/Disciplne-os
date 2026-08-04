@@ -63,37 +63,15 @@ export const EventEngineInspector: React.FC = () => {
     <>
       {/* Floating Toggle Button */}
       <button
+        aria-label="Nervous System Inspector"
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          zIndex: 9999,
-          padding: '12px 18px',
-          borderRadius: '30px',
-          background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          color: '#ffffff',
-          fontWeight: 700,
-          fontSize: '0.85rem',
-          cursor: 'pointer',
-          boxShadow: '0 8px 25px rgba(99, 102, 241, 0.35)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}
+        className="fixed z-[9999] bg-gradient-to-r from-[#6366f1] to-[#a855f7] border border-white/20 text-white font-bold cursor-pointer shadow-[0_8px_25px_rgba(99,102,241,0.35)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center bottom-[78px] right-5 w-12 h-12 max-[400px]:w-11 max-[400px]:h-11 rounded-full p-0 text-base md:bottom-6 md:right-6 md:w-auto md:h-auto md:rounded-[30px] md:px-[18px] md:py-[12px] md:text-[0.85rem] md:gap-2"
       >
         <span>⚡</span>
-        <span>Nervous System Inspector</span>
+        <span className="hidden md:inline">Nervous System Inspector</span>
         {offlineQueue.length > 0 && (
           <span
-            style={{
-              background: '#ef4444',
-              color: '#fff',
-              borderRadius: '10px',
-              padding: '2px 6px',
-              fontSize: '0.7rem',
-            }}
+            className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[0.7rem] leading-none absolute -top-1 -right-1 md:static md:top-auto md:right-auto"
           >
             {offlineQueue.length}
           </span>

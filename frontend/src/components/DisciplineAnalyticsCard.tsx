@@ -14,7 +14,6 @@ export default function DisciplineAnalyticsCard({ analytics }: DisciplineAnalyti
     totalFocusHours,
     currentStreak,
     bestStreak,
-    missedTasksCount,
     heatmapData,
     weeklyFocusTrend,
   } = analytics;

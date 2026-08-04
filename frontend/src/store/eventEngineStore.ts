@@ -140,7 +140,7 @@ interface EventEngineState {
   
   // Actions
   emitEvent: (
-    params: Omit<SystemEvent, 'eventId' | 'timestamp' | 'unixTimestamp' | 'userId' | 'status'> & {
+    params: Omit<SystemEvent, 'eventId' | 'timestamp' | 'unixTimestamp' | 'userId' | 'status' | 'source'> & {
       userId?: string;
       source?: EventSource;
     }
@@ -428,11 +428,6 @@ export const useEventEngineStore = create<EventEngineState>((set, get) => {
       const now = Date.now();
       const totalPaused = session.pausedTotalMs + (session.pausedTime ? now - session.pausedTime : 0);
       const elapsedMinutes = Math.max(1, Math.round((now - session.startTime - totalPaused) / 60000));
-
-      const updated: LiveSession = {
-        ...session,
-        status: 'finished',
-      };
 
       set((state) => {
         const newMap = { ...state.activeSessions };
