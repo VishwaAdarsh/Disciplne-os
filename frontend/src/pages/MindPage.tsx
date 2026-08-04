@@ -1,3 +1,7 @@
+/**
+ * Mind Performance Page (SPR-309)
+ */
+
 import { useState } from 'react';
 import {
   Brain,
@@ -6,7 +10,6 @@ import {
   Target,
   ShieldAlert,
   BookOpen,
-  Plus,
   Lock,
   Play,
   CheckCircle2,
@@ -15,17 +18,19 @@ import PageHeader from '../components/PageHeader';
 import MetricCard from '../components/MetricCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
 import BarChartCard from '../components/charts/BarChartCard';
-import { useMindStore } from '../store/mindStore';
+import { useMind } from '../hooks/mind/useMind';
 
 // Mind Subcomponents
 import DailyCheckInModal from '../components/mind/DailyCheckInModal';
 import ActiveMeditationModal from '../components/mind/ActiveMeditationModal';
 import CreateJournalModal from '../components/mind/CreateJournalModal';
-import JournalEntriesList from '../components/mind/JournalEntriesList';
-import MeditationCard from '../components/mind/MeditationCard';
 import MindInsightsCard from '../components/mind/MindInsightsCard';
 import MindAnalyticsTab from '../components/mind/MindAnalyticsTab';
 import MindActivityTimeline from '../components/mind/MindActivityTimeline';
+import { MoodTrackerCard } from '../components/mind/MoodTrackerCard';
+import { EnergyStressFocusCard } from '../components/mind/EnergyStressFocusCard';
+import { JournalSection } from '../components/mind/JournalSection';
+import { MeditationSection } from '../components/mind/MeditationSection';
 import type { MoodLevel } from '../types/mind';
 
 export default function MindPage() {
@@ -35,7 +40,7 @@ export default function MindPage() {
     meditation,
     journal,
     startMeditation,
-  } = useMindStore();
+  } = useMind();
 
   const [activeCategory, setActiveCategory] = useState<string>('Overview');
 
@@ -290,172 +295,36 @@ export default function MindPage() {
         </div>
       </div>
 
+      {/* HEALTH TRACKERS GRID (MOOD & ENERGY/STRESS/FOCUS) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <MoodTrackerCard
+          currentMood={todayCheckIn.mood}
+          moodNote={todayCheckIn.moodNote}
+          isCompleted={todayCheckIn.completed}
+          onOpenCheckInModal={() => setIsCheckInOpen(true)}
+        />
+
+        <EnergyStressFocusCard
+          energy={todayCheckIn.energy}
+          stress={todayCheckIn.stress}
+          focus={todayCheckIn.focus}
+          onOpenCheckInModal={() => setIsCheckInOpen(true)}
+        />
+      </div>
+
       {/* RENDER CATEGORY SUBVIEWS */}
       {activeCategory === 'Overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* CHECK-IN CARD & MEDITATION CARD GRID */}
+          {/* MEDITATION & JOURNAL GRID */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-            {/* DAILY CHECK-IN SUMMARY CARD */}
-            <div
-              style={{
-                background: 'var(--card-bg, #111827)',
-                border: '1px solid var(--card-border, #1F2937)',
-                borderRadius: 'var(--card-radius, 16px)',
-                boxShadow: 'var(--card-shadow)',
-                padding: '22px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '16px',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Smile size={20} color="#8B5CF6" />
-                    <span className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
-                      Today's Mind Check-In
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      background: 'rgba(16,185,129,0.15)',
-                      color: '#10B981',
-                      padding: '3px 10px',
-                      borderRadius: '12px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    COMPLETED
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
-                  {emojis[todayCheckIn.mood].emoji} {emojis[todayCheckIn.mood].label}
-                </div>
-                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                  {todayCheckIn.moodNote || 'No mood notes added today.'}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  <div style={{ background: 'var(--surface-bg, #1F2937)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Focus</span>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#6366F1' }}>{todayCheckIn.focus}/10</div>
-                  </div>
-                  <div style={{ background: 'var(--surface-bg, #1F2937)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Energy</span>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#F59E0B' }}>{todayCheckIn.energy}/10</div>
-                  </div>
-                  <div style={{ background: 'var(--surface-bg, #1F2937)', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Stress</span>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#10B981' }}>{todayCheckIn.stress}/10</div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsCheckInOpen(true)}
-                style={{
-                  background: 'linear-gradient(90deg, #8B5CF6, #6366F1)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-                }}
-              >
-                <CheckCircle2 size={16} />
-                <span>UPDATE CHECK-IN</span>
-              </button>
-            </div>
-
-            {/* MEDITATION CARD */}
-            <MeditationCard />
+            <MeditationSection />
+            <JournalSection onOpenCreate={() => setIsJournalOpen(true)} />
           </div>
 
-          {/* INSIGHTS & JOURNAL GRID */}
+          {/* INSIGHTS & TIMELINE */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
             <MindInsightsCard />
-
-            <div
-              style={{
-                background: 'var(--card-bg, #111827)',
-                border: '1px solid var(--card-border, #1F2937)',
-                borderRadius: 'var(--card-radius, 16px)',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BookOpen size={18} color="#6366F1" />
-                    <span className="font-sekuya" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>
-                      Today's Reflection
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      background: journal.completedToday ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
-                      color: journal.completedToday ? '#10B981' : '#F59E0B',
-                      padding: '3px 10px',
-                      borderRadius: '12px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {journal.completedToday ? 'LOGGED' : 'PENDING'}
-                  </span>
-                </div>
-
-                {journal.entries.length > 0 ? (
-                  <div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>
-                      {journal.entries[0].title}
-                    </div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                      "{journal.entries[0].reflection}"
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                    No journal reflections logged for today yet.
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => setIsJournalOpen(true)}
-                style={{
-                  marginTop: '16px',
-                  background: 'rgba(99, 102, 241, 0.15)',
-                  color: '#6366F1',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <Plus size={16} />
-                <span>WRITE REFLECTION ENTRY</span>
-              </button>
-            </div>
+            <MindActivityTimeline />
           </div>
 
           {/* CHARTS ROW: FOCUS TREND & STRESS STRAIN */}
@@ -526,7 +395,7 @@ export default function MindPage() {
 
       {activeCategory === 'Meditation' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <MeditationCard />
+          <MeditationSection />
           <BarChartCard
             title="Weekly Meditation Minutes"
             subtitle="Mindfulness logged per day"
@@ -547,7 +416,7 @@ export default function MindPage() {
       )}
 
       {activeCategory === 'Journal' && (
-        <JournalEntriesList onOpenCreate={() => setIsJournalOpen(true)} />
+        <JournalSection onOpenCreate={() => setIsJournalOpen(true)} />
       )}
 
       {activeCategory === 'Trends' && <MindAnalyticsTab />}

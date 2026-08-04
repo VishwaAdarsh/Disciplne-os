@@ -1,3 +1,7 @@
+/**
+ * Discipline Page (SPR-307)
+ */
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,62 +10,83 @@ import {
   Zap,
   Sparkles,
   X,
-  CheckCircle2,
-  AlertCircle,
+  Flame,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import DeepWorkTimerCard from '../components/DeepWorkTimerCard';
 import LevelProgressCard from '../components/LevelProgressCard';
-import DisciplineTaskCard from '../components/DisciplineTaskCard';
-import CreateTaskModal from '../components/CreateTaskModal';
 import DisciplineAnalyticsCard from '../components/DisciplineAnalyticsCard';
-import { useDisciplineStore } from '../store/disciplineStore';
+import { TaskItemCard } from '../components/discipline/TaskItemCard';
+import { HabitItemCard } from '../components/discipline/HabitItemCard';
+import { DisciplineFiltersBar } from '../components/discipline/DisciplineFiltersBar';
+import { TaskModal } from '../components/discipline/TaskModal';
+import { HabitModal } from '../components/discipline/HabitModal';
+import { useDiscipline } from '../hooks/useDiscipline';
 import type { DisciplineTask } from '../types/discipline';
 
 export default function DisciplinePage() {
   const {
     tasks,
+    habits,
     levelInfo,
     analytics,
     activeTab,
-    activeFilter,
     notificationToast,
+    searchQuery,
+    selectedCategory,
+    selectedPriority,
+    selectedStatus,
+    sortBy,
+    filteredTasks,
     setActiveTab,
-    setActiveFilter,
     dismissNotification,
-  } = useDisciplineStore();
+    toggleTask,
+    addTask,
+    editTask,
+    deleteTask,
+    setSearchQuery,
+    setSelectedCategory,
+    setSelectedPriority,
+    setSelectedStatus,
+    setSortBy,
+    handleAddHabit,
+    handleToggleHabit,
+    handleDeleteHabit,
+  } = useDiscipline();
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [habitModalOpen, setHabitModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<DisciplineTask | null>(null);
 
   // Groupings & Progress calculations
-  const nonnegTasks = tasks.filter((t) => t.category === 'nonneg');
-  const nonnegDone = nonnegTasks.filter((t) => t.completed).length;
-  const nonnegTotal = nonnegTasks.length;
-  const progressPct = nonnegTotal > 0 ? Math.round((nonnegDone / nonnegTotal) * 100) : 0;
+  const totalTasks = tasks.length;
+  const completedCount = tasks.filter((t) => t.completed).length;
+  const progressPct = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+  const remainingMins = tasks
+    .filter((t) => !t.completed)
+    .reduce((acc, t) => acc + (t.estimatedMinutes || 30), 0);
 
-  const remainingTasks = tasks.filter((t) => !t.completed && !t.skipped);
-  const totalRemainingMins = remainingTasks.reduce((acc, t) => acc + t.estimatedMinutes, 0);
-
-  // Filter tasks based on active category filter
-  const filteredTasks = tasks.filter((t) => {
-    if (activeFilter === 'all') return true;
-    return t.category === activeFilter;
-  });
-
-  const handleEditClick = (task: DisciplineTask) => {
-    setTaskToEdit(task);
-    setModalOpen(true);
+  const handleOpenCreateTask = () => {
+    setTaskToEdit(null);
+    setTaskModalOpen(true);
   };
 
-  const handleOpenCreateModal = () => {
-    setTaskToEdit(null);
-    setModalOpen(true);
+  const handleOpenEditTask = (task: DisciplineTask) => {
+    setTaskToEdit(task);
+    setTaskModalOpen(true);
+  };
+
+  const handleSaveTask = (taskData: Partial<DisciplineTask>) => {
+    if (taskToEdit) {
+      editTask(taskToEdit.id, taskData);
+    } else {
+      addTask(taskData as any);
+    }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', position: 'relative' }}>
-      {/* NOTIFICATION TOAST BANNER (PRD Section 18) */}
+      {/* NOTIFICATION TOAST BANNER */}
       <AnimatePresence>
         {notificationToast && (
           <motion.div
@@ -104,61 +129,81 @@ export default function DisciplinePage() {
         )}
       </AnimatePresence>
 
-      {/* 1. MODULE HEADER & SUB-NAVIGATION (PRD Section 4) */}
+      {/* 1. MODULE HEADER & SUB-NAVIGATION */}
       <PageHeader
         title="Discipline Engine"
-        subtitle="Structured execution, Non-Negotiables, Habits, Deep Work, and XP progression."
-        categories={['Overview', 'Non-Negotiables', 'Habits', 'Deep Work', 'Analytics', 'History']}
+        subtitle="Task management, recurring habits, daily planner, search & performance integration."
+        categories={['Overview', 'Tasks & Planner', 'Habits Stack', 'Deep Work', 'Analytics']}
         activeCategory={
           activeTab === 'overview'
             ? 'Overview'
             : activeTab === 'nonneg'
-              ? 'Non-Negotiables'
+              ? 'Tasks & Planner'
               : activeTab === 'habits'
-                ? 'Habits'
+                ? 'Habits Stack'
                 : activeTab === 'deepwork'
                   ? 'Deep Work'
-                  : activeTab === 'analytics'
-                    ? 'Analytics'
-                    : 'History'
+                  : 'Analytics'
         }
         onSelectCategory={(cat) => {
           const tabMap: Record<string, any> = {
             Overview: 'overview',
-            'Non-Negotiables': 'nonneg',
-            Habits: 'habits',
+            'Tasks & Planner': 'nonneg',
+            'Habits Stack': 'habits',
             'Deep Work': 'deepwork',
             Analytics: 'analytics',
-            History: 'history',
           };
           setActiveTab(tabMap[cat] || 'overview');
         }}
         actionRight={
-          <button
-            onClick={handleOpenCreateModal}
-            style={{
-              background: '#6366F1',
-              color: '#FFF',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '8px 14px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <Plus size={16} />
-            <span>New Task</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setHabitModalOpen(true)}
+              style={{
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#F59E0B',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '10px',
+                padding: '8px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Flame size={16} />
+              <span>New Habit</span>
+            </button>
+
+            <button
+              onClick={handleOpenCreateTask}
+              style={{
+                background: '#6366F1',
+                color: '#FFF',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '8px 14px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Plus size={16} />
+              <span>New Task</span>
+            </button>
+          </div>
         }
       />
 
-      {/* 2. TODAY'S EXECUTION STICKY PROGRESS BAR (PRD Section 7 & 10) */}
+      {/* 2. TODAY'S EXECUTION PROGRESS CARD */}
       <div
         style={{
           background: 'var(--card-bg)',
@@ -175,16 +220,16 @@ export default function DisciplinePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShieldCheck size={18} color="#F59E0B" />
             <span className="font-sekuya" style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-main)' }}>
-              Today's Execution
+              Daily Planner Completion
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', flexWrap: 'wrap' }}>
             <span style={{ color: 'var(--text-muted)' }}>
-              Completed: <strong style={{ color: '#10B981' }}>{nonnegDone} / {nonnegTotal}</strong> ({progressPct}%)
+              Completed: <strong style={{ color: '#10B981' }}>{completedCount} / {totalTasks}</strong> ({progressPct}%)
             </span>
             <span style={{ color: 'var(--text-muted)' }}>
-              Left: <strong style={{ color: '#6366F1' }}>{totalRemainingMins} min</strong>
+              Est. Remaining: <strong style={{ color: '#6366F1' }}>{remainingMins} min</strong>
             </span>
           </div>
         </div>
@@ -203,7 +248,7 @@ export default function DisciplinePage() {
         </div>
       </div>
 
-      {/* LEVEL & XP PROGRESSION CARD (PRD Section 13 & 14) */}
+      {/* LEVEL & XP PROGRESSION CARD */}
       <LevelProgressCard levelInfo={levelInfo} />
 
       {/* TAB CONTENT CONDITIONAL RENDERING */}
@@ -211,145 +256,68 @@ export default function DisciplinePage() {
         <DeepWorkTimerCard />
       ) : activeTab === 'analytics' ? (
         <DisciplineAnalyticsCard analytics={analytics} />
-      ) : activeTab === 'history' ? (
-        /* TASK HISTORY VIEW (PRD Section 16) */
-        <div
-          style={{
-            background: 'var(--card-bg)',
-            border: '1px solid var(--card-border)',
-            borderRadius: 'var(--card-radius, 16px)',
-            boxShadow: 'var(--card-shadow)',
-            padding: '18px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+      ) : activeTab === 'habits' ? (
+        /* HABITS STACK VIEW */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 className="font-sekuya" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-              Execution Task History
+              Recurring Habits Stack
             </h2>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Filterable Date Range Logs</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{habits.length} habits active</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  fontSize: '13px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
-                  <span style={{ fontSize: '16px', flexShrink: 0 }}>{task.icon}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.title}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{task.timeSchedule}</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  {task.completed ? (
-                    <span style={{ fontSize: '11px', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <CheckCircle2 size={13} /> Completed
-                    </span>
-                  ) : task.skipped ? (
-                    <span style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <AlertCircle size={13} /> Skipped ({task.skipReason})
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                      Pending
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        /* MAIN TASKS DASHBOARD VIEW (PRD Section 5 & 8) */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Deep Work Focus Card Launcher */}
-          <DeepWorkTimerCard />
-
-          {/* Task Category Filter Tabs - Mobile Touch Scrollable */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <div
-              className="no-scrollbar"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'var(--input-bg)',
-                padding: '4px',
-                borderRadius: '12px',
-                overflowX: 'auto',
-                maxWidth: '100%',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              {(
-                [
-                  { key: 'all', label: 'All Tasks' },
-                  { key: 'nonneg', label: 'Non-Negotiables' },
-                  { key: 'habit', label: 'Habits Stack' },
-                  { key: 'goal', label: 'Goal-Linked' },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveFilter(tab.key)}
-                  style={{
-                    background: activeFilter === tab.key ? '#6366F1' : 'transparent',
-                    color: activeFilter === tab.key ? '#FFFFFF' : 'var(--text-muted)',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {tab.label}
-                </button>
+          {habits.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {habits.map((habit) => (
+                <HabitItemCard key={habit.id} habit={habit} onToggle={handleToggleHabit} onDelete={handleDeleteHabit} />
               ))}
             </div>
-
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-              Showing {filteredTasks.length} tasks
-            </span>
-          </div>
+          ) : (
+            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No habits created yet. Click "New Habit" to start building a streak!
+            </div>
+          )}
+        </div>
+      ) : (
+        /* MAIN TASKS & DAILY PLANNER VIEW */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Multi-Criteria Filters & Search Bar */}
+          <DisciplineFiltersBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedPriority={selectedPriority}
+            onPriorityChange={setSelectedPriority}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
 
           {/* Task Cards List */}
           {filteredTasks.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <AnimatePresence>
                 {filteredTasks.map((task) => (
-                  <DisciplineTaskCard key={task.id} task={task} onEdit={handleEditClick} />
+                  <TaskItemCard
+                    key={task.id}
+                    task={task}
+                    onToggle={toggleTask}
+                    onEdit={handleOpenEditTask}
+                    onDelete={deleteTask}
+                  />
                 ))}
               </AnimatePresence>
             </div>
           ) : (
-            /* Empty Task State (PRD Section 20) */
+            /* Empty State */
             <div
               style={{
                 background: 'var(--card-bg)',
                 border: '1px dashed var(--card-border)',
                 borderRadius: 'var(--card-radius, 16px)',
-                padding: '32px 16px',
+                padding: '36px 16px',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
@@ -372,13 +340,13 @@ export default function DisciplinePage() {
                 <Zap size={22} color="#6366F1" />
               </div>
               <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-main)' }}>
-                No Non-Negotiables created
+                No tasks match your filter parameters
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '300px' }}>
-                Create your first structured daily commitment to protect your streak.
+                Try adjusting your search criteria or create a new task.
               </div>
               <button
-                onClick={handleOpenCreateModal}
+                onClick={handleOpenCreateTask}
                 style={{
                   background: '#6366F1',
                   color: '#FFF',
@@ -391,7 +359,7 @@ export default function DisciplinePage() {
                   marginTop: '4px',
                 }}
               >
-                Create First Commitment
+                Create Task
               </button>
             </div>
           )}
@@ -399,13 +367,21 @@ export default function DisciplinePage() {
       )}
 
       {/* CREATE / EDIT TASK MODAL */}
-      <CreateTaskModal
-        isOpen={modalOpen}
+      <TaskModal
+        isOpen={taskModalOpen}
         onClose={() => {
-          setModalOpen(false);
+          setTaskModalOpen(false);
           setTaskToEdit(null);
         }}
+        onSave={handleSaveTask}
         taskToEdit={taskToEdit}
+      />
+
+      {/* CREATE HABIT MODAL */}
+      <HabitModal
+        isOpen={habitModalOpen}
+        onClose={() => setHabitModalOpen(false)}
+        onSave={handleAddHabit}
       />
     </div>
   );

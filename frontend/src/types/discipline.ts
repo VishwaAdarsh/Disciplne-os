@@ -1,6 +1,21 @@
-export type TaskCategory = 'nonneg' | 'habit' | 'goal';
-export type TaskPriority = 'high' | 'medium' | 'low';
-export type TaskStatusFilter = 'all' | 'completed' | 'missed' | 'skipped' | 'active';
+/**
+ * Frontend Discipline Domain Types (SPR-307)
+ */
+
+export type TaskCategory =
+  | 'Study'
+  | 'Work'
+  | 'Fitness'
+  | 'Health'
+  | 'Personal'
+  | 'Finance'
+  | 'Custom'
+  | 'nonneg'
+  | 'habit'
+  | 'goal';
+
+export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
+export type TaskStatusFilter = 'all' | 'pending' | 'completed' | 'overdue' | 'upcoming' | 'archived';
 
 export interface DisciplineTask {
   id: string;
@@ -9,18 +24,35 @@ export interface DisciplineTask {
   category: TaskCategory;
   priority: TaskPriority;
   estimatedMinutes: number;
-  timeSchedule: string; // e.g. "06:00 AM"
+  timeSchedule?: string; // e.g. "06:00 AM" or ISO string
+  dueDate?: string;
   goalId?: string;
   goalTitle?: string;
-  icon: string;
-  color: string;
+  icon?: string;
+  color?: string;
   completed: boolean;
-  skipped: boolean;
+  skipped?: boolean;
   skipReason?: string;
+  isArchived?: boolean;
   streak: number;
-  xpReward: number; // e.g. 10 (Easy), 20 (Medium), 40 (Hard)
+  xpReward: number;
   createdAt: string;
   completedAt?: string;
+  tags?: string[];
+  notes?: string;
+}
+
+export interface DisciplineHabit {
+  id: string;
+  habitName: string;
+  description?: string;
+  category: string;
+  frequency: 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'custom';
+  targetDaysPerWeek: number;
+  streak: number;
+  completionRate: number;
+  status: 'active' | 'paused' | 'archived';
+  createdAt: string;
 }
 
 export interface LevelInfo {
@@ -41,9 +73,9 @@ export interface DeepWorkSessionState {
 }
 
 export interface DisciplineAnalyticsData {
-  completionRate: number; // 0-100
-  disciplineScore: number; // 0-100
-  weeklyConsistency: number; // 0-100
+  completionRate: number;
+  disciplineScore: number;
+  weeklyConsistency: number;
   totalFocusHours: number;
   currentStreak: number;
   bestStreak: number;

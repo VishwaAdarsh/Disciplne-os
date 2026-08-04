@@ -1,3 +1,7 @@
+/**
+ * Body Performance Page (SPR-308)
+ */
+
 import { useState } from 'react';
 import {
   Activity,
@@ -8,15 +12,13 @@ import {
   Play,
   Plus,
   Zap,
-  CheckCircle2,
-  Bell,
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import MetricCard from '../components/MetricCard';
 import BarChartCard from '../components/charts/BarChartCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
 import HorizontalProgressBar from '../components/charts/HorizontalProgressBar';
-import { useBodyStore } from '../store/bodyStore';
+import { useBody } from '../hooks/body/useBody';
 
 // Body Subcomponents
 import ActiveWorkoutModal from '../components/body/ActiveWorkoutModal';
@@ -28,6 +30,9 @@ import RecoveryCard from '../components/body/RecoveryCard';
 import StepTrackerCard from '../components/body/StepTrackerCard';
 import BodyAnalyticsTab from '../components/body/BodyAnalyticsTab';
 import BodyActivityTimeline from '../components/body/BodyActivityTimeline';
+import { WaterTrackerCard } from '../components/body/WaterTrackerCard';
+import { SleepTrackerCard } from '../components/body/SleepTrackerCard';
+import { WeightTrackerCard } from '../components/body/WeightTrackerCard';
 
 export default function BodyPage() {
   const {
@@ -40,7 +45,10 @@ export default function BodyPage() {
     recovery,
     activeSession,
     startWorkout,
-  } = useBodyStore();
+    unitSystem,
+    toggleUnitSystem,
+    handleQuickAddWater,
+  } = useBody();
 
   const [activeCategory, setActiveCategory] = useState<string>('Overview');
 
@@ -346,6 +354,36 @@ export default function BodyPage() {
             <span>Log Weight</span>
           </button>
         </div>
+      </div>
+
+      {/* HEALTH TRACKERS GRID (WATER, SLEEP, WEIGHT) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+        <WaterTrackerCard
+          currentLiters={water.currentLiters}
+          targetLiters={water.targetLiters}
+          unitSystem={unitSystem}
+          onQuickAdd={handleQuickAddWater}
+          onOpenModal={() => setIsLogWaterOpen(true)}
+          onToggleUnit={toggleUnitSystem}
+        />
+
+        <SleepTrackerCard
+          durationHours={sleep.durationHours}
+          durationMinutes={sleep.durationMinutes}
+          targetHours={sleep.targetHours}
+          qualityPercent={sleep.qualityPercent}
+          sleepStart={sleep.sleepStart}
+          wakeTime={sleep.wakeTime}
+          onOpenModal={() => setIsLogSleepOpen(true)}
+        />
+
+        <WeightTrackerCard
+          currentKg={weight.currentKg}
+          targetKg={weight.targetKg}
+          change30Days={weight.change30Days}
+          unitSystem={unitSystem}
+          onOpenModal={() => setIsLogWeightOpen(true)}
+        />
       </div>
 
       {/* RENDER CATEGORY SUBVIEWS */}

@@ -83,3 +83,92 @@ export interface MindScoreBreakdown {
   journalScore: number;
   totalScore: number;
 }
+
+// ── API DTOs (used by mindApi service) ──────────────────────────────
+
+export interface MoodDTO {
+  id: string;
+  userId: string;
+  mood: string;
+  icon: string;
+  notes?: string | null;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface EnergyDTO {
+  id: string;
+  userId: string;
+  energyLevel: string;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface StressDTO {
+  id: string;
+  userId: string;
+  stressLevel: number;
+  triggerNotes?: string | null;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface FocusDTO {
+  id: string;
+  userId: string;
+  focusScore: number;
+  notes?: string | null;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface JournalDTO {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  moodTag: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeditationDTO {
+  id: string;
+  userId: string;
+  title: string;
+  durationMinutes: number;
+  type: string;
+  completed: boolean;
+  notes?: string | null;
+  logDate: string;
+  createdAt: string;
+}
+
+export interface MindSummaryDTO {
+  userId: string;
+  date: string;
+  mood: {
+    logged: boolean;
+    currentMood: string | null;
+    icon: string | null;
+  };
+  energy: {
+    logged: boolean;
+    level: string | null;
+  };
+  stress: {
+    logged: boolean;
+    level: number | null;
+  };
+  focus: {
+    logged: boolean;
+    score: number | null;
+  };
+  meditation: {
+    totalMinutes: number;
+    sessionsCount: number;
+  };
+  journal: {
+    todayEntriesCount: number;
+  };
+}

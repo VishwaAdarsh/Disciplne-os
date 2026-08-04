@@ -21,6 +21,9 @@ import MacroProgressCard from '../components/nutrition/MacroProgressCard';
 import NutritionInsightsCard from '../components/nutrition/NutritionInsightsCard';
 import NutritionAnalyticsTab from '../components/nutrition/NutritionAnalyticsTab';
 import NutritionActivityTimeline from '../components/nutrition/NutritionActivityTimeline';
+import { DailySummaryCard } from '../components/nutrition/DailySummaryCard';
+import { NutritionGoalsCard } from '../components/nutrition/NutritionGoalsCard';
+import { MealLogCard } from '../components/nutrition/MealLogCard';
 
 export default function NutritionPage() {
   const {
@@ -260,6 +263,27 @@ export default function NutritionPage() {
       {/* RENDER CATEGORY SUBVIEWS */}
       {activeCategory === 'Overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* DAILY SUMMARY & GOALS GRID */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            <DailySummaryCard
+              calories={{ current: calories.current, target: calories.target, remaining: Math.max(0, calories.target - calories.current), progressPercent: Math.min(100, Math.round((calories.current / calories.target) * 100)) }}
+              protein={{ current: protein.current, target: protein.target, remaining: Math.max(0, protein.target - protein.current), progressPercent: Math.min(100, Math.round((protein.current / protein.target) * 100)) }}
+              carbs={{ current: carbs.current, target: carbs.target, remaining: Math.max(0, carbs.target - carbs.current), progressPercent: Math.min(100, Math.round((carbs.current / carbs.target) * 100)) }}
+              fat={{ current: fat.current, target: fat.target, remaining: Math.max(0, fat.target - fat.current), progressPercent: Math.min(100, Math.round((fat.current / fat.target) * 100)) }}
+              fiber={{ current: 0 }}
+              water={{ currentLiters: water.currentLiters, targetLiters: water.targetLiters, progressPercent: Math.min(100, Math.round((water.currentLiters / water.targetLiters) * 100)) }}
+              mealsLogged={nutritionStore.meals.length}
+            />
+            <NutritionGoalsCard
+              caloriesTarget={calories.target}
+              proteinTarget={protein.target}
+              carbsTarget={carbs.target}
+              fatTarget={fat.target}
+              waterTargetLiters={water.targetLiters}
+              onEditGoals={() => {}}
+            />
+          </div>
+
           {/* MEAL TIMELINE & MACRO PROGRESS GRID */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
             <MealTimelineCard onOpenLogModal={() => setIsLogMealOpen(true)} />
@@ -298,6 +322,20 @@ export default function NutritionPage() {
 
       {activeCategory === 'Meals' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <MealLogCard
+            meals={nutritionStore.meals.map((m) => ({
+              id: m.id,
+              name: m.name,
+              category: m.category,
+              calories: m.calories,
+              proteinG: m.proteinGrams,
+              carbsG: m.carbsGrams,
+              fatG: m.fatGrams,
+              loggedAt: m.timeStr,
+            }))}
+            onOpenLogModal={() => setIsLogMealOpen(true)}
+            onDelete={(id) => nutritionStore.deleteMeal(id)}
+          />
           <MealTimelineCard onOpenLogModal={() => setIsLogMealOpen(true)} />
           <BarChartCard
             title="Weekly Calorie History"

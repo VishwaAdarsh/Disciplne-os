@@ -1,71 +1,30 @@
+/**
+ * API v1 Discipline Router (SPR-307)
+ */
+
 import { Router } from 'express';
-import { sendSuccess, sendError } from '../../utils/response';
-import { authenticate, AuthRequest } from '../../middleware';
+import { authenticate } from '../../middleware';
+import { getTasks, createTask, completeTask } from '../../controllers/tasks/taskController';
+import { getHabits, createHabit, completeHabit } from '../../controllers/habits/habitController';
 
 const router = Router();
 
 // GET /api/v1/discipline/tasks
-router.get('/tasks', authenticate, (req: AuthRequest, res) => {
-  const mockTasks = [
-    {
-      id: 'dt-1',
-      title: 'Morning Routine & Cold Shower',
-      category: 'nonneg',
-      priority: 'high',
-      completed: true,
-      streak: 14,
-      xpReward: 20,
-    },
-    {
-      id: 'dt-2',
-      title: 'Deep Work Block 1 (Core Coding)',
-      category: 'nonneg',
-      priority: 'high',
-      completed: true,
-      streak: 8,
-      xpReward: 40,
-    },
-  ];
-  return sendSuccess(res, mockTasks, 'Tasks retrieved successfully');
-});
+router.get('/tasks', authenticate, getTasks);
 
 // POST /api/v1/discipline/tasks
-router.post('/tasks', authenticate, (req: AuthRequest, res) => {
-  const { title, category, priority, estimatedMinutes } = req.body;
-  if (!title) return sendError(res, 'Task title is required', 400);
+router.post('/tasks', authenticate, createTask);
 
-  const newTask = {
-    id: `dt-${Date.now()}`,
-    userId: req.userId,
-    title,
-    category: category || 'nonneg',
-    priority: priority || 'medium',
-    estimatedMinutes: estimatedMinutes || 30,
-    completed: false,
-    streak: 0,
-    createdAt: new Date().toISOString(),
-  };
+// PATCH /api/v1/discipline/tasks/:id/complete
+router.patch('/tasks/:id/complete', authenticate, completeTask);
 
-  return sendSuccess(res, newTask, 'Task created successfully', 201);
-});
+// GET /api/v1/discipline/habits
+router.get('/habits', authenticate, getHabits);
 
-// PATCH /api/v1/discipline/tasks/:id/toggle
-router.patch('/tasks/:id/toggle', authenticate, (req: AuthRequest, res) => {
-  const { id } = req.params;
-  return sendSuccess(res, { taskId: id, completed: true, streak: 15, xpGained: 20 }, 'Task status toggled');
-});
+// POST /api/v1/discipline/habits
+router.post('/habits', authenticate, createHabit);
 
-// POST /api/v1/discipline/sessions/start
-router.post('/sessions/start', authenticate, (req: AuthRequest, res) => {
-  const { sessionName, targetMinutes } = req.body;
-  const session = {
-    id: `sess-${Date.now()}`,
-    sessionName: sessionName || 'Deep Work',
-    status: 'running',
-    targetMinutes: targetMinutes || 60,
-    startTime: new Date().toISOString(),
-  };
-  return sendSuccess(res, session, 'Focus session started');
-});
+// PATCH /api/v1/discipline/habits/:id/complete
+router.patch('/habits/:id/complete', authenticate, completeHabit);
 
 export default router;
