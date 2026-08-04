@@ -86,9 +86,48 @@ export function initDB() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      module TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      icon TEXT DEFAULT '⚡',
+      payload_json TEXT DEFAULT '{}',
+      score_impact INTEGER DEFAULT 0,
+      source TEXT DEFAULT 'user',
+      status TEXT DEFAULT 'completed',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS performance_snapshots (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      overall_score INTEGER NOT NULL,
+      discipline_score INTEGER NOT NULL,
+      body_score INTEGER NOT NULL,
+      mind_score INTEGER NOT NULL,
+      nutrition_score INTEGER NOT NULL,
+      goals_score INTEGER NOT NULL,
+      period_type TEXT DEFAULT 'daily',
+      trend TEXT DEFAULT 'stable',
+      snapshot_date TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
     CREATE INDEX IF NOT EXISTS idx_reflections_user_id ON reflections(user_id);
     CREATE INDEX IF NOT EXISTS idx_task_completions_user_id ON task_completions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
+    CREATE INDEX IF NOT EXISTS idx_events_event_type ON events(event_type);
+    CREATE INDEX IF NOT EXISTS idx_events_module ON events(module);
+    CREATE INDEX IF NOT EXISTS idx_events_user_created ON events(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_perf_user_id ON performance_snapshots(user_id);
+    CREATE INDEX IF NOT EXISTS idx_perf_snapshot_date ON performance_snapshots(snapshot_date);
+    CREATE INDEX IF NOT EXISTS idx_perf_user_date_period ON performance_snapshots(user_id, snapshot_date, period_type);
   `);
   console.log('✅ Database initialized');
 }
