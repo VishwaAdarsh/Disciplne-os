@@ -1,4 +1,9 @@
 export type GoalCategory =
+  | 'Discipline'
+  | 'Body'
+  | 'Nutrition'
+  | 'Mind'
+  | 'General'
   | 'Study'
   | 'Career'
   | 'Fitness'
@@ -7,7 +12,15 @@ export type GoalCategory =
   | 'Learning'
   | 'Custom';
 
-export type GoalStatus = 'Planning' | 'Active' | 'Paused' | 'Completed' | 'Archived';
+export type GoalStatus =
+  | 'Not Started'
+  | 'In Progress'
+  | 'Completed'
+  | 'Paused'
+  | 'Cancelled'
+  | 'Planning'
+  | 'Active'
+  | 'Archived';
 
 export type GoalPriority = 'Low' | 'Medium' | 'High' | 'Critical';
 

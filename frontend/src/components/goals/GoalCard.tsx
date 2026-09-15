@@ -1,15 +1,34 @@
-import { useState } from 'react';
-import { Target, CheckCircle2, Circle, Calendar, Pause, Play, Plus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Target,
+  CheckCircle2,
+  Circle,
+  Calendar,
+  Pause,
+  Play,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  Edit3,
+} from 'lucide-react';
 import { useGoalsStore } from '../../store/goalsStore';
 import type { GoalItem } from '../../types/goals';
 import HorizontalProgressBar from '../charts/HorizontalProgressBar';
 
 interface Props {
   goal: GoalItem;
+  onEdit?: (goal: GoalItem) => void;
 }
 
-export default function GoalCard({ goal }: Props) {
-  const { toggleMilestone, setGoalStatus, addMilestone, deleteGoal } = useGoalsStore();
+export default function GoalCard({ goal, onEdit }: Props) {
+  const {
+    toggleMilestoneAsync,
+    setGoalStatusAsync,
+    addMilestoneAsync,
+    deleteGoalAsync,
+  } = useGoalsStore();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [newMilestoneText, setNewMilestoneText] = useState('');
   const [isAddingM, setIsAddingM] = useState(false);
@@ -17,46 +36,55 @@ export default function GoalCard({ goal }: Props) {
   const completedMilestones = goal.milestones.filter((m) => m.completed).length;
   const totalMilestones = goal.milestones.length;
 
-  const handleAddMilestoneSubmit = (e: React.FormEvent) => {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isOverdue =
+    goal.status !== 'Completed' &&
+    Boolean(goal.deadline && goal.deadline.length >= 10 && goal.deadline < todayStr);
+
+  const handleAddMilestoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMilestoneText.trim()) {
-      addMilestone(goal.id, newMilestoneText.trim());
+      await addMilestoneAsync(goal.id, newMilestoneText.trim());
       setNewMilestoneText('');
       setIsAddingM(false);
     }
   };
 
   const getStatusColor = () => {
+    if (isOverdue) return '#EF4444';
     switch (goal.status) {
       case 'Completed':
         return '#10B981';
       case 'Paused':
         return '#F59E0B';
       case 'Archived':
+      case 'Cancelled':
         return '#6B7280';
       default:
         return '#6366F1';
     }
   };
 
+  const isCompleted = goal.status === 'Completed';
+
   return (
     <div
       style={{
         background: 'var(--card-bg, #111827)',
-        border: `1px solid ${goal.status === 'Completed' ? 'rgba(16, 185, 129, 0.4)' : 'var(--card-border, #1F2937)'}`,
+        border: `1px solid ${isCompleted ? 'rgba(16, 185, 129, 0.4)' : isOverdue ? 'rgba(239, 68, 68, 0.4)' : 'var(--card-border, #1F2937)'}`,
         borderRadius: 'var(--card-radius, 16px)',
         boxShadow: 'var(--card-shadow)',
-        padding: '22px',
+        padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gap: '16px',
+        gap: '14px',
       }}
     >
       <div>
         {/* HEADER BADGES */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: '10px',
@@ -68,7 +96,7 @@ export default function GoalCard({ goal }: Props) {
                 textTransform: 'uppercase',
               }}
             >
-              {goal.category === 'Custom' ? goal.customCategoryName || 'Custom' : goal.category}
+              {goal.category}
             </span>
 
             <span
@@ -82,24 +110,58 @@ export default function GoalCard({ goal }: Props) {
                 textTransform: 'uppercase',
               }}
             >
-              {goal.status}
+              {isOverdue ? 'Overdue' : goal.status}
             </span>
+
+            {goal.priority && (
+              <span
+                style={{
+                  fontSize: '10px',
+                  color: 'var(--text-muted)',
+                  border: '1px solid var(--card-border, #374151)',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                }}
+              >
+                {goal.priority}
+              </span>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Priority: {goal.priority}</span>
+            {onEdit && (
+              <button
+                onClick={() => onEdit(goal)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+                title="Edit goal"
+              >
+                <Edit3 size={14} />
+              </button>
+            )}
             <button
-              onClick={() => deleteGoal(goal.id)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
+              onClick={() => deleteGoalAsync(goal.id)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
               title="Delete goal"
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>
 
         {/* TITLE & DESCRIPTION */}
-        <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
+        <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
           {goal.title}
         </div>
         {goal.description && (
@@ -121,7 +183,7 @@ export default function GoalCard({ goal }: Props) {
         <div
           style={{
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginTop: '12px',
             fontSize: '12px',
@@ -130,6 +192,8 @@ export default function GoalCard({ goal }: Props) {
             padding: '10px 12px',
             borderRadius: '10px',
             border: '1px solid var(--card-border, #1F2937)',
+            flexWrap: 'wrap',
+            gap: '8px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -140,8 +204,10 @@ export default function GoalCard({ goal }: Props) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Calendar size={14} color="#F59E0B" />
-            <span>Deadline: <strong style={{ color: 'var(--text-main)' }}>{goal.deadline}</strong></span>
+            <Calendar size={14} color={isOverdue ? '#EF4444' : '#F59E0B'} />
+            <span>
+              Deadline: <strong style={{ color: isOverdue ? '#EF4444' : 'var(--text-main)' }}>{goal.deadline || 'Ongoing'}</strong>
+            </span>
           </div>
         </div>
       </div>
@@ -173,7 +239,7 @@ export default function GoalCard({ goal }: Props) {
             {goal.milestones.map((m) => (
               <div
                 key={m.id}
-                onClick={() => toggleMilestone(goal.id, m.id)}
+                onClick={() => toggleMilestoneAsync(goal.id, m.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -240,7 +306,7 @@ export default function GoalCard({ goal }: Props) {
                   alignSelf: 'flex-start',
                   background: 'transparent',
                   border: 'none',
-                  color: 'var(--text-muted)',
+                  color: '#6366F1',
                   fontSize: '11px',
                   cursor: 'pointer',
                   display: 'flex',
@@ -259,9 +325,9 @@ export default function GoalCard({ goal }: Props) {
 
       {/* QUICK STATUS ACTIONS */}
       <div style={{ display: 'flex', gap: '8px' }}>
-        {goal.status === 'Active' ? (
+        {goal.status === 'Active' || goal.status === 'In Progress' ? (
           <button
-            onClick={() => setGoalStatus(goal.id, 'Paused')}
+            onClick={() => setGoalStatusAsync(goal.id, 'Paused')}
             style={{
               flex: 1,
               padding: '8px',
@@ -283,7 +349,7 @@ export default function GoalCard({ goal }: Props) {
           </button>
         ) : (
           <button
-            onClick={() => setGoalStatus(goal.id, 'Active')}
+            onClick={() => setGoalStatusAsync(goal.id, 'In Progress')}
             style={{
               flex: 1,
               padding: '8px',
@@ -305,9 +371,9 @@ export default function GoalCard({ goal }: Props) {
           </button>
         )}
 
-        {goal.status !== 'Completed' && (
+        {!isCompleted && (
           <button
-            onClick={() => setGoalStatus(goal.id, 'Completed')}
+            onClick={() => setGoalStatusAsync(goal.id, 'Completed')}
             style={{
               flex: 1,
               padding: '8px',

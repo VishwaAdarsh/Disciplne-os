@@ -7,7 +7,7 @@ import type {
   NutritionScoreBreakdown,
   MealCategory,
 } from '../types/nutrition';
-import { nutritionApi, MealInput, GoalsInput } from '../services/nutrition/nutritionApi';
+import { nutritionApi, type MealInput, type GoalsInput } from '../services/nutrition/nutritionApi';
 import { bodyApi } from '../services/body/bodyApi';
 import { useOverviewStore } from './overviewStore';
 import { useEventEngineStore } from './eventEngineStore';

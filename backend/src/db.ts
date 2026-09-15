@@ -316,6 +316,44 @@ export function initDB() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS goals (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      category TEXT DEFAULT 'Discipline',
+      goal_type TEXT DEFAULT 'numeric',
+      target_value REAL,
+      current_value REAL DEFAULT 0,
+      unit TEXT,
+      color TEXT DEFAULT '#6366F1',
+      priority TEXT DEFAULT 'High',
+      status TEXT DEFAULT 'In Progress',
+      progress_percent INTEGER DEFAULT 0,
+      start_date TEXT,
+      deadline TEXT,
+      notes TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS goal_milestones (
+      id TEXT PRIMARY KEY,
+      goal_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      completed INTEGER DEFAULT 0,
+      due_date TEXT,
+      order_index INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
+      FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
     CREATE INDEX IF NOT EXISTS idx_reflections_user_id ON reflections(user_id);
     CREATE INDEX IF NOT EXISTS idx_task_completions_user_id ON task_completions(user_id);
@@ -340,6 +378,10 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_meals_user_date ON meals(user_id, log_date);
     CREATE INDEX IF NOT EXISTS idx_meals_user_category ON meals(user_id, category);
     CREATE INDEX IF NOT EXISTS idx_nutrition_goals_user ON nutrition_goals(user_id);
+    CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
+    CREATE INDEX IF NOT EXISTS idx_goals_user_status ON goals(user_id, status);
+    CREATE INDEX IF NOT EXISTS idx_goal_milestones_goal_id ON goal_milestones(goal_id);
+    CREATE INDEX IF NOT EXISTS idx_goal_milestones_user_id ON goal_milestones(user_id);
   `);
   console.log('✅ Database initialized');
 }

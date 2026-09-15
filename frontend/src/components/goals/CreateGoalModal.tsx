@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Target, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { X, Target, Sparkles, Plus, Trash2, Edit2 } from 'lucide-react';
 import { useGoalsStore } from '../../store/goalsStore';
-import type { GoalCategory, GoalPriority } from '../../types/goals';
+import type { GoalCategory, GoalPriority, GoalItem } from '../../types/goals';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  goalToEdit?: GoalItem | null;
 }
 
 const CATEGORIES: GoalCategory[] = [
+  'Discipline',
+  'Body',
+  'Nutrition',
+  'Mind',
+  'General',
   'Career',
   'Study',
   'Fitness',
@@ -21,21 +27,48 @@ const CATEGORIES: GoalCategory[] = [
 
 const PRIORITIES: GoalPriority[] = ['Low', 'Medium', 'High', 'Critical'];
 
-export default function CreateGoalModal({ isOpen, onClose }: Props) {
-  const { createGoal, aiSuggestMilestones } = useGoalsStore();
+export default function CreateGoalModal({ isOpen, onClose, goalToEdit }: Props) {
+  const { createGoalAsync, updateGoalAsync, aiSuggestMilestones } = useGoalsStore();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<GoalCategory>('Career');
+  const [category, setCategory] = useState<GoalCategory>('Discipline');
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [priority, setPriority] = useState<GoalPriority>('High');
-  const [deadline, setDeadline] = useState('Aug 31');
-  const [targetValue, setTargetValue] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [targetValue, setTargetValue] = useState<string>('');
   const [milestoneInputs, setMilestoneInputs] = useState<string[]>([
     'Phase 1: Setup & Fundamentals',
-    'Phase 2: Core Project Implementation',
+    'Phase 2: Core Execution & Delivery',
   ]);
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (goalToEdit) {
+      setTitle(goalToEdit.title);
+      setDescription(goalToEdit.description || '');
+      setCategory(goalToEdit.category);
+      setCustomCategoryName(goalToEdit.customCategoryName || '');
+      setPriority(goalToEdit.priority);
+      setDeadline(goalToEdit.deadline || '');
+      setTargetValue(goalToEdit.targetValue || '');
+      setMilestoneInputs(goalToEdit.milestones.map((m) => m.title));
+      setNotes(goalToEdit.notes || '');
+    } else {
+      setTitle('');
+      setDescription('');
+      setCategory('Discipline');
+      setCustomCategoryName('');
+      setPriority('High');
+      setDeadline('');
+      setTargetValue('');
+      setMilestoneInputs([
+        'Phase 1: Setup & Fundamentals',
+        'Phase 2: Core Execution & Delivery',
+      ]);
+      setNotes('');
+    }
+  }, [goalToEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -53,35 +86,40 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
     setMilestoneInputs(suggested);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     const milestones = milestoneInputs
       .filter((m) => m.trim().length > 0)
-      .map((mTitle, idx) => ({
-        id: `m-${Date.now()}-${idx}`,
+      .map((mTitle) => ({
         title: mTitle.trim(),
-        completed: false,
       }));
 
-    createGoal({
-      title: title.trim().toUpperCase(),
-      description: description.trim() || undefined,
-      category,
-      customCategoryName: category === 'Custom' ? customCategoryName.trim() : undefined,
-      startDate: new Date().toISOString().split('T')[0],
-      deadline: deadline.trim() || 'Ongoing',
-      priority,
-      status: 'Active',
-      targetValue: targetValue.trim() || undefined,
-      milestones,
-      linkedTasks: [],
-      notes: notes.trim() || undefined,
-    });
+    if (goalToEdit) {
+      await updateGoalAsync(goalToEdit.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        category,
+        priority,
+        deadline: deadline.trim() || undefined,
+        targetValue: targetValue ? Number(targetValue) : undefined,
+        notes: category === 'Custom' ? customCategoryName.trim() : notes.trim() || undefined,
+      });
+    } else {
+      await createGoalAsync({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        category,
+        priority,
+        status: 'In Progress',
+        deadline: deadline.trim() || undefined,
+        targetValue: targetValue ? Number(targetValue) : undefined,
+        milestones,
+        notes: category === 'Custom' ? customCategoryName.trim() : notes.trim() || undefined,
+      });
+    }
 
-    setTitle('');
-    setDescription('');
     onClose();
   };
 
@@ -127,9 +165,11 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
                   color: '#6366F1',
                 }}
               >
-                <Target size={20} />
+                {goalToEdit ? <Edit2 size={20} /> : <Target size={20} />}
               </div>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Create New Strategic Goal</h3>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
+                {goalToEdit ? 'Edit Strategic Goal' : 'Create New Strategic Goal'}
+              </h3>
             </div>
             <button
               onClick={onClose}
@@ -142,13 +182,14 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Goal Title
+                Goal Title *
               </label>
               <input
                 type="text"
-                placeholder="e.g. LEARN PYTHON & DATA SCIENCE"
+                placeholder="e.g. Master React & System Design"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required
                 style={{
                   width: '100%',
                   padding: '10px 14px',
@@ -165,9 +206,32 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
 
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                Description (Optional)
+              </label>
+              <textarea
+                placeholder="Key outcomes, motivation, and definition of success..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--surface-bg, #1F2937)',
+                  border: '1px solid var(--card-border, #374151)',
+                  color: '#FFF',
+                  fontSize: '13px',
+                  boxSizing: 'border-box',
+                  resize: 'none',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
                 Category
               </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
@@ -176,7 +240,7 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
                     style={{
                       padding: '6px 12px',
                       borderRadius: '8px',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 600,
                       border: `1px solid ${category === cat ? '#6366F1' : 'var(--card-border, #374151)'}`,
                       background: category === cat ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
@@ -215,8 +279,7 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
                   Target Deadline
                 </label>
                 <input
-                  type="text"
-                  placeholder="e.g. Aug 31 or Dec 31"
+                  type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                   style={{
@@ -261,91 +324,115 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 700 }}>Milestones Checklist</label>
-                <button
-                  type="button"
-                  onClick={handleAiSuggest}
-                  disabled={!title.trim()}
-                  style={{
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    color: '#8B5CF6',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                    padding: '4px 10px',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: title.trim() ? 'pointer' : 'not-allowed',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <Sparkles size={12} />
-                  <span>AI Breakdown</span>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {milestoneInputs.map((val, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    <input
-                      type="text"
-                      placeholder={`Milestone #${idx + 1}`}
-                      value={val}
-                      onChange={(e) => {
-                        const updated = [...milestoneInputs];
-                        updated[idx] = e.target.value;
-                        setMilestoneInputs(updated);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        background: 'var(--surface-bg, #1F2937)',
-                        border: '1px solid var(--card-border, #374151)',
-                        color: '#FFF',
-                        fontSize: '13px',
-                      }}
-                    />
-                    {milestoneInputs.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMilestoneInput(idx)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMilestoneInput}
-                  style={{
-                    alignSelf: 'flex-start',
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#6366F1',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    marginTop: '4px',
-                  }}
-                >
-                  <Plus size={14} />
-                  <span>Add Milestone</span>
-                </button>
-              </div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                Numeric Target (Optional)
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 100 or 10"
+                value={targetValue}
+                onChange={(e) => setTargetValue(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--surface-bg, #1F2937)',
+                  border: '1px solid var(--card-border, #374151)',
+                  color: '#FFF',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                }}
+              />
             </div>
+
+            {!goalToEdit && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700 }}>Initial Milestones</label>
+                  <button
+                    type="button"
+                    onClick={handleAiSuggest}
+                    disabled={!title.trim()}
+                    style={{
+                      background: 'rgba(139, 92, 246, 0.15)',
+                      color: '#8B5CF6',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: title.trim() ? 'pointer' : 'not-allowed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Sparkles size={12} />
+                    <span>AI Breakdown</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {milestoneInputs.map((val, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        placeholder={`Milestone #${idx + 1}`}
+                        value={val}
+                        onChange={(e) => {
+                          const updated = [...milestoneInputs];
+                          updated[idx] = e.target.value;
+                          setMilestoneInputs(updated);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          background: 'var(--surface-bg, #1F2937)',
+                          border: '1px solid var(--card-border, #374151)',
+                          color: '#FFF',
+                          fontSize: '13px',
+                        }}
+                      />
+                      {milestoneInputs.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMilestoneInput(idx)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddMilestoneInput}
+                    style={{
+                      alignSelf: 'flex-start',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#6366F1',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginTop: '4px',
+                    }}
+                  >
+                    <Plus size={14} />
+                    <span>Add Milestone</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -367,8 +454,8 @@ export default function CreateGoalModal({ isOpen, onClose }: Props) {
                 marginTop: '8px',
               }}
             >
-              <Plus size={18} />
-              <span>SAVE STRATEGIC GOAL</span>
+              {goalToEdit ? <Edit2 size={18} /> : <Plus size={18} />}
+              <span>{goalToEdit ? 'SAVE CHANGES' : 'CREATE GOAL'}</span>
             </button>
           </form>
         </motion.div>

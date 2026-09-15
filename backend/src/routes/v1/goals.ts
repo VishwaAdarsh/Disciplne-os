@@ -1,40 +1,42 @@
+/**
+ * Goals Routes (SPR-311 / ARCH-002)
+ */
+
 import { Router } from 'express';
-import { sendSuccess, sendError } from '../../utils/response';
-import { authenticate, AuthRequest } from '../../middleware';
+import { authenticate } from '../../middleware';
+import {
+  getGoals,
+  getGoalsSummary,
+  getGoalById,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+  setGoalStatus,
+  updateGoalProgress,
+  addMilestone,
+  toggleMilestone,
+  deleteMilestone,
+} from '../../controllers/goals/goalsController';
 
 const router = Router();
 
-// GET /api/v1/goals
-router.get('/', authenticate, (_req: AuthRequest, res) => {
-  const goals = [
-    {
-      id: 'g1',
-      title: 'LEARN PYTHON & DATA SCIENCE',
-      category: 'Career',
-      progressPercent: 75,
-      deadline: 'Aug 31',
-      status: 'Active',
-    },
-  ];
-  return sendSuccess(res, goals, 'Goals retrieved');
-});
+// Summary
+router.get('/summary', authenticate, getGoalsSummary);
 
-// POST /api/v1/goals
-router.post('/', authenticate, (req: AuthRequest, res) => {
-  const { title, category, deadline } = req.body;
-  if (!title) return sendError(res, 'Goal title is required', 400);
+// Goals CRUD
+router.get('/', authenticate, getGoals);
+router.get('/:id', authenticate, getGoalById);
+router.post('/', authenticate, createGoal);
+router.patch('/:id', authenticate, updateGoal);
+router.delete('/:id', authenticate, deleteGoal);
 
-  const newGoal = {
-    id: `g-${Date.now()}`,
-    title,
-    category: category || 'Career',
-    progressPercent: 0,
-    deadline: deadline || 'Dec 31',
-    status: 'Active',
-    createdAt: new Date().toISOString(),
-  };
+// Status and Progress
+router.patch('/:id/status', authenticate, setGoalStatus);
+router.patch('/:id/progress', authenticate, updateGoalProgress);
 
-  return sendSuccess(res, newGoal, 'Goal created', 201);
-});
+// Milestones
+router.post('/:id/milestones', authenticate, addMilestone);
+router.patch('/:id/milestones/:mId/toggle', authenticate, toggleMilestone);
+router.delete('/:id/milestones/:mId', authenticate, deleteMilestone);
 
 export default router;

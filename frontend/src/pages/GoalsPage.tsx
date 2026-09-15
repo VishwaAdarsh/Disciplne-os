@@ -1,10 +1,19 @@
-import { useState } from 'react';
-import { Target, Plus, CheckCircle2, Calendar, Award, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  Target,
+  Plus,
+  CheckCircle2,
+  Calendar,
+  Award,
+  Zap,
+  PauseCircle,
+} from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import MetricCard from '../components/MetricCard';
 import DonutChartCard from '../components/charts/DonutChartCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
 import { useGoalsStore } from '../store/goalsStore';
+import type { GoalItem } from '../types/goals';
 
 // Goals Subcomponents
 import CreateGoalModal from '../components/goals/CreateGoalModal';
@@ -15,38 +24,80 @@ import GoalsAnalyticsTab from '../components/goals/GoalsAnalyticsTab';
 import GoalActivityTimeline from '../components/goals/GoalActivityTimeline';
 
 export default function GoalsPage() {
-  const { goals, goalScore, weeklyProgressHistory } = useGoalsStore();
+  const {
+    goals,
+    summary,
+    goalScore,
+    weeklyProgressHistory,
+    loadAllGoals,
+  } = useGoalsStore();
 
   const [activeCategory, setActiveCategory] = useState<string>('Overview');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [goalToEdit, setGoalToEdit] = useState<GoalItem | null>(null);
 
-  const activeGoals = goals.filter((g) => g.status === 'Active');
+  useEffect(() => {
+    loadAllGoals();
+  }, []);
+
+  const handleOpenCreateGoal = () => {
+    setGoalToEdit(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenEditGoal = (goal: GoalItem) => {
+    setGoalToEdit(goal);
+    setIsCreateModalOpen(true);
+  };
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const activeGoals = goals.filter(
+    (g) => g.status === 'Active' || g.status === 'In Progress' || g.status === 'Not Started'
+  );
   const completedGoals = goals.filter((g) => g.status === 'Completed');
+  const pausedGoals = goals.filter((g) => g.status === 'Paused');
+  const overdueGoals = goals.filter(
+    (g) => g.status !== 'Completed' && Boolean(g.deadline && g.deadline.length >= 10 && g.deadline < todayStr)
+  );
 
-  const averageProgress = activeGoals.length > 0
-    ? Math.round(activeGoals.reduce((acc, g) => acc + g.progressPercent, 0) / activeGoals.length)
-    : 100;
+  const averageProgress =
+    activeGoals.length > 0
+      ? Math.round(activeGoals.reduce((acc, g) => acc + (g.progressPercent || 0), 0) / activeGoals.length)
+      : summary.overallProgressPercent || (goals.length > 0 ? 100 : 0);
 
   const goalStatusDonut = [
-    { name: 'Active Goals', value: activeGoals.length, color: '#6366F1' },
-    { name: 'Completed Goals', value: completedGoals.length, color: '#10B981' },
-  ];
+    { name: 'Active', value: activeGoals.length, color: '#6366F1' },
+    { name: 'Completed', value: completedGoals.length, color: '#10B981' },
+    { name: 'Paused', value: pausedGoals.length, color: '#F59E0B' },
+  ].filter((item) => item.value > 0);
 
   const milestoneTrendData = weeklyProgressHistory.map((h) => ({
     date: h.week,
     progress: h.progressAvg,
   }));
 
+  const nearestDeadlineGoal = [...activeGoals]
+    .filter((g) => g.deadline)
+    .sort((a, b) => (a.deadline! > b.deadline! ? 1 : -1))[0];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', position: 'relative' }}>
       {/* MODALS */}
-      <CreateGoalModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+      <CreateGoalModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setGoalToEdit(null);
+        }}
+        goalToEdit={goalToEdit}
+      />
 
       {/* HEADER WITH CATEGORIES */}
       <PageHeader
         title="Goals & Projects"
         subtitle="Track long-term strategic objectives, milestone roadmaps, and daily task progress."
-        categories={['Overview', 'Active', 'Roadmap', 'Milestones', 'Completed', 'Analytics', 'Insights']}
+        categories={['Overview', 'Active', 'Completed', 'Paused', 'Milestones', 'Roadmap', 'Analytics', 'Insights']}
         onSelectCategory={(cat) => setActiveCategory(cat)}
       />
 
@@ -90,10 +141,10 @@ export default function GoalsPage() {
         <MetricCard
           title="Active Goals"
           value={activeGoals.length}
-          subtext="Ongoing strategic projects"
-          badge="IN FLIGHT"
-          badgeColor="#6366F1"
-          sparklineData={[2, 3, 3, 4, 4, activeGoals.length]}
+          subtext={`${overdueGoals.length} overdue`}
+          badge={overdueGoals.length > 0 ? `${overdueGoals.length} OVERDUE` : 'ON TRACK'}
+          badgeColor={overdueGoals.length > 0 ? '#EF4444' : '#6366F1'}
+          sparklineData={[1, 2, 2, 3, 3, activeGoals.length]}
           sparklineColor="#6366F1"
           icon={<Target size={18} color="#6366F1" />}
         />
@@ -101,10 +152,10 @@ export default function GoalsPage() {
         <MetricCard
           title="Completed Goals"
           value={completedGoals.length}
-          subtext="Achieved strategic objectives"
+          subtext={`${goals.length} total created`}
           badge="FINISHED"
           badgeColor="#10B981"
-          sparklineData={[4, 5, 5, 6, 6, completedGoals.length]}
+          sparklineData={[0, 1, 1, 2, completedGoals.length]}
           sparklineColor="#10B981"
           icon={<CheckCircle2 size={18} color="#10B981" />}
         />
@@ -113,9 +164,9 @@ export default function GoalsPage() {
           title="Average Progress"
           value={`${averageProgress}%`}
           subtext="Overall completion rate"
-          badge="ON TRACK"
+          badge={averageProgress >= 70 ? 'HIGH' : 'ACTIVE'}
           badgeColor="#8B5CF6"
-          sparklineData={[45, 52, 60, 64, 66, averageProgress]}
+          sparklineData={[20, 35, 50, 65, averageProgress]}
           sparklineColor="#8B5CF6"
           progressPercent={averageProgress}
           progressColor="linear-gradient(90deg, #6366F1, #8B5CF6)"
@@ -123,12 +174,12 @@ export default function GoalsPage() {
         />
 
         <MetricCard
-          title="Nearest Deadline"
-          value={activeGoals[0]?.deadline || 'Aug 30'}
-          subtext={activeGoals[0]?.title || 'Learn Python'}
-          badge="ON TRACK"
+          title="Next Deadline"
+          value={nearestDeadlineGoal?.deadline || 'None'}
+          subtext={nearestDeadlineGoal?.title || 'No upcoming deadlines'}
+          badge={nearestDeadlineGoal ? 'ACTIVE' : 'IDLE'}
           badgeColor="#F59E0B"
-          sparklineData={[10, 8, 7, 5, 4, 3]}
+          sparklineData={[5, 4, 3, 2, 1]}
           sparklineColor="#F59E0B"
           icon={<Calendar size={18} color="#F59E0B" />}
         />
@@ -151,7 +202,7 @@ export default function GoalsPage() {
         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>QUICK GOAL ACTIONS</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={handleOpenCreateGoal}
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
@@ -180,8 +231,8 @@ export default function GoalsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
             <DonutChartCard
               title="Goal Completion Status"
-              subtitle="Breakdown of active vs completed strategic goals"
-              data={goalStatusDonut}
+              subtitle="Breakdown of active, completed, and paused strategic goals"
+              data={goalStatusDonut.length > 0 ? goalStatusDonut : [{ name: 'No Goals', value: 1, color: '#374151' }]}
               centerLabel={`${completedGoals.length} / ${goals.length}`}
               centerSublabel="Goals Done"
               height={200}
@@ -200,9 +251,27 @@ export default function GoalsPage() {
 
           {/* ACTIVE GOALS CARDS GRID */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-            {activeGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
-            ))}
+            {activeGoals.length === 0 ? (
+              <div
+                style={{
+                  background: 'var(--card-bg, #111827)',
+                  border: '1px solid var(--card-border, #1F2937)',
+                  borderRadius: '16px',
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  color: 'var(--text-muted)',
+                  gridColumn: '1 / -1',
+                }}
+              >
+                <Target size={36} style={{ marginBottom: '12px', opacity: 0.5, color: '#6366F1' }} />
+                <h4 style={{ margin: '0 0 4px 0', color: 'var(--text-main)' }}>No active goals</h4>
+                <p style={{ fontSize: '13px', margin: 0 }}>Create a new goal above to start tracking your strategic objectives.</p>
+              </div>
+            ) : (
+              activeGoals.map((goal) => (
+                <GoalCard key={goal.id} goal={goal} onEdit={handleOpenEditGoal} />
+              ))
+            )}
           </div>
 
           {/* INSIGHTS & TIMELINE */}
@@ -215,50 +284,27 @@ export default function GoalsPage() {
 
       {activeCategory === 'Active' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-          {activeGoals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} />
-          ))}
-        </div>
-      )}
-
-      {activeCategory === 'Roadmap' && <GoalTimelineRoadmap />}
-
-      {activeCategory === 'Milestones' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {activeGoals.map((g) => (
+          {activeGoals.length === 0 ? (
             <div
-              key={g.id}
               style={{
                 background: 'var(--card-bg, #111827)',
                 border: '1px solid var(--card-border, #1F2937)',
                 borderRadius: '16px',
-                padding: '18px',
+                padding: '40px 20px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                gridColumn: '1 / -1',
               }}
             >
-              <h4 style={{ margin: '0 0 10px 0', color: '#6366F1', fontSize: '16px', fontWeight: 800 }}>{g.title}</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
-                {g.milestones.map((m) => (
-                  <div
-                    key={m.id}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      background: m.completed ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-bg, #1F2937)',
-                      border: `1px solid ${m.completed ? '#10B981' : 'var(--card-border)'}`,
-                      fontSize: '12px',
-                      color: m.completed ? '#10B981' : 'var(--text-main)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <span>{m.completed ? '✓' : '○'} {m.title}</span>
-                    {m.dueDate && <span style={{ fontSize: '10px', color: '#F59E0B' }}>{m.dueDate}</span>}
-                  </div>
-                ))}
-              </div>
+              <Target size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+              <h4 style={{ margin: '0 0 4px 0', color: 'var(--text-main)' }}>No active goals</h4>
+              <p style={{ fontSize: '13px', margin: 0 }}>All goals are completed or paused.</p>
             </div>
-          ))}
+          ) : (
+            activeGoals.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} onEdit={handleOpenEditGoal} />
+            ))
+          )}
         </div>
       )}
 
@@ -281,8 +327,84 @@ export default function GoalsPage() {
               <p style={{ fontSize: '13px', margin: 0 }}>Keep working on active goal milestones to complete your first objective!</p>
             </div>
           ) : (
-            completedGoals.map((goal) => <GoalCard key={goal.id} goal={goal} />)
+            completedGoals.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} onEdit={handleOpenEditGoal} />
+            ))
           )}
+        </div>
+      )}
+
+      {activeCategory === 'Paused' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+          {pausedGoals.length === 0 ? (
+            <div
+              style={{
+                background: 'var(--card-bg, #111827)',
+                border: '1px solid var(--card-border, #1F2937)',
+                borderRadius: '16px',
+                padding: '40px 20px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                gridColumn: '1 / -1',
+              }}
+            >
+              <PauseCircle size={36} style={{ marginBottom: '12px', opacity: 0.5, color: '#F59E0B' }} />
+              <h4 style={{ margin: '0 0 4px 0', color: 'var(--text-main)' }}>No paused goals</h4>
+              <p style={{ fontSize: '13px', margin: 0 }}>Any goals on hold will appear here.</p>
+            </div>
+          ) : (
+            pausedGoals.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} onEdit={handleOpenEditGoal} />
+            ))
+          )}
+        </div>
+      )}
+
+      {activeCategory === 'Roadmap' && <GoalTimelineRoadmap />}
+
+      {activeCategory === 'Milestones' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {goals.map((g) => (
+            <div
+              key={g.id}
+              style={{
+                background: 'var(--card-bg, #111827)',
+                border: '1px solid var(--card-border, #1F2937)',
+                borderRadius: '16px',
+                padding: '18px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h4 style={{ margin: 0, color: '#6366F1', fontSize: '16px', fontWeight: 800 }}>{g.title}</h4>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{g.progressPercent}% Done</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
+                {g.milestones.length === 0 ? (
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No milestones set for this goal.</div>
+                ) : (
+                  g.milestones.map((m) => (
+                    <div
+                      key={m.id}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        background: m.completed ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-bg, #1F2937)',
+                        border: `1px solid ${m.completed ? '#10B981' : 'var(--card-border)'}`,
+                        fontSize: '12px',
+                        color: m.completed ? '#10B981' : 'var(--text-main)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>{m.completed ? '✓' : '○'} {m.title}</span>
+                      {m.dueDate && <span style={{ fontSize: '10px', color: '#F59E0B' }}>{m.dueDate}</span>}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -292,7 +414,7 @@ export default function GoalsPage() {
 
       {/* FLOATING ACTION BUTTON FOR GOAL CREATION */}
       <button
-        onClick={() => setIsCreateModalOpen(true)}
+        onClick={handleOpenCreateGoal}
         style={{
           position: 'fixed',
           bottom: '28px',

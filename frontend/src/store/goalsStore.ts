@@ -4,16 +4,27 @@ import type {
   GoalCategory,
   GoalStatus,
   GoalPriority,
+  GoalMilestone,
   GoalRuleInsight,
   GoalActivityEvent,
   GoalScoreBreakdown,
 } from '../types/goals';
-import { useOverviewStore } from './overviewStore';
+import { goalsApi, type GoalPayload } from '../services/goals/goalsApi';
 import { useEventEngineStore } from './eventEngineStore';
+
+interface GoalsSummary {
+  totalGoals: number;
+  activeCount: number;
+  completedCount: number;
+  pausedCount: number;
+  overdueCount: number;
+  overallProgressPercent: number;
+}
 
 interface GoalsState {
   goalScore: number;
   goals: GoalItem[];
+  summary: GoalsSummary;
   ruleInsights: GoalRuleInsight[];
   activityFeed: GoalActivityEvent[];
   weeklyProgressHistory: Array<{
@@ -22,7 +33,18 @@ interface GoalsState {
     completedCount: number;
   }>;
 
-  // Actions
+  // Async API Actions
+  loadAllGoals: () => Promise<void>;
+  createGoalAsync: (goal: GoalPayload) => Promise<void>;
+  updateGoalAsync: (id: string, updates: Partial<GoalPayload>) => Promise<void>;
+  deleteGoalAsync: (id: string) => Promise<void>;
+  setGoalStatusAsync: (id: string, status: GoalStatus) => Promise<void>;
+  updateProgressAsync: (id: string, progressPercent: number, currentValue?: number) => Promise<void>;
+  addMilestoneAsync: (goalId: string, title: string, dueDate?: string) => Promise<void>;
+  toggleMilestoneAsync: (goalId: string, milestoneId: string) => Promise<void>;
+  deleteMilestoneAsync: (goalId: string, milestoneId: string) => Promise<void>;
+
+  // Sync / Fallback Actions
   createGoal: (goal: Omit<GoalItem, 'id' | 'createdAt' | 'progressPercent'>) => void;
   updateGoal: (id: string, updates: Partial<GoalItem>) => void;
   setGoalStatus: (id: string, status: GoalStatus) => void;
@@ -37,185 +59,436 @@ interface GoalsState {
 }
 
 export const useGoalsStore = create<GoalsState>((set, get) => ({
-  goalScore: 84,
-  goals: [
-    {
-      id: 'g1',
-      title: 'LEARN PYTHON & DATA SCIENCE',
-      description: 'Master Python fundamentals, pandas data wrangling, and machine learning models.',
-      category: 'Career',
-      color: '#6366F1',
-      startDate: '2026-07-01',
-      deadline: 'Aug 31',
-      priority: 'High',
-      status: 'Active',
-      progressPercent: 75,
-      targetValue: '16 Modules',
-      milestones: [
-        { id: 'm1-1', title: 'Python Syntax & Variables', completed: true },
-        { id: 'm1-2', title: 'Control Flow & Functions', completed: true },
-        { id: 'm1-3', title: 'Object Oriented Programming', completed: true },
-        { id: 'm1-4', title: 'Pandas & Data Wrangling', completed: false, dueDate: 'Aug 15' },
-        { id: 'm1-5', title: 'Matplotlib & Seaborn Visualization', completed: false, dueDate: 'Aug 25' },
-        { id: 'm1-6', title: 'Build Capstone Analytics Dashboard', completed: false, dueDate: 'Aug 31' },
-      ],
-      linkedTasks: [
-        { id: 't-1', name: 'Study Python 45m Daily', engineSource: 'discipline' },
-      ],
-      notes: 'Focus on hands-on pandas code projects.',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'g2',
-      title: 'BUILD PORTFOLIO SHOWCASE',
-      description: 'Design and deploy a full-stack personal portfolio showcasing top 3 projects.',
-      category: 'Career',
-      color: '#10B981',
-      startDate: '2026-07-15',
-      deadline: 'Aug 30',
-      priority: 'Critical',
-      status: 'Active',
-      progressPercent: 50,
-      targetValue: '3 Apps Deployed',
-      milestones: [
-        { id: 'm2-1', title: 'Wireframe Layout & Color Tokens', completed: true },
-        { id: 'm2-2', title: 'Implement React Frontend Components', completed: true },
-        { id: 'm2-3', title: 'Connect REST API Backend', completed: false, dueDate: 'Aug 20' },
-        { id: 'm2-4', title: 'Deploy to Production Vercel', completed: false, dueDate: 'Aug 30' },
-      ],
-      linkedTasks: [
-        { id: 't-2', name: 'Code Frontend Components', engineSource: 'discipline' },
-      ],
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'g3',
-      title: 'FITNESS CONSISTENCY',
-      description: 'Maintain 5 workouts per week and reach target strength metrics.',
-      category: 'Fitness',
-      color: '#0EA5E9',
-      startDate: '2026-06-01',
-      deadline: 'Ongoing',
-      priority: 'Medium',
-      status: 'Active',
-      progressPercent: 65,
-      targetValue: '5 workouts/wk',
-      milestones: [
-        { id: 'm3-1', title: 'Hit 4 consecutive weeks of 5x workouts', completed: true },
-        { id: 'm3-2', title: 'Reach 70kg Body Weight Goal', completed: false, dueDate: 'Sep 15' },
-        { id: 'm3-3', title: 'Complete 10k Run under 50 minutes', completed: false, dueDate: 'Oct 01' },
-      ],
-      linkedTasks: [
-        { id: 't-3', name: 'Morning Strength Workout', engineSource: 'body' },
-      ],
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'g4',
-      title: 'DAILY MINDFULNESS HABIT',
-      description: 'Practice meditation and daily journaling for emotional clarity.',
-      category: 'Personal',
-      color: '#8B5CF6',
-      startDate: '2026-07-01',
-      deadline: 'Aug 20',
-      priority: 'Low',
-      status: 'Active',
-      progressPercent: 80,
-      targetValue: '30 Days',
-      milestones: [
-        { id: 'm4-1', title: 'Complete 14 consecutive meditation days', completed: true },
-        { id: 'm4-2', title: 'Log 20 daily journal reflections', completed: true },
-        { id: 'm4-3', title: 'Maintain 30-day streak', completed: false, dueDate: 'Aug 20' },
-      ],
-      linkedTasks: [
-        { id: 't-4', name: '10m Guided Meditation', engineSource: 'mind' },
-      ],
-      createdAt: new Date().toISOString(),
-    },
-  ],
-  ruleInsights: [
-    {
-      id: 'g-ins-1',
-      title: 'Fast Progression Rate',
-      description: 'Python & Data Science Goal is progressing 15% faster than initial timeline forecast.',
-      category: 'speed',
-      icon: 'Zap',
-    },
-    {
-      id: 'g-ins-2',
-      title: 'Approaching Milestone Deadline',
-      description: 'Portfolio Showcase milestone "Connect REST API Backend" is due in 16 days.',
-      category: 'deadline',
-      icon: 'Calendar',
-    },
-    {
-      id: 'g-ins-3',
-      title: 'High Goal Consistency',
-      description: 'Daily discipline tasks are linked to 100% of your active strategic goals.',
-      category: 'milestone',
-      icon: 'Target',
-    },
-  ],
-  activityFeed: [
-    {
-      id: 'g-act-1',
-      type: 'MILESTONE_COMPLETED',
-      title: 'Milestone Completed',
-      subtext: 'Completed "Object Oriented Programming" in Learn Python Goal',
-      timestamp: 'Today, 9:30 AM',
-      icon: 'CheckCircle2',
-    },
-    {
-      id: 'g-act-2',
-      type: 'MILESTONE_COMPLETED',
-      title: 'Milestone Completed',
-      subtext: 'Completed "Implement React Frontend Components" in Build Portfolio Goal',
-      timestamp: 'Yesterday',
-      icon: 'CheckCircle2',
-    },
-    {
-      id: 'g-act-3',
-      type: 'GOAL_CREATED',
-      title: 'Created New Goal',
-      subtext: 'LEARN PYTHON & DATA SCIENCE (Deadline: Aug 31)',
-      timestamp: 'Jul 1',
-      icon: 'Target',
-    },
-  ],
+  goalScore: 85,
+  goals: [],
+  summary: {
+    totalGoals: 0,
+    activeCount: 0,
+    completedCount: 0,
+    pausedCount: 0,
+    overdueCount: 0,
+    overallProgressPercent: 0,
+  },
+  ruleInsights: [],
+  activityFeed: [],
   weeklyProgressHistory: [
-    { week: 'Week 1', progressAvg: 45, completedCount: 1 },
-    { week: 'Week 2', progressAvg: 55, completedCount: 3 },
-    { week: 'Week 3', progressAvg: 64, completedCount: 5 },
-    { week: 'Week 4', progressAvg: 72, completedCount: 7 },
+    { week: 'W1', progressAvg: 45, completedCount: 1 },
+    { week: 'W2', progressAvg: 58, completedCount: 2 },
+    { week: 'W3', progressAvg: 70, completedCount: 3 },
+    { week: 'W4', progressAvg: 82, completedCount: 4 },
   ],
+
+  loadAllGoals: async () => {
+    try {
+      const [rawGoals, summaryData] = await Promise.all([
+        goalsApi.getGoals(),
+        goalsApi.getGoalsSummary().catch(() => null),
+      ]);
+
+      if (Array.isArray(rawGoals)) {
+        const mappedGoals: GoalItem[] = rawGoals.map((g: any) => ({
+          id: g.id,
+          title: g.title,
+          description: g.description,
+          category: (g.category as GoalCategory) || 'Discipline',
+          customCategoryName: g.category === 'Custom' ? g.notes : undefined,
+          color: g.color || '#6366F1',
+          startDate: g.startDate || '',
+          deadline: g.deadline || 'Ongoing',
+          priority: (g.priority as GoalPriority) || 'High',
+          status: (g.status as GoalStatus) || 'In Progress',
+          progressPercent: g.progressPercent ?? 0,
+          targetValue: g.targetValue !== undefined ? `${g.targetValue} ${g.unit || ''}`.trim() : undefined,
+          milestones: (g.milestones || []).map((m: any) => ({
+            id: m.id,
+            title: m.title,
+            completed: Boolean(m.completed),
+            dueDate: m.dueDate,
+          })),
+          linkedTasks: [],
+          notes: g.notes,
+          createdAt: g.createdAt || new Date().toISOString(),
+        }));
+
+        set({ goals: mappedGoals });
+      }
+
+      if (summaryData) {
+        set({
+          summary: {
+            totalGoals: summaryData.totalGoals ?? 0,
+            activeCount: summaryData.activeCount ?? 0,
+            completedCount: summaryData.completedCount ?? 0,
+            pausedCount: summaryData.pausedCount ?? 0,
+            overdueCount: summaryData.overdueCount ?? 0,
+            overallProgressPercent: summaryData.overallProgressPercent ?? 0,
+          },
+        });
+      }
+
+      get().recalculateScore();
+      get().generateRuleInsights();
+    } catch (err) {
+      console.warn('Could not load goals from API:', err);
+    }
+  },
+
+  createGoalAsync: async (goalData: GoalPayload) => {
+    try {
+      await goalsApi.createGoal(goalData);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error creating goal via API:', err);
+      // Fallback local
+      get().createGoal({
+        title: goalData.title,
+        description: goalData.description,
+        category: (goalData.category as GoalCategory) || 'Discipline',
+        color: goalData.color || '#6366F1',
+        startDate: goalData.startDate || new Date().toISOString().split('T')[0],
+        deadline: goalData.deadline || 'Ongoing',
+        priority: (goalData.priority as GoalPriority) || 'High',
+        status: (goalData.status as GoalStatus) || 'In Progress',
+        targetValue: goalData.targetValue ? String(goalData.targetValue) : undefined,
+        milestones: (goalData.milestones || []).map((m, idx) => ({
+          id: `m-${Date.now()}-${idx}`,
+          title: m.title,
+          completed: false,
+          dueDate: m.dueDate,
+        })),
+        linkedTasks: [],
+        notes: goalData.notes,
+      });
+    }
+  },
+
+  updateGoalAsync: async (id: string, updates: Partial<GoalPayload>) => {
+    try {
+      await goalsApi.updateGoal(id, updates);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error updating goal via API:', err);
+      get().updateGoal(id, updates as any);
+    }
+  },
+
+  deleteGoalAsync: async (id: string) => {
+    try {
+      await goalsApi.deleteGoal(id);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error deleting goal via API:', err);
+      get().deleteGoal(id);
+    }
+  },
+
+  setGoalStatusAsync: async (id: string, status: GoalStatus) => {
+    try {
+      await goalsApi.setGoalStatus(id, status);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error setting goal status via API:', err);
+      get().setGoalStatus(id, status);
+    }
+  },
+
+  updateProgressAsync: async (id: string, progressPercent: number, currentValue?: number) => {
+    try {
+      await goalsApi.updateProgress(id, progressPercent, currentValue);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error updating goal progress via API:', err);
+    }
+  },
+
+  addMilestoneAsync: async (goalId: string, title: string, dueDate?: string) => {
+    try {
+      await goalsApi.addMilestone(goalId, title, dueDate);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error adding milestone via API:', err);
+      get().addMilestone(goalId, title, dueDate);
+    }
+  },
+
+  toggleMilestoneAsync: async (goalId: string, milestoneId: string) => {
+    try {
+      await goalsApi.toggleMilestone(goalId, milestoneId);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error toggling milestone via API:', err);
+      get().toggleMilestone(goalId, milestoneId);
+    }
+  },
+
+  deleteMilestoneAsync: async (goalId: string, milestoneId: string) => {
+    try {
+      await goalsApi.deleteMilestone(goalId, milestoneId);
+      await get().loadAllGoals();
+    } catch (err) {
+      console.error('Error deleting milestone via API:', err);
+      get().deleteMilestone(goalId, milestoneId);
+    }
+  },
+
+  // --- LOCAL MUTATIONS ---
+  createGoal: (goalData) => {
+    const { goals, activityFeed } = get();
+    const newGoal: GoalItem = {
+      ...goalData,
+      id: `g-${Date.now()}`,
+      progressPercent: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    const newActivity: GoalActivityEvent = {
+      id: `g-act-${Date.now()}`,
+      type: 'GOAL_CREATED',
+      title: `Created Goal: ${goalData.title}`,
+      subtext: `${goalData.category} · Priority: ${goalData.priority}`,
+      timestamp: 'Just now',
+      icon: 'Target',
+    };
+
+    set({
+      goals: [newGoal, ...goals],
+      activityFeed: [newActivity, ...activityFeed],
+    });
+
+    get().recalculateScore();
+    get().generateRuleInsights();
+
+    useEventEngineStore.getState().emitEvent({
+      module: 'goals',
+      eventType: 'GOAL_CREATED',
+      title: `New Goal: ${goalData.title}`,
+      description: `${goalData.category} · Target: ${goalData.deadline}`,
+      icon: '🎯',
+      payload: { title: goalData.title, category: goalData.category, priority: goalData.priority },
+      scoreImpact: 5,
+    });
+  },
+
+  updateGoal: (id, updates) => {
+    const { goals } = get();
+    set({
+      goals: goals.map((g) => (g.id === id ? { ...g, ...updates } : g)),
+    });
+    get().recalculateScore();
+  },
+
+  setGoalStatus: (id, status) => {
+    const { goals, activityFeed } = get();
+    const target = goals.find((g) => g.id === id);
+    if (!target) return;
+
+    const isCompleted = status === 'Completed';
+    const updatedGoals = goals.map((g) =>
+      g.id === id
+        ? {
+            ...g,
+            status,
+            progressPercent: isCompleted ? 100 : g.progressPercent,
+          }
+        : g
+    );
+
+    const eventType: GoalActivityEvent['type'] =
+      status === 'Completed'
+        ? 'GOAL_COMPLETED'
+        : status === 'Paused'
+        ? 'GOAL_PAUSED'
+        : 'GOAL_RESUMED';
+
+    const newActivity: GoalActivityEvent = {
+      id: `g-act-${Date.now()}`,
+      type: eventType,
+      title: `${status} Goal: ${target.title}`,
+      subtext: `Status updated to ${status}`,
+      timestamp: 'Just now',
+      icon: isCompleted ? 'CheckCircle2' : status === 'Paused' ? 'Pause' : 'Play',
+    };
+
+    set({
+      goals: updatedGoals,
+      activityFeed: [newActivity, ...activityFeed],
+    });
+
+    get().recalculateScore();
+    get().generateRuleInsights();
+  },
+
+  toggleMilestone: (goalId, milestoneId) => {
+    const { goals, activityFeed } = get();
+    let milestoneTitle = '';
+    let isNowCompleted = false;
+
+    const updatedGoals = goals.map((g) => {
+      if (g.id !== goalId) return g;
+
+      const updatedMilestones = g.milestones.map((m) => {
+        if (m.id === milestoneId) {
+          milestoneTitle = m.title;
+          isNowCompleted = !m.completed;
+          return { ...m, completed: !m.completed };
+        }
+        return m;
+      });
+
+      const completedCount = updatedMilestones.filter((m) => m.completed).length;
+      const progressPercent =
+        updatedMilestones.length > 0
+          ? Math.round((completedCount / updatedMilestones.length) * 100)
+          : g.progressPercent;
+
+      const autoCompleted = progressPercent === 100 && updatedMilestones.length > 0;
+
+      return {
+        ...g,
+        milestones: updatedMilestones,
+        progressPercent,
+        status: autoCompleted ? ('Completed' as GoalStatus) : g.status,
+      };
+    });
+
+    const newActivity: GoalActivityEvent = {
+      id: `g-act-${Date.now()}`,
+      type: isNowCompleted ? 'MILESTONE_COMPLETED' : 'GOAL_CREATED',
+      title: `${isNowCompleted ? 'Completed' : 'Reopened'} Milestone: ${milestoneTitle}`,
+      subtext: `Milestone updated for goal`,
+      timestamp: 'Just now',
+      icon: 'CheckCircle2',
+    };
+
+    set({
+      goals: updatedGoals,
+      activityFeed: [newActivity, ...activityFeed],
+    });
+
+    get().recalculateScore();
+    get().generateRuleInsights();
+  },
+
+  addMilestone: (goalId, title, dueDate) => {
+    const { goals } = get();
+    const newMilestone: GoalMilestone = {
+      id: `m-${Date.now()}`,
+      title,
+      completed: false,
+      dueDate,
+    };
+
+    const updatedGoals = goals.map((g) => {
+      if (g.id !== goalId) return g;
+      const updatedM = [...g.milestones, newMilestone];
+      const completedCount = updatedM.filter((m) => m.completed).length;
+      const progressPercent = Math.round((completedCount / updatedM.length) * 100);
+      return {
+        ...g,
+        milestones: updatedM,
+        progressPercent,
+      };
+    });
+
+    set({ goals: updatedGoals });
+    get().recalculateScore();
+  },
+
+  deleteMilestone: (goalId, milestoneId) => {
+    const { goals } = get();
+    const updatedGoals = goals.map((g) => {
+      if (g.id !== goalId) return g;
+      const updatedM = g.milestones.filter((m) => m.id !== milestoneId);
+      const completedCount = updatedM.filter((m) => m.completed).length;
+      const progressPercent =
+        updatedM.length > 0 ? Math.round((completedCount / updatedM.length) * 100) : 0;
+      return {
+        ...g,
+        milestones: updatedM,
+        progressPercent,
+      };
+    });
+
+    set({ goals: updatedGoals });
+    get().recalculateScore();
+  },
+
+  deleteGoal: (id) => {
+    const { goals } = get();
+    set({ goals: goals.filter((g) => g.id !== id) });
+    get().recalculateScore();
+  },
+
+  aiSuggestMilestones: (_title, category) => {
+    if (category === 'Discipline') {
+      return [
+        'Establish morning routine non-negotiables',
+        'Maintain 14-day zero distraction streak',
+        'Review weekly performance scores every Sunday',
+      ];
+    }
+    if (category === 'Fitness' || category === 'Body') {
+      return [
+        'Complete baseline fitness assessment',
+        'Log 5 workouts per week consistently',
+        'Achieve target strength / endurance benchmark',
+      ];
+    }
+    if (category === 'Nutrition') {
+      return [
+        'Track daily meals and macro ratios',
+        'Reach daily hydration targets (3.0L water)',
+        'Maintain consistent calorie deficit/surplus for 30 days',
+      ];
+    }
+    if (category === 'Mind') {
+      return [
+        'Complete daily 10-minute mindfulness check-in',
+        'Establish consistent sleep schedule (7.5+ hrs)',
+        'Review monthly mental clarity and stress patterns',
+      ];
+    }
+    return [
+      'Phase 1: Research & Strategy Definition',
+      'Phase 2: Core Execution & Implementation',
+      'Phase 3: Review, Optimization & Delivery',
+    ];
+  },
 
   calculateScoreBreakdown: () => {
     const { goals } = get();
-    const active = goals.filter((g) => g.status === 'Active');
-    if (active.length === 0) {
-      return { progressAvgScore: 100, milestoneVelocityScore: 100, deadlineHealthScore: 100, consistencyScore: 100, totalScore: 100 };
+    if (goals.length === 0) {
+      return {
+        progressAvgScore: 80,
+        milestoneVelocityScore: 80,
+        deadlineHealthScore: 85,
+        consistencyScore: 85,
+        totalScore: 82,
+      };
     }
 
-    const progressAvgScore = Math.round(
-      active.reduce((acc, g) => acc + g.progressPercent, 0) / active.length
-    );
+    const progressSum = goals.reduce((acc, g) => acc + g.progressPercent, 0);
+    const progressAvgScore = Math.round(progressSum / goals.length);
 
-    let totalM = 0;
-    let doneM = 0;
-    active.forEach((g) => {
-      totalM += g.milestones.length;
-      doneM += g.milestones.filter((m) => m.completed).length;
-    });
+    let allMilestonesCount = 0;
+    let completedMilestonesCount = 0;
+    for (const g of goals) {
+      allMilestonesCount += g.milestones.length;
+      completedMilestonesCount += g.milestones.filter((m) => m.completed).length;
+    }
 
-    const milestoneVelocityScore = totalM > 0 ? Math.round((doneM / totalM) * 100) : 80;
+    const milestoneVelocityScore =
+      allMilestonesCount > 0 ? Math.round((completedMilestonesCount / allMilestonesCount) * 100) : 80;
+
+    const completedCount = goals.filter((g) => g.status === 'Completed').length;
+    const consistencyScore = Math.min(100, Math.round((completedCount / Math.max(1, goals.length)) * 100) + 50);
     const deadlineHealthScore = 88;
-    const consistencyScore = 85;
 
     const totalScore = Math.round(
-      progressAvgScore * 0.4 +
-      milestoneVelocityScore * 0.3 +
-      deadlineHealthScore * 0.2 +
-      consistencyScore * 0.1
+      progressAvgScore * 0.35 +
+      milestoneVelocityScore * 0.25 +
+      deadlineHealthScore * 0.20 +
+      consistencyScore * 0.20
     );
 
     return {
@@ -232,266 +505,36 @@ export const useGoalsStore = create<GoalsState>((set, get) => ({
     set({ goalScore: breakdown.totalScore });
   },
 
-  createGoal: (goalData) => {
-    const { goals, activityFeed } = get();
-    const newGoal: GoalItem = {
-      ...goalData,
-      id: `g-${Date.now()}`,
-      progressPercent: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    const newActivity: GoalActivityEvent = {
-      id: `g-act-${Date.now()}`,
-      type: 'GOAL_CREATED',
-      title: `Created Goal: ${goalData.title}`,
-      subtext: `Category: ${goalData.category} · Priority: ${goalData.priority} · Deadline: ${goalData.deadline}`,
-      timestamp: 'Just now',
-      icon: 'Target',
-    };
-
-    set({
-      goals: [newGoal, ...goals],
-      activityFeed: [newActivity, ...activityFeed],
-    });
-
-    get().recalculateScore();
-    get().generateRuleInsights();
-
-    useEventEngineStore.getState().emitEvent({
-      module: 'goals',
-      eventType: 'GOAL_CREATED',
-      title: `Goal Created: ${goalData.title}`,
-      description: `Category: ${goalData.category} · Priority: ${goalData.priority}`,
-      icon: '🎯',
-      payload: { title: goalData.title, category: goalData.category, priority: goalData.priority },
-      scoreImpact: 5,
-    });
-  },
-
-
-  updateGoal: (id, updates) => {
-    const { goals } = get();
-    const updated = goals.map((g) => (g.id === id ? { ...g, ...updates } : g));
-    set({ goals: updated });
-    get().recalculateScore();
-  },
-
-  setGoalStatus: (id, status) => {
-    const { goals, activityFeed } = get();
-    const target = goals.find((g) => g.id === id);
-    if (!target) return;
-
-    let eventType: GoalActivityEvent['type'] = 'GOAL_PAUSED';
-    if (status === 'Active') eventType = 'GOAL_RESUMED';
-    if (status === 'Completed') eventType = 'GOAL_COMPLETED';
-    if (status === 'Archived') eventType = 'GOAL_ARCHIVED';
-
-    const newActivity: GoalActivityEvent = {
-      id: `g-act-${Date.now()}`,
-      type: eventType,
-      title: `Goal ${status}: ${target.title}`,
-      subtext: `Status updated to ${status}`,
-      timestamp: 'Just now',
-      icon: 'Target',
-    };
-
-    const updated = goals.map((g) => {
-      if (g.id === id) {
-        const newProgress = status === 'Completed' ? 100 : g.progressPercent;
-        return { ...g, status, progressPercent: newProgress };
-      }
-      return g;
-    });
-
-    set({
-      goals: updated,
-      activityFeed: [newActivity, ...activityFeed],
-    });
-
-    get().recalculateScore();
-    get().generateRuleInsights();
-
-    const sysType = status === 'Completed' ? 'GOAL_COMPLETED' : status === 'Archived' ? 'GOAL_ARCHIVED' : 'GOAL_PAUSED';
-    useEventEngineStore.getState().emitEvent({
-      module: 'goals',
-      eventType: sysType,
-      title: `Goal ${status}: ${target.title}`,
-      description: `Status changed to ${status}`,
-      icon: status === 'Completed' ? '🏆' : '🎯',
-      payload: { goalId: target.id, status },
-      scoreImpact: status === 'Completed' ? 15 : 0,
-    });
-  },
-
-
-  toggleMilestone: (goalId, milestoneId) => {
-    const { goals, activityFeed } = get();
-    const targetGoal = goals.find((g) => g.id === goalId);
-    if (!targetGoal) return;
-
-    let toggledTitle = '';
-    let nowDone = false;
-
-    const updatedMilestones = targetGoal.milestones.map((m) => {
-      if (m.id === milestoneId) {
-        nowDone = !m.completed;
-        toggledTitle = m.title;
-        return { ...m, completed: nowDone };
-      }
-      return m;
-    });
-
-    const totalM = updatedMilestones.length;
-    const doneM = updatedMilestones.filter((m) => m.completed).length;
-    const newProgress = totalM > 0 ? Math.round((doneM / totalM) * 100) : targetGoal.progressPercent;
-    const newStatus = newProgress === 100 ? 'Completed' : targetGoal.status;
-
-    const updatedGoals = goals.map((g) =>
-      g.id === goalId
-        ? { ...g, milestones: updatedMilestones, progressPercent: newProgress, status: newStatus }
-        : g
-    );
-
-    const activities = [...activityFeed];
-    if (nowDone) {
-      activities.unshift({
-        id: `g-act-${Date.now()}`,
-        type: 'MILESTONE_COMPLETED',
-        title: `Milestone Completed: ${toggledTitle}`,
-        subtext: `Goal: ${targetGoal.title} (${newProgress}% completed)`,
-        timestamp: 'Just now',
-        icon: 'CheckCircle2',
-      });
-    }
-
-    set({
-      goals: updatedGoals,
-      activityFeed: activities,
-    });
-
-    get().recalculateScore();
-    get().generateRuleInsights();
-
-    if (nowDone) {
-      useOverviewStore.getState().pushEvent({
-        title: `Completed Milestone: ${toggledTitle} (+${Math.round(100 / totalM)}%)`,
-        category: 'goals',
-        icon: '✅',
-        type: 'GOAL_UPDATED',
-      });
-    }
-  },
-
-  addMilestone: (goalId, title, dueDate) => {
-    const { goals } = get();
-    const newMilestone = {
-      id: `m-${Date.now()}`,
-      title,
-      completed: false,
-      dueDate,
-    };
-
-    const updated = goals.map((g) => {
-      if (g.id === goalId) {
-        const ms = [...g.milestones, newMilestone];
-        const done = ms.filter((m) => m.completed).length;
-        const progress = Math.round((done / ms.length) * 100);
-        return { ...g, milestones: ms, progressPercent: progress };
-      }
-      return g;
-    });
-
-    set({ goals: updated });
-    get().recalculateScore();
-  },
-
-  deleteMilestone: (goalId, milestoneId) => {
-    const { goals } = get();
-    const updated = goals.map((g) => {
-      if (g.id === goalId) {
-        const ms = g.milestones.filter((m) => m.id !== milestoneId);
-        const done = ms.filter((m) => m.completed).length;
-        const progress = ms.length > 0 ? Math.round((done / ms.length) * 100) : 0;
-        return { ...g, milestones: ms, progressPercent: progress };
-      }
-      return g;
-    });
-
-    set({ goals: updated });
-    get().recalculateScore();
-  },
-
-  deleteGoal: (id) => {
-    const { goals } = get();
-    set({ goals: goals.filter((g) => g.id !== id) });
-    get().recalculateScore();
-  },
-
-  aiSuggestMilestones: (title, category) => {
-    const titleLower = title.toLowerCase();
-    if (titleLower.includes('python') || titleLower.includes('data')) {
-      return [
-        'Python Syntax, Variables & Control Flow',
-        'Functions, Modules & Object Oriented Programming',
-        'Data Analysis with Pandas & NumPy',
-        'Data Visualization with Matplotlib & Seaborn',
-        'Machine Learning Models & Scikit-Learn',
-        'Deploy Analytics Dashboard Project',
-      ];
-    }
-    if (titleLower.includes('react') || titleLower.includes('portfolio') || titleLower.includes('web')) {
-      return [
-        'Design UI Wireframes & Layout System',
-        'HTML5 & CSS Responsive Grid Setup',
-        'JavaScript ES6+ Core & Async Concepts',
-        'React Components, Props & Hooks State',
-        'Backend REST API Integration',
-        'Deployment to Production Vercel/Netlify',
-      ];
-    }
-    if (category === 'Fitness' || titleLower.includes('fitness') || titleLower.includes('run')) {
-      return [
-        'Establish 3x/week workout baseline',
-        'Progress to 5x/week workout consistency',
-        'Achieve target body weight & nutrition macros',
-        'Complete 10k endurance run milestone',
-      ];
-    }
-
-    // Default template
-    return [
-      `Phase 1: Foundation & Planning for ${title}`,
-      `Phase 2: Core Implementation & Practice`,
-      `Phase 3: Testing, Refinement & Review`,
-      `Phase 4: Final Launch & Completion`,
-    ];
-  },
-
   generateRuleInsights: () => {
     const { goals } = get();
     const insights: GoalRuleInsight[] = [];
-    const activeGoals = goals.filter((g) => g.status === 'Active');
 
-    const highProgress = activeGoals.find((g) => g.progressPercent >= 70);
-    if (highProgress) {
+    const activeGoals = goals.filter((g) => g.status === 'Active' || g.status === 'In Progress');
+    const highProgressGoals = activeGoals.filter((g) => g.progressPercent >= 70);
+
+    if (highProgressGoals.length > 0) {
       insights.push({
-        id: 'g-ins-fast',
-        title: 'High Progression Rate',
-        description: `"${highProgress.title}" has reached ${highProgress.progressPercent}% completion!`,
+        id: 'g-ins-speed',
+        title: 'High Execution Velocity',
+        description: `${highProgressGoals.length} goal(s) have passed 70% completion. You are in the final push phase!`,
         category: 'speed',
         icon: 'Zap',
       });
     }
 
-    const nearDeadline = activeGoals.find((g) => g.deadline && g.deadline !== 'Ongoing');
-    if (nearDeadline) {
+    const totalMilestones = goals.reduce((acc, g) => acc + g.milestones.length, 0);
+    const completedM = goals.reduce(
+      (acc, g) => acc + g.milestones.filter((m) => m.completed).length,
+      0
+    );
+
+    if (totalMilestones > 0) {
       insights.push({
-        id: 'g-ins-deadline',
-        title: 'Upcoming Goal Deadline',
-        description: `"${nearDeadline.title}" target deadline is approaching (${nearDeadline.deadline}).`,
-        category: 'deadline',
-        icon: 'Calendar',
+        id: 'g-ins-milestones',
+        title: 'Milestone Momentum',
+        description: `${completedM} out of ${totalMilestones} total project milestones completed across all strategic goals.`,
+        category: 'milestone',
+        icon: 'CheckCircle2',
       });
     }
 
