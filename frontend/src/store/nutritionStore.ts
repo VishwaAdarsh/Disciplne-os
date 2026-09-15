@@ -5,11 +5,19 @@ import type {
   NutritionRuleInsight,
   NutritionActivityEvent,
   NutritionScoreBreakdown,
+  MealCategory,
 } from '../types/nutrition';
+import { nutritionApi, MealInput, GoalsInput } from '../services/nutrition/nutritionApi';
+import { bodyApi } from '../services/body/bodyApi';
 import { useOverviewStore } from './overviewStore';
 import { useEventEngineStore } from './eventEngineStore';
 
+const todayDateStr = new Date().toISOString().split('T')[0];
+
 interface NutritionState {
+  selectedDate: string;
+  setSelectedDate: (date: string) => void;
+
   nutritionScore: number;
   calories: {
     current: number;
@@ -43,7 +51,20 @@ interface NutritionState {
     score: number;
   }>;
 
-  // Actions
+  // Async API Actions
+  fetchSummary: (date?: string) => Promise<void>;
+  fetchMeals: (date?: string, category?: string) => Promise<void>;
+  fetchGoals: () => Promise<void>;
+  fetchHistory: (period?: string, from?: string, to?: string) => Promise<void>;
+  loadAllData: (date?: string) => Promise<void>;
+
+  logMealAsync: (mealData: MealInput) => Promise<void>;
+  updateMealAsync: (id: string, updates: Partial<MealInput>) => Promise<void>;
+  deleteMealAsync: (id: string) => Promise<void>;
+  updateGoalsAsync: (goalsInput: GoalsInput) => Promise<void>;
+  addWaterAsync: (amountMl: number) => Promise<void>;
+
+  // Legacy/Local Actions
   logMeal: (meal: Omit<MealSession, 'id' | 'timestamp'>) => void;
   toggleMealLogged: (id: string) => void;
   deleteMeal: (id: string) => void;
@@ -54,151 +75,228 @@ interface NutritionState {
 }
 
 export const useNutritionStore = create<NutritionState>((set, get) => ({
-  nutritionScore: 81,
+  selectedDate: todayDateStr,
+
+  setSelectedDate: (date: string) => {
+    set({ selectedDate: date });
+    get().loadAllData(date);
+  },
+
+  nutritionScore: 85,
   calories: {
-    current: 1720,
+    current: 0,
     target: 2200,
   },
   protein: {
-    current: 82,
+    current: 0,
     target: 120,
   },
   carbs: {
-    current: 180,
+    current: 0,
     target: 250,
   },
   fat: {
-    current: 48,
+    current: 0,
     target: 70,
   },
   water: {
-    currentLiters: 2.2,
+    currentLiters: 0,
     targetLiters: 3.0,
-    logs: [
-      { id: 'w-1', amountMl: 500, timestamp: '08:00 AM' },
-      { id: 'w-2', amountMl: 500, timestamp: '11:00 AM' },
-      { id: 'w-3', amountMl: 700, timestamp: '02:00 PM' },
-      { id: 'w-4', amountMl: 500, timestamp: '05:00 PM' },
-    ],
+    logs: [],
   },
-  meals: [
-    {
-      id: 'm-1',
-      name: 'Oatmeal & Protein Shake',
-      category: 'Breakfast',
-      timeStr: '08:30 AM',
-      calories: 420,
-      proteinGrams: 28,
-      carbsGrams: 45,
-      fatGrams: 14,
-      logged: true,
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: 'm-2',
-      name: 'Grilled Chicken & Quinoa Salad',
-      category: 'Lunch',
-      timeStr: '01:15 PM',
-      calories: 650,
-      proteinGrams: 42,
-      carbsGrams: 75,
-      fatGrams: 20,
-      logged: true,
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: 'm-3',
-      name: 'Greek Yogurt & Almonds',
-      category: 'Snack',
-      timeStr: '05:00 PM',
-      calories: 180,
-      proteinGrams: 12,
-      carbsGrams: 20,
-      fatGrams: 6,
-      logged: true,
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: 'm-4',
-      name: 'Salmon, Sweet Potato & Broccoli',
-      category: 'Dinner',
-      timeStr: '08:00 PM',
-      calories: 470,
-      proteinGrams: 35,
-      carbsGrams: 40,
-      fatGrams: 14,
-      logged: false,
-      timestamp: new Date().toISOString(),
-    },
-  ],
-  ruleInsights: [
-    {
-      id: 'n-ins-1',
-      title: 'Protein Target Progress',
-      description: 'Protein intake has improved by 18% compared to last week (82g average).',
-      category: 'protein',
-      icon: 'Zap',
-    },
-    {
-      id: 'n-ins-2',
-      title: 'Weekend Hydration Drop',
-      description: 'Water intake averages 1.8L on weekends vs 2.5L on weekdays.',
-      category: 'water',
-      icon: 'Droplet',
-    },
-    {
-      id: 'n-ins-3',
-      title: 'Consistent Meal Spacing',
-      description: 'You log breakfast before 9:00 AM on 5 out of 7 days.',
-      category: 'consistency',
-      icon: 'Utensils',
-    },
-  ],
-  activityFeed: [
-    {
-      id: 'n-act-1',
-      type: 'MEAL_LOGGED',
-      title: 'Logged Snack',
-      subtext: 'Greek Yogurt & Almonds (180 kcal · 12g P)',
-      timestamp: 'Today, 5:00 PM',
-      icon: 'Utensils',
-    },
-    {
-      id: 'n-act-2',
-      type: 'WATER_LOGGED',
-      title: 'Added Hydration',
-      subtext: '+500 ml logged (Total 2.2L / 3.0L)',
-      timestamp: 'Today, 5:00 PM',
-      icon: 'Droplet',
-    },
-    {
-      id: 'n-act-3',
-      type: 'MEAL_LOGGED',
-      title: 'Logged Lunch',
-      subtext: 'Grilled Chicken & Quinoa Salad (650 kcal · 42g P)',
-      timestamp: 'Today, 1:15 PM',
-      icon: 'Utensils',
-    },
-  ],
-  weeklyHistory: [
-    { day: 'Mon', calories: 2100, protein: 110, water: 2.8, score: 85 },
-    { day: 'Tue', calories: 2050, protein: 115, water: 2.9, score: 88 },
-    { day: 'Wed', calories: 2250, protein: 105, water: 2.6, score: 82 },
-    { day: 'Thu', calories: 1980, protein: 118, water: 3.0, score: 90 },
-    { day: 'Fri', calories: 2150, protein: 112, water: 2.7, score: 86 },
-    { day: 'Sat', calories: 2300, protein: 95, water: 2.0, score: 78 },
-    { day: 'Sun', calories: 1720, protein: 82, water: 2.2, score: 81 },
-  ],
+  meals: [],
+  ruleInsights: [],
+  activityFeed: [],
+  weeklyHistory: [],
 
+  // --- API DATA FETCHING ---
+  fetchSummary: async (dateStr?: string) => {
+    const d = dateStr || get().selectedDate;
+    try {
+      const summary = await nutritionApi.getDailySummary(d);
+      if (summary) {
+        set({
+          calories: {
+            current: summary.calories?.current ?? 0,
+            target: summary.calories?.target ?? 2200,
+          },
+          protein: {
+            current: summary.protein?.current ?? 0,
+            target: summary.protein?.target ?? 120,
+          },
+          carbs: {
+            current: summary.carbs?.current ?? 0,
+            target: summary.carbs?.target ?? 250,
+          },
+          fat: {
+            current: summary.fat?.current ?? 0,
+            target: summary.fat?.target ?? 70,
+          },
+          water: {
+            currentLiters: summary.water?.currentLiters ?? 0,
+            targetLiters: summary.water?.targetLiters ?? 3.0,
+            logs: get().water.logs,
+          },
+        });
+        get().recalculateScore();
+      }
+    } catch (err) {
+      console.warn('Could not fetch daily nutrition summary from API:', err);
+    }
+  },
+
+  fetchMeals: async (dateStr?: string, category?: string) => {
+    const d = dateStr || get().selectedDate;
+    try {
+      const rawMeals = await nutritionApi.getMeals(d, category);
+      if (Array.isArray(rawMeals)) {
+        const mappedMeals: MealSession[] = rawMeals.map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          category: (m.category as MealCategory) || 'Lunch',
+          timeStr: m.loggedAt ? new Date(m.loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '12:00 PM',
+          calories: m.calories ?? 0,
+          proteinGrams: m.proteinG ?? 0,
+          carbsGrams: m.carbsG ?? 0,
+          fatGrams: m.fatG ?? 0,
+          notes: m.notes || undefined,
+          logged: true,
+          timestamp: m.createdAt || new Date().toISOString(),
+        }));
+        set({ meals: mappedMeals });
+      }
+    } catch (err) {
+      console.warn('Could not fetch meals from API:', err);
+    }
+  },
+
+  fetchGoals: async () => {
+    try {
+      const goals = await nutritionApi.getGoals();
+      if (goals) {
+        set((s) => ({
+          calories: { ...s.calories, target: goals.caloriesTarget ?? 2200 },
+          protein: { ...s.protein, target: goals.proteinTarget ?? 120 },
+          carbs: { ...s.carbs, target: goals.carbsTarget ?? 250 },
+          fat: { ...s.fat, target: goals.fatTarget ?? 70 },
+          water: { ...s.water, targetLiters: goals.waterTargetLiters ?? 3.0 },
+        }));
+      }
+    } catch (err) {
+      console.warn('Could not fetch nutrition goals from API:', err);
+    }
+  },
+
+  fetchHistory: async (period = 'daily', from?, to?) => {
+    try {
+      const history = await nutritionApi.getHistory(period, from, to);
+      if (Array.isArray(history)) {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const formatted = history.map((h: any) => {
+          const dateObj = new Date(h.date);
+          const dayName = days[dateObj.getDay()] || h.date;
+          return {
+            day: dayName,
+            calories: h.calories ?? 0,
+            protein: h.protein ?? 0,
+            water: h.water ?? 0,
+            score: 85,
+          };
+        });
+        set({ weeklyHistory: formatted });
+      }
+    } catch (err) {
+      console.warn('Could not fetch nutrition history from API:', err);
+    }
+  },
+
+  loadAllData: async (dateStr?: string) => {
+    const d = dateStr || get().selectedDate;
+    await Promise.all([
+      get().fetchGoals(),
+      get().fetchSummary(d),
+      get().fetchMeals(d),
+      get().fetchHistory('daily'),
+    ]);
+    get().generateRuleInsights();
+  },
+
+  // --- ASYNC MUTATIONS ---
+  logMealAsync: async (mealData: MealInput) => {
+    const d = mealData.logDate || get().selectedDate;
+    try {
+      await nutritionApi.logMeal({ ...mealData, logDate: d });
+      await Promise.all([get().fetchMeals(d), get().fetchSummary(d), get().fetchHistory('daily')]);
+    } catch (err) {
+      console.error('Error logging meal:', err);
+      // Fallback local mutation
+      get().logMeal({
+        name: mealData.name,
+        category: (mealData.category as MealCategory) || 'Lunch',
+        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        calories: mealData.calories ?? 0,
+        proteinGrams: mealData.proteinG ?? 0,
+        carbsGrams: mealData.carbsG ?? 0,
+        fatGrams: mealData.fatG ?? 0,
+        notes: mealData.notes,
+        logged: true,
+      });
+    }
+  },
+
+  updateMealAsync: async (id: string, updates: Partial<MealInput>) => {
+    const d = get().selectedDate;
+    try {
+      await nutritionApi.updateMeal(id, updates);
+      await Promise.all([get().fetchMeals(d), get().fetchSummary(d)]);
+    } catch (err) {
+      console.error('Error updating meal:', err);
+    }
+  },
+
+  deleteMealAsync: async (id: string) => {
+    const d = get().selectedDate;
+    try {
+      await nutritionApi.deleteMeal(id);
+      await Promise.all([get().fetchMeals(d), get().fetchSummary(d)]);
+    } catch (err) {
+      console.error('Error deleting meal:', err);
+      get().deleteMeal(id);
+    }
+  },
+
+  updateGoalsAsync: async (goalsInput: GoalsInput) => {
+    try {
+      await nutritionApi.updateGoals(goalsInput);
+      await get().fetchGoals();
+      await get().fetchSummary(get().selectedDate);
+    } catch (err) {
+      console.error('Error updating nutrition goals:', err);
+    }
+  },
+
+  addWaterAsync: async (amountMl: number) => {
+    const d = get().selectedDate;
+    try {
+      // Single Source of Truth: Log water in Body Module
+      await bodyApi.logWater(amountMl);
+      await get().fetchSummary(d);
+    } catch (err) {
+      console.error('Error logging water to Body module:', err);
+      get().addWater(amountMl);
+    }
+  },
+
+  // --- LOCAL FALLBACK MUTATIONS ---
   calculateScoreBreakdown: () => {
     const { meals, calories, protein, water } = get();
     const loggedMeals = meals.filter((m) => m.logged).length;
     const mealScore = Math.round((loggedMeals / Math.max(1, meals.length)) * 100);
 
-    const calRatio = calories.current / calories.target;
+    const calRatio = calories.target > 0 ? calories.current / calories.target : 0;
     const calorieScore = Math.min(100, Math.round((1 - Math.abs(calRatio - 0.85)) * 100));
-    const proteinScore = Math.min(100, Math.round((protein.current / protein.target) * 100));
-    const waterScore = Math.min(100, Math.round((water.currentLiters / water.targetLiters) * 100));
+    const proteinScore = protein.target > 0 ? Math.min(100, Math.round((protein.current / protein.target) * 100)) : 0;
+    const waterScore = water.targetLiters > 0 ? Math.min(100, Math.round((water.currentLiters / water.targetLiters) * 100)) : 0;
     const timingScore = 85;
 
     const totalScore = Math.round(
@@ -280,7 +378,6 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
     });
   },
 
-
   toggleMealLogged: (id) => {
     const { meals } = get();
     const target = meals.find((m) => m.id === id);
@@ -294,7 +391,6 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
     let fDiff = target.fatGrams;
 
     if (target.logged) {
-      // Unlogging
       cDiff = -cDiff;
       pDiff = -pDiff;
       carbDiff = -carbDiff;
@@ -391,8 +487,8 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
         id: 'n-ins-water-good',
         title: 'Optimal Hydration',
         description: `Hydration level at ${water.currentLiters}L (${Math.round(
-          (water.currentLiters / water.targetLiters) * 100
-        )}% of daily 3.0L goal).`,
+          (water.currentLiters / Math.max(1, water.targetLiters)) * 100
+        )}% of daily ${water.targetLiters}L goal).`,
         category: 'water',
         icon: 'Droplet',
       });

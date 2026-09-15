@@ -2,7 +2,7 @@
  * Discipline Module API Service (SPR-307)
  */
 
-import { DisciplineTask, DisciplineHabit } from '../types/discipline';
+import type { DisciplineTask, DisciplineHabit } from '../types/discipline';
 
 const API_BASE = '/api/v1';
 

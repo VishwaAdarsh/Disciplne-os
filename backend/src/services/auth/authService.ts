@@ -167,7 +167,7 @@ export class AuthService {
 
       return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch (err) {
-      logger.warn('Refresh token validation failed', err);
+      logger.warn('Refresh token validation failed', { error: String(err) });
       return null;
     }
   }

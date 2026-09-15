@@ -5,7 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Flame, CheckCircle2, Repeat, Trash2 } from 'lucide-react';
-import { DisciplineHabit } from '../../types/discipline';
+import type { DisciplineHabit } from '../../types/discipline';
 
 interface HabitItemCardProps {
   habit: DisciplineHabit;

@@ -37,6 +37,7 @@ export interface JwtPayload {
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+  sessionId?: string;
   requestId?: string;
 }
 

@@ -175,7 +175,7 @@ export class PerformanceService {
       trend: overview.trend,
       currentScore: overview.overallScore,
       previousScore: overview.previousScore,
-      absoluteChange,
+      absoluteChange: overview.overallScore - overview.previousScore,
       percentageChange: overview.percentageChange,
       evaluationPeriod: overview.periodType,
     };

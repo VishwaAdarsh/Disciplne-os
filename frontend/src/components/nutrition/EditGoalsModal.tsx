@@ -1,76 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Utensils, Plus, Edit2 } from 'lucide-react';
+import { X, Target, Save } from 'lucide-react';
 import { useNutritionStore } from '../../store/nutritionStore';
-import type { MealCategory, MealSession } from '../../types/nutrition';
 
-interface Props {
+interface EditGoalsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mealToEdit?: MealSession | null;
 }
 
-const CATEGORIES: MealCategory[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Custom'];
+export const EditGoalsModal: React.FC<EditGoalsModalProps> = ({ isOpen, onClose }) => {
+  const { calories, protein, carbs, fat, water, updateGoalsAsync } = useNutritionStore();
 
-export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
-  const { logMealAsync, updateMealAsync } = useNutritionStore();
-
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState<MealCategory>('Lunch');
-  const [calories, setCalories] = useState<number | ''>(550);
-  const [proteinGrams, setProteinGrams] = useState<number | ''>(35);
-  const [carbsGrams, setCarbsGrams] = useState<number | ''>(60);
-  const [fatGrams, setFatGrams] = useState<number | ''>(15);
-  const [notes, setNotes] = useState('');
+  const [caloriesTarget, setCaloriesTarget] = useState<number | ''>(calories.target || 2200);
+  const [proteinTarget, setProteinTarget] = useState<number | ''>(protein.target || 120);
+  const [carbsTarget, setCarbsTarget] = useState<number | ''>(carbs.target || 250);
+  const [fatTarget, setFatTarget] = useState<number | ''>(fat.target || 70);
+  const [waterTargetMl, setWaterTargetMl] = useState<number | ''>(Math.round((water.targetLiters || 3.0) * 1000));
 
   useEffect(() => {
-    if (mealToEdit) {
-      setName(mealToEdit.name);
-      setCategory(mealToEdit.category);
-      setCalories(mealToEdit.calories);
-      setProteinGrams(mealToEdit.proteinGrams);
-      setCarbsGrams(mealToEdit.carbsGrams);
-      setFatGrams(mealToEdit.fatGrams);
-      setNotes(mealToEdit.notes || '');
-    } else {
-      setName('');
-      setCategory('Lunch');
-      setCalories(550);
-      setProteinGrams(35);
-      setCarbsGrams(60);
-      setFatGrams(15);
-      setNotes('');
+    if (isOpen) {
+      setCaloriesTarget(calories.target || 2200);
+      setProteinTarget(protein.target || 120);
+      setCarbsTarget(carbs.target || 250);
+      setFatTarget(fat.target || 70);
+      setWaterTargetMl(Math.round((water.targetLiters || 3.0) * 1000));
     }
-  }, [mealToEdit, isOpen]);
+  }, [isOpen, calories.target, protein.target, carbs.target, fat.target, water.targetLiters]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mealToEdit) {
-      await updateMealAsync(mealToEdit.id, {
-        name: name.trim() || `${category} Meal`,
-        category,
-        calories: Number(calories) || 0,
-        proteinG: Number(proteinGrams) || 0,
-        carbsG: Number(carbsGrams) || 0,
-        fatG: Number(fatGrams) || 0,
-        notes: notes.trim() || undefined,
-      });
-    } else {
-      await logMealAsync({
-        name: name.trim() || `${category} Meal`,
-        category,
-        calories: Number(calories) || 400,
-        proteinG: Number(proteinGrams) || 25,
-        carbsG: Number(carbsGrams) || 40,
-        fatG: Number(fatGrams) || 12,
-        notes: notes.trim() || undefined,
-      });
-    }
-
-    setName('');
-    setNotes('');
+    await updateGoalsAsync({
+      caloriesTarget: Number(caloriesTarget) || 2200,
+      proteinTarget: Number(proteinTarget) || 120,
+      carbsTarget: Number(carbsTarget) || 250,
+      fatTarget: Number(fatTarget) || 70,
+      waterTargetMl: Number(waterTargetMl) || 3000,
+    });
     onClose();
   };
 
@@ -98,7 +65,7 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
             border: '1px solid var(--card-border, #1F2937)',
             borderRadius: '24px',
             width: '100%',
-            maxWidth: '480px',
+            maxWidth: '440px',
             padding: '24px',
             boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
             color: 'var(--text-main, #FFFFFF)',
@@ -116,11 +83,9 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                   color: '#10B981',
                 }}
               >
-                <Utensils size={20} />
+                <Target size={20} />
               </div>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
-                {mealToEdit ? 'Edit Meal & Macros' : 'Log Meal & Macros'}
-              </h3>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Edit Nutrition Goals</h3>
             </div>
             <button
               onClick={onClose}
@@ -133,62 +98,12 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Meal Category
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCategory(cat)}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      border: `1px solid ${category === cat ? '#10B981' : 'var(--card-border, #374151)'}`,
-                      background: category === cat ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
-                      color: category === cat ? '#10B981' : 'var(--text-muted)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Meal Name / Items
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Chicken Rice Bowl & Veggies"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  background: 'var(--surface-bg, #1F2937)',
-                  border: '1px solid var(--card-border, #374151)',
-                  color: '#FFF',
-                  fontSize: '14px',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Total Calories (kcal)
+                Daily Calorie Target (kcal)
               </label>
               <input
                 type="number"
-                placeholder="e.g. 550"
-                value={calories}
-                onChange={(e) => setCalories(e.target.value ? Number(e.target.value) : '')}
+                value={caloriesTarget}
+                onChange={(e) => setCaloriesTarget(e.target.value ? Number(e.target.value) : '')}
                 style={{
                   width: '100%',
                   padding: '10px 14px',
@@ -196,7 +111,7 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                   background: 'var(--surface-bg, #1F2937)',
                   border: '1px solid var(--card-border, #374151)',
                   color: '#FFF',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: 700,
                   boxSizing: 'border-box',
                 }}
@@ -210,9 +125,8 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                 </label>
                 <input
                   type="number"
-                  placeholder="35"
-                  value={proteinGrams}
-                  onChange={(e) => setProteinGrams(e.target.value ? Number(e.target.value) : '')}
+                  value={proteinTarget}
+                  onChange={(e) => setProteinTarget(e.target.value ? Number(e.target.value) : '')}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -232,9 +146,8 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                 </label>
                 <input
                   type="number"
-                  placeholder="60"
-                  value={carbsGrams}
-                  onChange={(e) => setCarbsGrams(e.target.value ? Number(e.target.value) : '')}
+                  value={carbsTarget}
+                  onChange={(e) => setCarbsTarget(e.target.value ? Number(e.target.value) : '')}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -254,9 +167,8 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                 </label>
                 <input
                   type="number"
-                  placeholder="15"
-                  value={fatGrams}
-                  onChange={(e) => setFatGrams(e.target.value ? Number(e.target.value) : '')}
+                  value={fatTarget}
+                  onChange={(e) => setFatTarget(e.target.value ? Number(e.target.value) : '')}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -272,26 +184,28 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Meal Notes (Optional)
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#0EA5E9' }}>
+                Water Goal (ml)
               </label>
-              <textarea
-                placeholder="High protein post-workout lunch..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={2}
+              <input
+                type="number"
+                placeholder="3000"
+                value={waterTargetMl}
+                onChange={(e) => setWaterTargetMl(e.target.value ? Number(e.target.value) : '')}
                 style={{
                   width: '100%',
                   padding: '10px 14px',
                   borderRadius: '10px',
                   background: 'var(--surface-bg, #1F2937)',
-                  border: '1px solid var(--card-border, #374151)',
+                  border: '1px solid #0EA5E9',
                   color: '#FFF',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   boxSizing: 'border-box',
-                  resize: 'none',
                 }}
               />
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                {Number(waterTargetMl) / 1000} Liters
+              </div>
             </div>
 
             <button
@@ -314,12 +228,12 @@ export default function LogMealModal({ isOpen, onClose, mealToEdit }: Props) {
                 marginTop: '8px',
               }}
             >
-              {mealToEdit ? <Edit2 size={18} /> : <Plus size={18} />}
-              <span>{mealToEdit ? 'UPDATE MEAL' : 'SAVE MEAL'}</span>
+              <Save size={18} />
+              <span>SAVE TARGETS</span>
             </button>
           </form>
         </motion.div>
       </div>
     </AnimatePresence>
   );
-}
+};

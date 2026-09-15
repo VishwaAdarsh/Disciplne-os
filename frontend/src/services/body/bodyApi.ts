@@ -2,17 +2,21 @@
  * Body Module API Service (SPR-308)
  */
 
-import { WorkoutDTO, SleepDTO, WaterDTO, StepDTO, WeightDTO, BodySummaryDTO } from '../../types/body';
+import type { WorkoutDTO, SleepDTO, WaterDTO, StepDTO, WeightDTO, BodySummaryDTO } from '../../types/body';
 
 const API_BASE = '/api/v1/body';
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('dos_token') : null;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options?.headers as Record<string, string>),
+  };
+
   const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
     ...options,
+    headers,
   });
 
   const data = await res.json();

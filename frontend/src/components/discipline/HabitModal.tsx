@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Flame } from 'lucide-react';
-import { DisciplineHabit } from '../../types/discipline';
+import type { DisciplineHabit } from '../../types/discipline';
 
 interface HabitModalProps {
   isOpen: boolean;

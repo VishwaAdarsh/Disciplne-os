@@ -158,7 +158,19 @@ export class NutritionService {
       water_target_ml: updates.waterTargetMl,
     });
 
-    return nutritionRepository.toGoalsDTO(record);
+    const dto = nutritionRepository.toGoalsDTO(record);
+
+    await eventDispatcher.publish({
+      userId,
+      module: 'nutrition',
+      eventType: 'NUTRITION_GOAL_UPDATED',
+      title: `Updated Nutrition Goals: ${dto.caloriesTarget} kcal target`,
+      icon: '🎯',
+      metadata: { caloriesTarget: dto.caloriesTarget, proteinTarget: dto.proteinTarget },
+      scoreImpact: 0,
+    });
+
+    return dto;
   }
 
   // DAILY SUMMARY

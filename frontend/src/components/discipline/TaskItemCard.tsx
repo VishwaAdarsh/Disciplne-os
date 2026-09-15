@@ -5,7 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, Clock, Flame, Archive, Trash2, Edit3 } from 'lucide-react';
-import { DisciplineTask } from '../../types/discipline';
+import type { DisciplineTask } from '../../types/discipline';
 
 interface TaskItemCardProps {
   task: DisciplineTask;

@@ -19,6 +19,7 @@ interface MealItem {
 interface MealLogCardProps {
   meals: MealItem[];
   onOpenLogModal: () => void;
+  onEdit?: (meal: MealItem) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -27,12 +28,14 @@ const categoryColors: Record<string, string> = {
   Lunch: '#10B981',
   Dinner: '#8B5CF6',
   Snacks: '#0EA5E9',
+  Snack: '#0EA5E9',
   Custom: '#6366F1',
 };
 
 export const MealLogCard: React.FC<MealLogCardProps> = ({
   meals,
   onOpenLogModal,
+  onEdit,
   onDelete,
 }) => {
   return (
@@ -130,6 +133,21 @@ export const MealLogCard: React.FC<MealLogCardProps> = ({
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(meal)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                    }}
+                    title="Edit meal"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+                )}
                 {onDelete && (
                   <button
                     onClick={() => onDelete(meal.id)}
@@ -140,6 +158,7 @@ export const MealLogCard: React.FC<MealLogCardProps> = ({
                       cursor: 'pointer',
                       padding: '4px',
                     }}
+                    title="Delete meal"
                   >
                     <Trash2 size={14} />
                   </button>

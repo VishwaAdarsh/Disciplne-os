@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useDisciplineStore } from '../store/disciplineStore';
-import { DisciplineTask, DisciplineHabit, TaskCategory, TaskPriority } from '../types/discipline';
+import type { DisciplineTask, DisciplineHabit, TaskCategory, TaskPriority } from '../types/discipline';
 
 export function useDiscipline() {
   const store = useDisciplineStore();

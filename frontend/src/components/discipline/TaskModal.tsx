@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Edit2 } from 'lucide-react';
-import { DisciplineTask, TaskCategory, TaskPriority } from '../../types/discipline';
+import type { DisciplineTask, TaskCategory, TaskPriority } from '../../types/discipline';
 
 interface TaskModalProps {
   isOpen: boolean;
