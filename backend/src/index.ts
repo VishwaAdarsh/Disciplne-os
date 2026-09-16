@@ -26,6 +26,7 @@ import v1PerformanceRoutes from './routes/v1/performance';
 import v1EventsRoutes from './routes/v1/events';
 import v1AIRoutes from './routes/v1/ai';
 import v1NotificationRoutes from './routes/v1/notifications';
+import v1OverviewRoutes from './routes/v1/overview';
 
 import { requestLogger } from './middleware/requestLogger';
 import { globalErrorHandler } from './middleware/errorHandler';
@@ -57,6 +58,7 @@ app.use('/api/v1/performance', v1PerformanceRoutes);
 app.use('/api/v1/events', v1EventsRoutes);
 app.use('/api/v1/ai', v1AIRoutes);
 app.use('/api/v1/notifications', v1NotificationRoutes);
+app.use('/api/v1/overview', v1OverviewRoutes);
 
 // Legacy routes for backward compatibility
 app.use('/api/auth', authRoutes);

@@ -30,7 +30,7 @@ export function ChartSkeleton() {
         height: '240px',
         display: 'flex',
         flexDirection: 'column',
-        justify: 'space-between',
+        justifyContent: 'space-between',
         animation: 'pulse 1.5s infinite ease-in-out',
       }}
     >

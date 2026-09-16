@@ -383,6 +383,36 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_goal_milestones_goal_id ON goal_milestones(goal_id);
     CREATE INDEX IF NOT EXISTS idx_goal_milestones_user_id ON goal_milestones(user_id);
   `);
+
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN deleted_at TEXT;');
+  } catch {}
+
+  const taskCols = [
+    'goal_id TEXT',
+    'description TEXT',
+    'category TEXT DEFAULT "Work"',
+    'priority TEXT DEFAULT "medium"',
+    'estimated_minutes INTEGER DEFAULT 30',
+    'due_date TEXT',
+    'status TEXT DEFAULT "pending"',
+    'tags TEXT DEFAULT "[]"',
+    'notes TEXT',
+    'is_archived INTEGER DEFAULT 0',
+    'completed_at TEXT',
+    'updated_at TEXT',
+    'deleted_at TEXT',
+  ];
+  for (const col of taskCols) {
+    try {
+      db.exec(`ALTER TABLE tasks ADD COLUMN ${col};`);
+    } catch {}
+  }
+
+  try {
+    db.exec('ALTER TABLE habits ADD COLUMN deleted_at TEXT;');
+  } catch {}
+
   console.log('✅ Database initialized');
 }
 
