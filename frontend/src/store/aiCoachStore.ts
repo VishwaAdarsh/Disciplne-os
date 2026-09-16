@@ -9,27 +9,26 @@ import type {
   AISmartScheduleBlock,
   AIReport,
   AIMemory,
+  AIConversationDTO,
 } from '../types/ai';
 
 import { usePerformanceEngineStore } from './performanceEngineStore';
 import { useDisciplineStore } from './disciplineStore';
 import { useBodyStore } from './bodyStore';
 import { useMindStore } from './mindStore';
-import { useNutritionStore } from './nutritionStore';
 import { useGoalsStore } from './goalsStore';
-import { useEventEngineStore } from './eventEngineStore';
+import { aiApi } from '../services/ai/aiApi';
 
 const STORAGE_KEYS = {
-  CHAT: 'dos_ai_chat_history',
   MEMORY: 'dos_ai_memory',
 };
 
 const initialChatMessages: AIChatMessage[] = [
   {
-    id: 'msg-1',
+    id: 'msg-welcome',
     sender: 'coach',
-    text: "Greetings Adarsh! I'm your DisciplineOS AI Coach. I analyze your real-time performance across Discipline, Body, Mind, Nutrition, and Goals to help you optimize your daily routine. How can I assist your execution today?",
-    timestamp: new Date(Date.now() - 30 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    text: "Greetings! I'm your DisciplineOS AI Coach. I analyze your live performance across Discipline, Body, Mind, Nutrition, and Goals to help you optimize your daily execution. How can I assist you today?",
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   },
 ];
 
@@ -40,16 +39,6 @@ const initialMemory: AIMemory = {
   coachingStyle: 'encouraging',
   consentAnalytics: true,
 };
-
-function loadStoredChat(): AIChatMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.CHAT);
-    if (raw) return JSON.parse(raw);
-  } catch (err) {
-    console.error('Failed to load chat history', err);
-  }
-  return initialChatMessages;
-}
 
 function loadStoredMemory(): AIMemory {
   try {
@@ -63,30 +52,42 @@ function loadStoredMemory(): AIMemory {
 
 interface AICoachState {
   chatMessages: AIChatMessage[];
-  memory: AIMemory;
+  conversations: AIConversationDTO[];
+  activeConversationId: string | null;
   isThinking: boolean;
+  error: string | null;
+  lastFailedQuery: string | null;
+  memory: AIMemory;
   reports: AIReport[];
 
   // Actions
   sendChatMessage: (userQuery: string) => Promise<void>;
-  clearChatHistory: () => void;
+  retryLastMessage: () => Promise<void>;
+  startNewConversation: () => Promise<void>;
+  loadConversations: () => Promise<void>;
+  selectConversation: (conversationId: string) => Promise<void>;
+  clearChatHistory: () => Promise<void>;
 
   getDailyBriefing: () => DailyBriefing;
   getEveningReview: () => EveningReview;
   getWeeklyReview: () => WeeklyReview;
-  
+
   getPatterns: () => AIPattern[];
   getGoalPredictions: () => AIGoalPrediction[];
   getSmartSchedule: () => AISmartScheduleBlock[];
-  
+
   generateReport: (type: 'daily' | 'weekly' | 'monthly') => AIReport;
   updateMemory: (updates: Partial<AIMemory>) => void;
 }
 
 export const useAICoachStore = create<AICoachState>((set, get) => ({
-  chatMessages: loadStoredChat(),
-  memory: loadStoredMemory(),
+  chatMessages: initialChatMessages,
+  conversations: [],
+  activeConversationId: null,
   isThinking: false,
+  error: null,
+  lastFailedQuery: null,
+  memory: loadStoredMemory(),
   reports: [],
 
   sendChatMessage: async (userQuery: string) => {
@@ -101,88 +102,123 @@ export const useAICoachStore = create<AICoachState>((set, get) => ({
       timestamp: nowStr,
     };
 
-    set((state) => {
-      const updated = [...state.chatMessages, userMsg];
-      localStorage.setItem(STORAGE_KEYS.CHAT, JSON.stringify(updated));
-      return { chatMessages: updated, isThinking: true };
-    });
+    set((state) => ({
+      chatMessages: [...state.chatMessages, userMsg],
+      isThinking: true,
+      error: null,
+      lastFailedQuery: null,
+    }));
 
-    // Simulate AI processing delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const activeId = get().activeConversationId || undefined;
+      const res = await aiApi.chat(queryTrimmed, activeId);
 
-    // Gather full context
-    const perfState = usePerformanceEngineStore.getState();
-    const discState = useDisciplineStore.getState();
-    const bodyState = useBodyStore.getState();
-    const mindState = useMindStore.getState();
-    const nutrState = useNutritionStore.getState();
-    const goalsState = useGoalsStore.getState();
+      const coachMsg: AIChatMessage = {
+        id: res.messageId || `cch-${Date.now()}`,
+        sender: 'coach',
+        text: res.response,
+        timestamp: new Date(res.timestamp || Date.now()).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
 
-    const qLower = queryTrimmed.toLowerCase();
-    let replyText = '';
-    let suggestedActions: AIChatMessage['suggestedActions'] = undefined;
+      set((state) => ({
+        chatMessages: [...state.chatMessages, coachMsg],
+        activeConversationId: res.conversationId,
+        isThinking: false,
+      }));
 
-    if (qLower.includes('score') || qLower.includes('drop') || qLower.includes('why')) {
-      replyText = `Your overall Performance Score is currently **${perfState.performanceScore}/1000** (${perfState.levelInfo.title} Level). Breakdown:\n\n` +
-        `• **Discipline**: ${discState.analytics?.disciplineScore || 82}/100\n` +
-        `• **Body**: ${bodyState.bodyScore}/100\n` +
-        `• **Mind**: ${mindState.mindScore}/100\n` +
-        `• **Nutrition**: ${nutrState.nutritionScore}/100\n` +
-        `• **Goals**: ${goalsState.goalScore}/100\n\n` +
-        `💡 *Coach Insight*: ${nutrState.nutritionScore < 70 ? 'Your Nutrition score is dragging down your index. Log your meals & hit 3L water target.' : 'Your Discipline & Body consistency are high. Keep momentum going!'}`;
-      
-      suggestedActions = [
-        { label: 'Log Water (+500ml)', actionType: 'LOG_WATER' },
-        { label: 'View Performance Report', actionType: 'VIEW_REPORT' },
-      ];
-    } else if (qLower.includes('python') || qLower.includes('goal') || qLower.includes('plan')) {
-      const topGoal = goalsState.goals[0];
-      replyText = `Based on your Goal Engine context:\n\n` +
-        `🎯 **Active Goal**: ${topGoal ? topGoal.title : 'Learn Python & Data Science'}\n` +
-        `📈 **Current Progress**: ${topGoal ? topGoal.progressPercent : 75}%\n` +
-        `📅 **Forecasted Completion**: August 28 (87% confidence)\n\n` +
-        `Recommended daily action: Spend **45 mins** on Deep Work coding before 11:00 AM to stay ahead of deadline.`;
-      
-      suggestedActions = [
-        { label: 'Start 45m Deep Work', actionType: 'START_DEEP_WORK' },
-      ];
-    } else if (qLower.includes('workout') || qLower.includes('body') || qLower.includes('sleep')) {
-      replyText = `Here is your physical telemetry:\n\n` +
-        `💪 **Workout**: ${bodyState.workout.completed ? 'Completed Today ✅' : 'Pending ⏳'}\n` +
-        `😴 **Sleep Quality**: ${bodyState.sleep.durationHours}h ${bodyState.sleep.durationMinutes}m (${bodyState.sleep.qualityPercent}% quality)\n` +
-        `💧 **Hydration**: ${bodyState.water.currentLiters}L / ${bodyState.water.targetLiters}L\n\n` +
-        `💡 *Recommendation*: ${bodyState.water.currentLiters < bodyState.water.targetLiters ? 'Drink 1 more bottle of water before 6 PM to enhance mental clarity.' : 'Great hydration levels today!'}`;
-    } else if (qLower.includes('analytics') || qLower.includes('pattern') || qLower.includes('habit')) {
-      replyText = `🔍 **AI Pattern Detection Analysis**:\n\n` +
-        `1. **Peak Focus Window**: Your best focus occurs between **08:00 AM – 11:00 AM**.\n` +
-        `2. **Workout & Mood Correlation**: Workout completion increases daily mood scores by **+18%**.\n` +
-        `3. **Streak Safety**: Current streak is **🔥 ${discState.analytics.currentStreak} Days**. Risk level is **LOW**.`;
-    } else {
-      replyText = `I have analyzed your live system state:\n\n` +
-        `• Total Performance Index: **${perfState.performanceScore} / 1000**\n` +
-        `• Active Streak: **${discState.analytics.currentStreak} Days**\n` +
-        `• Tasks Completed Today: **${discState.tasks.filter((t) => t.completed).length} / ${discState.tasks.length}**\n\n` +
-        `How can I help you optimize your schedule or achieve your next milestone?`;
+      // Refresh conversations list in background
+      get().loadConversations();
+    } catch (err: any) {
+      console.error('[AICoachStore] Error in sendChatMessage:', err);
+      set({
+        isThinking: false,
+        error: err?.message || 'Failed to connect to AI Coach. Please try again.',
+        lastFailedQuery: queryTrimmed,
+      });
     }
-
-    const coachMsg: AIChatMessage = {
-      id: `cch-${Date.now()}`,
-      sender: 'coach',
-      text: replyText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedActions,
-    };
-
-    set((state) => {
-      const updated = [...state.chatMessages, coachMsg];
-      localStorage.setItem(STORAGE_KEYS.CHAT, JSON.stringify(updated));
-      return { chatMessages: updated, isThinking: false };
-    });
   },
 
-  clearChatHistory: () => {
-    set({ chatMessages: initialChatMessages });
-    localStorage.removeItem(STORAGE_KEYS.CHAT);
+  retryLastMessage: async () => {
+    const lastQuery = get().lastFailedQuery;
+    if (lastQuery) {
+      await get().sendChatMessage(lastQuery);
+    }
+  },
+
+  startNewConversation: async () => {
+    try {
+      set({ isThinking: true, error: null });
+      const newConv = await aiApi.createConversation('New Conversation');
+      set({
+        activeConversationId: newConv.id,
+        chatMessages: [
+          {
+            id: `welcome-${Date.now()}`,
+            sender: 'coach',
+            text: "Started a fresh conversation. What would you like to discuss or optimize today?",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ],
+        conversations: [newConv, ...get().conversations],
+        isThinking: false,
+      });
+    } catch (err: any) {
+      console.error('[AICoachStore] Failed to create new conversation:', err);
+      // Fallback local reset
+      set({
+        activeConversationId: null,
+        chatMessages: initialChatMessages,
+        isThinking: false,
+      });
+    }
+  },
+
+  loadConversations: async () => {
+    try {
+      const convs = await aiApi.getConversations();
+      set({ conversations: convs });
+      if (!get().activeConversationId && convs.length > 0) {
+        await get().selectConversation(convs[0].id);
+      }
+    } catch (err) {
+      console.warn('[AICoachStore] Could not load conversations from server:', err);
+    }
+  },
+
+  selectConversation: async (conversationId: string) => {
+    try {
+      set({ isThinking: true, error: null, activeConversationId: conversationId });
+      const msgs = await aiApi.getMessages(conversationId);
+      const formatted: AIChatMessage[] = msgs.map((m) => ({
+        id: m.id,
+        sender: m.sender,
+        text: m.text,
+        timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }));
+
+      set({
+        chatMessages: formatted.length > 0 ? formatted : initialChatMessages,
+        isThinking: false,
+      });
+    } catch (err: any) {
+      console.error('[AICoachStore] Failed to load messages:', err);
+      set({ isThinking: false, error: 'Failed to load conversation history' });
+    }
+  },
+
+  clearChatHistory: async () => {
+    const activeId = get().activeConversationId;
+    if (activeId) {
+      try {
+        await aiApi.deleteConversation(activeId);
+      } catch (err) {
+        console.warn('[AICoachStore] Failed to delete conversation on server:', err);
+      }
+    }
+    await get().startNewConversation();
   },
 
   getDailyBriefing: () => {
@@ -310,7 +346,7 @@ export const useAICoachStore = create<AICoachState>((set, get) => ({
       overallScore: Math.round(perfState.performanceScore / 10),
       summaryMarkdown: `# ${type.toUpperCase()} PERFORMANCE REPORT\n\n` +
         `**Date**: ${dateStr}\n` +
-        `**Overall Score Index**: ${perfState.performanceScore} / 1000 (${perfState.levelInfo.title} Level)\n\n` +
+        `**Overall Score Index**: ${perfState.performanceScore} / 1000 (${perfState.levelInfo.level} Level)\n\n` +
         `## 📊 Module Breakdown\n` +
         `- **Discipline**: High consistency, 12-day active streak.\n` +
         `- **Body**: Workout completed, 2.2L hydration logged.\n` +

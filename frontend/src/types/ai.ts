@@ -101,3 +101,39 @@ export interface AIMemory {
   coachingStyle: 'encouraging' | 'strict' | 'analytical' | 'direct';
   consentAnalytics: boolean;
 }
+
+export interface AIConversationDTO {
+  id: string;
+  userId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage?: string;
+  messageCount?: number;
+}
+
+export interface AIMessageDTO {
+  id: string;
+  conversationId: string;
+  sender: 'user' | 'coach';
+  text: string;
+  contextSummary?: string | null;
+  createdAt: string;
+}
+
+export interface AIChatResponseDTO {
+  response: string;
+  conversationId: string;
+  messageId: string;
+  timestamp: string;
+  contextSnapshot?: {
+    score: number;
+    level: string;
+    streak: number;
+    tasks: string;
+    workouts: number;
+    water: string;
+    calories: string;
+  };
+}
+
