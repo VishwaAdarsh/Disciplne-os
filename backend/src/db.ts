@@ -376,6 +376,58 @@ export function initDB() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT NOT NULL,
+      priority TEXT DEFAULT 'normal',
+      is_read INTEGER DEFAULT 0,
+      entity_type TEXT,
+      entity_id TEXT,
+      action_url TEXT,
+      scheduled_for TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      deleted_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS reminders (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      entity_type TEXT,
+      entity_id TEXT,
+      time_of_day TEXT NOT NULL,
+      days_of_week TEXT DEFAULT '["mon","tue","wed","thu","fri","sat","sun"]',
+      is_enabled INTEGER DEFAULT 1,
+      last_triggered_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS notification_preferences (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      enabled INTEGER DEFAULT 1,
+      discipline_enabled INTEGER DEFAULT 1,
+      body_enabled INTEGER DEFAULT 1,
+      mind_enabled INTEGER DEFAULT 1,
+      nutrition_enabled INTEGER DEFAULT 1,
+      goals_enabled INTEGER DEFAULT 1,
+      performance_enabled INTEGER DEFAULT 1,
+      reminders_enabled INTEGER DEFAULT 1,
+      quiet_hours_enabled INTEGER DEFAULT 0,
+      quiet_hours_start TEXT DEFAULT '22:00',
+      quiet_hours_end TEXT DEFAULT '07:00',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
     CREATE INDEX IF NOT EXISTS idx_reflections_user_id ON reflections(user_id);
     CREATE INDEX IF NOT EXISTS idx_task_completions_user_id ON task_completions(user_id);
@@ -407,6 +459,10 @@ export function initDB() {
     CREATE INDEX IF NOT EXISTS idx_ai_conversations_user ON ai_conversations(user_id, updated_at);
     CREATE INDEX IF NOT EXISTS idx_ai_messages_conv ON ai_messages(conversation_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_ai_messages_user ON ai_messages(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, is_read, deleted_at);
+    CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_reminders_user_enabled ON reminders(user_id, is_enabled);
+    CREATE INDEX IF NOT EXISTS idx_notif_pref_user ON notification_preferences(user_id);
   `);
 
   try {

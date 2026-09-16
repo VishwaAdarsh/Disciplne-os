@@ -1,35 +1,29 @@
+/**
+ * Notification & Scheduler Routes (SPR-315 / ARCH-009)
+ */
+
 import { Router } from 'express';
-import { sendSuccess } from '../../utils/response';
-import { authenticate, AuthRequest } from '../../middleware';
+import { authenticate } from '../../middleware';
+import { notificationController } from '../../controllers/notifications/notificationController';
 
 const router = Router();
 
-// GET /api/v1/notifications
-router.get('/', authenticate, (_req: AuthRequest, res) => {
-  const notifications = [
-    {
-      id: 'notif-1',
-      title: '🔥 14-Day Streak Protection',
-      message: 'You have completed all non-negotiables today.',
-      type: 'achievement',
-      read: false,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'notif-2',
-      title: '⚡ Performance Increased',
-      message: 'Performance score increased by +12 pts today.',
-      type: 'success',
-      read: true,
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-    },
-  ];
-  return sendSuccess(res, notifications, 'Notifications feed retrieved');
-});
+// Notification preferences
+router.get('/preferences', authenticate, (req, res) => notificationController.getPreferences(req, res));
+router.put('/preferences', authenticate, (req, res) => notificationController.updatePreferences(req, res));
 
-// PATCH /api/v1/notifications/:id/read
-router.patch('/:id/read', authenticate, (req: AuthRequest, res) => {
-  return sendSuccess(res, { notificationId: req.params.id, read: true }, 'Notification marked read');
-});
+// Reminders
+router.get('/reminders', authenticate, (req, res) => notificationController.getReminders(req, res));
+router.post('/reminders', authenticate, (req, res) => notificationController.createReminder(req, res));
+router.put('/reminders/:id', authenticate, (req, res) => notificationController.updateReminder(req, res));
+router.delete('/reminders/:id', authenticate, (req, res) => notificationController.deleteReminder(req, res));
+
+// Notifications feed & unread count
+router.get('/unread-count', authenticate, (req, res) => notificationController.getUnreadCount(req, res));
+router.get('/', authenticate, (req, res) => notificationController.getNotifications(req, res));
+router.patch('/read-all', authenticate, (req, res) => notificationController.markAllRead(req, res));
+router.patch('/:id/read', authenticate, (req, res) => notificationController.markRead(req, res));
+router.delete('/:id', authenticate, (req, res) => notificationController.deleteNotification(req, res));
+router.delete('/', authenticate, (req, res) => notificationController.clearAll(req, res));
 
 export default router;

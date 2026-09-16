@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import { useNotificationStore } from '../store/notificationStore';
 import { LayoutDashboard, CheckSquare, Heart, Brain, Utensils, Target, Sun, Moon, Bell, LogOut, MoreHorizontal, Sparkles } from 'lucide-react';
 import NotificationsModal from './NotificationsModal';
 import MoreMobileNav from './MoreMobileNav';
@@ -25,8 +26,17 @@ const MOBILE_PRIMARY_NAV = [
 export default function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { user, logout, dashboard, theme, setTheme } = useStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMore, setShowMobileMore] = useState(false);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -159,7 +169,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           {/* Notifications Button */}
           <button
-            className="hide-mobile"
             onClick={() => setShowNotifications(!showNotifications)}
             title="Notifications"
             style={{
@@ -175,8 +184,30 @@ export default function Layout({ children }: { children: ReactNode }) {
               position: 'relative',
             }}
           >
-            <Bell size={15} color="var(--text-muted)" />
-            <span style={{ position: 'absolute', top: '4px', right: '4px', width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444' }} />
+            <Bell size={15} color={unreadCount > 0 ? '#6366F1' : 'var(--text-muted)'} />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  minWidth: '16px',
+                  height: '16px',
+                  padding: '0 3px',
+                  borderRadius: '8px',
+                  background: '#EF4444',
+                  color: '#FFFFFF',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 5px rgba(239, 68, 68, 0.4)',
+                }}
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
 
           {/* Profile Details & Sign Out Button */}
@@ -310,7 +341,11 @@ export default function Layout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Mobile More Slide-over Drawer */}
-      <MoreMobileNav isOpen={showMobileMore} onClose={() => setShowMobileMore(false)} />
+      <MoreMobileNav
+        isOpen={showMobileMore}
+        onClose={() => setShowMobileMore(false)}
+        onOpenNotifications={() => setShowNotifications(true)}
+      />
 
       {/* Desktop Footer */}
       <footer className="hide-mobile" style={{ padding: '14px 24px', borderTop: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>

@@ -31,6 +31,8 @@ import v1AnalyticsRoutes from './routes/v1/analytics';
 
 import { requestLogger } from './middleware/requestLogger';
 import { globalErrorHandler } from './middleware/errorHandler';
+import { notificationService } from './services/notifications/notificationService';
+import { schedulerService } from './services/notifications/schedulerService';
 
 dotenv.config();
 
@@ -74,6 +76,9 @@ app.use('/api/health', v1HealthRoutes);
 app.use(globalErrorHandler);
 
 initDB();
+notificationService.initEventListener();
+schedulerService.start();
+
 app.listen(PORT, () => {
   console.log(`\n🧠 DisciplineOS System Architecture Backend running on http://localhost:${PORT}`);
   console.log(`📊 API Health: http://localhost:${PORT}/api/v1/health`);

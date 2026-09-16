@@ -1,15 +1,18 @@
 import { Link, useLocation } from 'react-router-dom';
-import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut, Sparkles } from 'lucide-react';
+import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut, Sparkles, Bell } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { useNotificationStore } from '../store/notificationStore';
 
 interface MoreMobileNavProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenNotifications?: () => void;
 }
 
-export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
+export default function MoreMobileNav({ isOpen, onClose, onOpenNotifications }: MoreMobileNavProps) {
   const { pathname } = useLocation();
   const { user, theme, setTheme, logout, dashboard } = useStore();
+  const { unreadCount } = useNotificationStore();
 
   if (!isOpen) return null;
 
@@ -86,6 +89,49 @@ export default function MoreMobileNav({ isOpen, onClose }: MoreMobileNavProps) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
+          {onOpenNotifications && (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenNotifications();
+              }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                padding: '12px',
+                borderRadius: '12px',
+                background: 'var(--input-bg)',
+                border: '1px solid var(--card-border)',
+                color: 'var(--text-main)',
+                textAlign: 'left',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px' }}>
+                  <Bell size={16} color="#6366F1" />
+                  <span>Notifications</span>
+                </div>
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      background: '#EF4444',
+                      color: '#FFFFFF',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Alerts, reminders & feed</span>
+            </button>
+          )}
+
           {moreItems.map(({ to, label, icon: Icon, desc }) => {
             const active = pathname === to;
             return (
