@@ -1,14 +1,53 @@
-import { useState } from 'react';
-import { Award, AlertTriangle, Zap, Calendar } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Award, AlertTriangle, Zap, Calendar, RefreshCw, AlertCircle } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import MetricCard from '../components/MetricCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
 import BarChartCard from '../components/charts/BarChartCard';
 import PieDistributionCard from '../components/charts/PieDistributionCard';
-import { mockAnalyticsData } from '../mock/analyticsData';
+import { HistoricalComparisonsRow } from '../components/analytics/HistoricalComparisonsRow';
+import { ModuleBreakdownTabs } from '../components/analytics/ModuleBreakdownTabs';
+import { analyticsApi } from '../services/analytics/analyticsApi';
+import type { AnalyticsDTO, AnalyticsTimeRange } from '../types/analytics';
+
+const timeframeMap: Record<string, AnalyticsTimeRange> = {
+  '7 Days': '7d',
+  '30 Days': '30d',
+  '90 Days': '90d',
+  '7D': '7d',
+  '30D': '30d',
+  '90D': '90d',
+};
+
+const reverseTimeframeMap: Record<AnalyticsTimeRange, string> = {
+  '7d': '7 Days',
+  '30d': '30 Days',
+  '90d': '90 Days',
+};
 
 export default function Analytics() {
-  const [timeframe, setTimeframe] = useState<'Today' | 'This Week' | 'This Month' | '90 Days'>('This Month');
+  const [timeRange, setTimeRange] = useState<AnalyticsTimeRange>('30d');
+  const [data, setData] = useState<AnalyticsDTO | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadAnalytics = useCallback(async (range: AnalyticsTimeRange) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await analyticsApi.getAnalytics(range);
+      setData(result);
+    } catch (err: any) {
+      console.error('Failed to load analytics:', err);
+      setError(err?.message || 'Failed to load analytics data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAnalytics(timeRange);
+  }, [timeRange, loadAnalytics]);
 
   const categoryTrendSeries = [
     { key: 'overall', name: 'Overall Score', color: '#4F46E5' },
@@ -16,149 +55,210 @@ export default function Analytics() {
     { key: 'body', name: 'Body', color: '#10B981' },
     { key: 'mind', name: 'Mind', color: '#8B5CF6' },
     { key: 'nutrition', name: 'Nutrition', color: '#F59E0B' },
+    { key: 'goals', name: 'Goals', color: '#06B6D4' },
   ];
 
-  const activityBarData = [
-    { name: 'Week 1', value: 42, color: '#6366F1' },
-    { name: 'Week 2', value: 48, color: '#6366F1' },
-    { name: 'Week 3', value: 54, color: '#6366F1' },
-    { name: 'Week 4', value: 62, color: '#10B981' },
-  ];
+  const bestDayValue = data?.highlights?.bestDayScore ? `${data.highlights.bestDayScore} pts` : '—';
+  const bestDaySubtext = data?.highlights?.bestDay ? `Peak on ${data.highlights.bestDay}` : 'No scoring history';
 
-  const activityDistributionPie = [
-    { name: 'Discipline & Focus', value: 38, color: '#6366F1' },
-    { name: 'Body & Fitness', value: 24, color: '#10B981' },
-    { name: 'Mind & Reflection', value: 18, color: '#8B5CF6' },
-    { name: 'Nutrition Tracking', value: 12, color: '#F59E0B' },
-    { name: 'Goals & Career', value: 8, color: '#06B6D4' },
-  ];
+  const bestCatValue = data?.highlights?.bestCategory || 'Discipline';
+  const bestCatSubtext = data?.highlights?.bestCategoryScore
+    ? `Avg score: ${data.highlights.bestCategoryScore}`
+    : 'Awaiting logs';
+
+  const attentionValue = data?.highlights?.needsAttention || 'None';
+  const attentionSubtext = data?.highlights?.needsAttentionScore
+    ? `Current score: ${data.highlights.needsAttentionScore}`
+    : 'All systems nominal';
+
+  const streakValue = `${data?.highlights?.longestStreak ?? 0} Days`;
+  const streakSubtext = data?.discipline?.currentStreak
+    ? `Current streak: ${data.discipline.currentStreak} days`
+    : 'Personal record streak';
+
+  const overallSparkline = data?.overallTrend?.map((p) => p.overall) || [];
+  const disciplineSparkline = data?.overallTrend?.map((p) => p.discipline) || [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
       <PageHeader
         title="Performance Analytics"
-        subtitle="Deep comparative analytics across all 6 core operating categories."
-        categories={['Today', 'This Week', 'This Month', '90 Days']}
-        activeCategory={timeframe}
-        onSelectCategory={(tf) => setTimeframe(tf as any)}
+        subtitle="Historical trajectory and multi-module insights across Discipline, Body, Mind, Nutrition, and Goals."
+        categories={['7 Days', '30 Days', '90 Days']}
+        activeCategory={reverseTimeframeMap[timeRange]}
+        onSelectCategory={(cat) => {
+          const mapped = timeframeMap[cat];
+          if (mapped) setTimeRange(mapped);
+        }}
+        actionRight={
+          <button
+            onClick={() => loadAnalytics(timeRange)}
+            disabled={loading}
+            title="Refresh Analytics"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
+              color: 'var(--text-muted)',
+              borderRadius: '10px',
+              padding: '7px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <span>{loading ? 'Updating...' : 'Refresh'}</span>
+          </button>
+        }
       />
 
-      {/* HIGHLIGHT CALLOUTS CARDS GRID WITH SPARKLINES */}
+      {/* ERROR BANNER */}
+      {error && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '14px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertCircle size={20} color="#EF4444" />
+            <span style={{ fontSize: '13px', color: '#FCA5A5' }}>{error}</span>
+          </div>
+          <button
+            onClick={() => loadAnalytics(timeRange)}
+            style={{
+              background: '#EF4444',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* HIGHLIGHT CALLOUTS CARDS GRID */}
       <div className="mobile-kpi-grid" style={{ gap: '12px' }}>
         <MetricCard
           title="Best Day"
-          value={mockAnalyticsData.highlights.bestDayScore}
-          subtext={mockAnalyticsData.highlights.bestDay}
+          value={loading && !data ? '...' : bestDayValue}
+          subtext={bestDaySubtext}
           badge="PEAK SCORE"
           badgeColor="#10B981"
           accentClass="text-gradient-success"
-          sparklineData={[82, 85, 88, 90, 91, 92]}
+          sparklineData={overallSparkline}
           sparklineColor="#10B981"
           icon={<Award size={18} color="#10B981" />}
         />
 
         <MetricCard
           title="Best Category"
-          value={mockAnalyticsData.highlights.bestCategory}
-          subtext={`Avg score: ${mockAnalyticsData.highlights.bestCategoryScore}`}
+          value={loading && !data ? '...' : bestCatValue}
+          subtext={bestCatSubtext}
           badge="TOP RATED"
           badgeColor="#6366F1"
           accentClass="text-gradient-brand"
-          sparklineData={[72, 78, 82, 84, 85, 86]}
+          sparklineData={disciplineSparkline}
           sparklineColor="#6366F1"
           icon={<Zap size={18} color="#6366F1" />}
         />
 
         <MetricCard
           title="Needs Attention"
-          value={mockAnalyticsData.highlights.needsAttention}
-          subtext={`Current score: ${mockAnalyticsData.highlights.needsAttentionScore}`}
+          value={loading && !data ? '...' : attentionValue}
+          subtext={attentionSubtext}
           badge="FOCUS AREA"
           badgeColor="#EF4444"
           accentClass="text-gradient-danger"
-          sparklineData={[60, 62, 64, 65, 66, 68]}
           sparklineColor="#EF4444"
           icon={<AlertTriangle size={18} color="#EF4444" />}
         />
 
         <MetricCard
           title="Longest Streak"
-          value={`${mockAnalyticsData.highlights.longestStreak} Days`}
-          subtext="Personal record streak"
+          value={loading && !data ? '...' : streakValue}
+          subtext={streakSubtext}
           badge="RECORD"
           badgeColor="#F59E0B"
           accentClass="text-gradient-streak"
-          sparklineData={[12, 14, 16, 18, 20, 21]}
           sparklineColor="#F59E0B"
           icon={<Calendar size={18} color="#F59E0B" />}
         />
       </div>
 
-      {/* COMPARISON CARDS ROW */}
-      <div className="grid-responsive-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Today vs Yesterday</div>
-          <div className="font-sekuya text-gradient-score" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
-            {mockAnalyticsData.comparisons.todayVsYesterday.score} pts
-          </div>
-          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
-            {mockAnalyticsData.comparisons.todayVsYesterday.change}
-          </div>
-        </div>
-
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Week vs Last Week</div>
-          <div className="font-sekuya text-gradient-brand" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
-            {mockAnalyticsData.comparisons.thisWeekVsLastWeek.score} pts
-          </div>
-          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
-            {mockAnalyticsData.comparisons.thisWeekVsLastWeek.change}
-          </div>
-        </div>
-
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Month vs Last Month</div>
-          <div className="font-sekuya text-gradient-xp" style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0' }}>
-            {mockAnalyticsData.comparisons.thisMonthVsLastMonth.score} pts
-          </div>
-          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
-            {mockAnalyticsData.comparisons.thisMonthVsLastMonth.change}
-          </div>
-        </div>
-      </div>
+      {/* PERIOD-OVER-PERIOD COMPARISON CARDS */}
+      {data && (
+        <HistoricalComparisonsRow
+          hasPreviousPeriodData={data.comparisons.hasPreviousPeriodData}
+          performance={data.comparisons.performance}
+          discipline={data.comparisons.discipline}
+          workouts={data.comparisons.workouts}
+          water={data.comparisons.water}
+        />
+      )}
 
       {/* OVERALL MULTI-CATEGORY TREND CHART */}
       <AreaTrendChartCard
-        title={`Overall Performance Multi-Category Trend (${timeframe})`}
-        subtitle="Comparative trajectory across Discipline, Body, Mind, and Nutrition"
-        data={mockAnalyticsData.overallTrend}
+        title={`Overall Performance Multi-Module Trend (${reverseTimeframeMap[timeRange]})`}
+        subtitle="Comparative trajectory across Discipline, Body, Mind, Nutrition, and Goals (0-1000 scale)"
+        data={data?.overallTrend || []}
         series={categoryTrendSeries}
         height={240}
         unit=" pts"
         timeframes={['7D', '30D', '90D']}
+        onTimeframeChange={(tf) => {
+          const mapped = timeframeMap[tf];
+          if (mapped) setTimeRange(mapped);
+        }}
       />
 
       {/* CHARTS ROW: ACTIVITY BAR CHART & ACTIVITY DISTRIBUTION PIE */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
         <BarChartCard
-          title="Weekly Activity Volume"
-          subtitle="Total completed actions & sessions logged per week"
-          data={activityBarData}
+          title="Daily Activity Volume"
+          subtitle={`Total logged actions across all modules (${reverseTimeframeMap[timeRange]})`}
+          data={data?.activityVolume || []}
           defaultColor="#6366F1"
-          unit=" logs"
+          unit=" actions"
           height={210}
-          badge="GROWTH"
+          badge="ACTIVITY"
           badgeColor="#10B981"
         />
 
         <PieDistributionCard
           title="Category Activity Distribution"
           subtitle="Part-to-whole share of total logged operator actions"
-          data={activityDistributionPie}
-          unit="%"
+          data={data?.activityDistribution || []}
+          unit=" actions"
           height={210}
         />
       </div>
+
+      {/* MODULE-LEVEL DEEP DIVE TABS */}
+      {data && (
+        <ModuleBreakdownTabs
+          discipline={data.discipline}
+          body={data.body}
+          mind={data.mind}
+          nutrition={data.nutrition}
+          goals={data.goals}
+        />
+      )}
     </div>
   );
 }
