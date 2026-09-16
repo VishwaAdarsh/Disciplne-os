@@ -28,11 +28,13 @@ import v1AIRoutes from './routes/v1/ai';
 import v1NotificationRoutes from './routes/v1/notifications';
 import v1OverviewRoutes from './routes/v1/overview';
 import v1AnalyticsRoutes from './routes/v1/analytics';
+import v1RealtimeRoutes from './routes/v1/realtime';
 
 import { requestLogger } from './middleware/requestLogger';
 import { globalErrorHandler } from './middleware/errorHandler';
 import { notificationService } from './services/notifications/notificationService';
 import { schedulerService } from './services/notifications/schedulerService';
+import { realtimeService } from './services/realtime/realtimeService';
 
 dotenv.config();
 
@@ -63,6 +65,7 @@ app.use('/api/v1/ai', v1AIRoutes);
 app.use('/api/v1/notifications', v1NotificationRoutes);
 app.use('/api/v1/overview', v1OverviewRoutes);
 app.use('/api/v1/analytics', v1AnalyticsRoutes);
+app.use('/api/v1/realtime', v1RealtimeRoutes);
 
 // Legacy routes for backward compatibility
 app.use('/api/auth', authRoutes);
@@ -78,6 +81,7 @@ app.use(globalErrorHandler);
 initDB();
 notificationService.initEventListener();
 schedulerService.start();
+realtimeService.initEventListener();
 
 app.listen(PORT, () => {
   console.log(`\n🧠 DisciplineOS System Architecture Backend running on http://localhost:${PORT}`);

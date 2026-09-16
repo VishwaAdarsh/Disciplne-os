@@ -2,6 +2,8 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useNotificationStore } from '../store/notificationStore';
+import { useRealtimeStore } from '../store/realtimeStore';
+import { realtimeClient } from '../services/realtime/realtimeClient';
 import { LayoutDashboard, CheckSquare, Heart, Brain, Utensils, Target, Sun, Moon, Bell, LogOut, MoreHorizontal, Sparkles } from 'lucide-react';
 import NotificationsModal from './NotificationsModal';
 import MoreMobileNav from './MoreMobileNav';
@@ -27,6 +29,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { user, logout, dashboard, theme, setTheme } = useStore();
   const { unreadCount, fetchUnreadCount } = useNotificationStore();
+  const { status: realtimeStatus } = useRealtimeStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMore, setShowMobileMore] = useState(false);
 
@@ -37,6 +40,17 @@ export default function Layout({ children }: { children: ReactNode }) {
     }, 60000);
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
+
+  useEffect(() => {
+    if (user) {
+      realtimeClient.connect();
+    } else {
+      realtimeClient.disconnect();
+    }
+    return () => {
+      realtimeClient.disconnect();
+    };
+  }, [user]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -143,6 +157,44 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             <span className="font-sekuya text-gradient-xp" style={{ fontSize: '12px', fontWeight: 700 }}>
               {formattedLevel}
+            </span>
+          </div>
+
+          {/* Live Sync Status Indicator */}
+          <div
+            title={`Real-Time Sync: ${realtimeStatus}`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              borderRadius: '20px',
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background:
+                  realtimeStatus === 'connected'
+                    ? '#10B981'
+                    : realtimeStatus === 'connecting' || realtimeStatus === 'reconnecting'
+                    ? '#F59E0B'
+                    : '#9CA3AF',
+                boxShadow:
+                  realtimeStatus === 'connected'
+                    ? '0 0 6px rgba(16, 185, 129, 0.6)'
+                    : 'none',
+              }}
+            />
+            <span className="hide-mobile" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              {realtimeStatus === 'connected' ? 'Live' : realtimeStatus === 'reconnecting' ? 'Sync...' : 'Offline'}
             </span>
           </div>
 

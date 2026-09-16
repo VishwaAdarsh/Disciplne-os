@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { notificationRepository } from '../../repositories/notifications/notificationRepository';
 import { eventDispatcher } from '../../events/eventDispatcher';
 import { EventDTO } from '../../types/events';
+import { realtimeService } from '../realtime/realtimeService';
 import {
   NotificationDTO,
   NotificationFilter,
@@ -73,23 +74,42 @@ export class NotificationService {
       scheduled_for: input.scheduledFor || null,
     });
 
-    return notificationRepository.toNotificationDTO(record);
+    const dto = notificationRepository.toNotificationDTO(record);
+    const unreadCount = await notificationRepository.getUnreadCount(input.userId);
+    realtimeService.sendToUser(input.userId, 'notification', { notification: dto, unreadCount });
+
+    return dto;
   }
 
   async markAsRead(id: string, userId: string): Promise<boolean> {
-    return notificationRepository.markAsRead(id, userId);
+    const success = await notificationRepository.markAsRead(id, userId);
+    if (success) {
+      const unreadCount = await notificationRepository.getUnreadCount(userId);
+      realtimeService.sendToUser(userId, 'notification_update', { unreadCount, readId: id });
+    }
+    return success;
   }
 
   async markAllAsRead(userId: string): Promise<number> {
-    return notificationRepository.markAllAsRead(userId);
+    const count = await notificationRepository.markAllAsRead(userId);
+    realtimeService.sendToUser(userId, 'notification_update', { unreadCount: 0, allRead: true });
+    return count;
   }
 
   async deleteNotification(id: string, userId: string): Promise<boolean> {
-    return notificationRepository.deleteNotification(id, userId);
+    const success = await notificationRepository.deleteNotification(id, userId);
+    if (success) {
+      const unreadCount = await notificationRepository.getUnreadCount(userId);
+      realtimeService.sendToUser(userId, 'notification_update', { unreadCount, deletedId: id });
+    }
+    return success;
   }
 
   async clearAll(userId: string, onlyRead: boolean = false): Promise<number> {
-    return notificationRepository.clearAll(userId, onlyRead);
+    const count = await notificationRepository.clearAll(userId, onlyRead);
+    const unreadCount = await notificationRepository.getUnreadCount(userId);
+    realtimeService.sendToUser(userId, 'notification_update', { unreadCount });
+    return count;
   }
 
   // ==================== REMINDERS ====================
