@@ -9,7 +9,7 @@ import { sendSuccess } from '../../responses/apiResponse';
 
 export async function getAnalytics(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const range = typeof req.query.range === 'string' ? req.query.range : undefined;
 
     const analytics = await analyticsService.getAnalytics(userId, range);

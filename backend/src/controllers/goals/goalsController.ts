@@ -14,7 +14,7 @@ import {
 
 export async function getGoals(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
 
@@ -27,7 +27,7 @@ export async function getGoals(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function getGoalsSummary(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const summary = await goalsService.getGoalsSummary(userId);
     sendSuccess(res, summary, 'Goals summary retrieved successfully', 200);
   } catch (err) {
@@ -37,7 +37,7 @@ export async function getGoalsSummary(req: AuthRequest, res: Response, next: Nex
 
 export async function getGoalById(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const goal = await goalsService.getGoalById(id, userId);
@@ -49,7 +49,7 @@ export async function getGoalById(req: AuthRequest, res: Response, next: NextFun
 
 export async function createGoal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateCreateGoalInput(input);
 
@@ -62,7 +62,7 @@ export async function createGoal(req: AuthRequest, res: Response, next: NextFunc
 
 export async function updateGoal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
     validateUpdateGoalInput(req.body);
 
@@ -75,7 +75,7 @@ export async function updateGoal(req: AuthRequest, res: Response, next: NextFunc
 
 export async function setGoalStatus(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
     const { status } = req.body;
 
@@ -88,7 +88,7 @@ export async function setGoalStatus(req: AuthRequest, res: Response, next: NextF
 
 export async function updateGoalProgress(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
     const { progressPercent, currentValue } = req.body;
 
@@ -101,7 +101,7 @@ export async function updateGoalProgress(req: AuthRequest, res: Response, next: 
 
 export async function deleteGoal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await goalsService.deleteGoal(id, userId);
@@ -115,7 +115,7 @@ export async function deleteGoal(req: AuthRequest, res: Response, next: NextFunc
 
 export async function addMilestone(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id: goalId } = req.params;
     const { title, dueDate } = req.body;
     validateMilestoneInput(title);
@@ -129,7 +129,7 @@ export async function addMilestone(req: AuthRequest, res: Response, next: NextFu
 
 export async function toggleMilestone(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id: goalId, mId: milestoneId } = req.params;
 
     const milestone = await goalsService.toggleMilestone(goalId, milestoneId, userId);
@@ -141,7 +141,7 @@ export async function toggleMilestone(req: AuthRequest, res: Response, next: Nex
 
 export async function deleteMilestone(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id: goalId, mId: milestoneId } = req.params;
 
     await goalsService.deleteMilestone(goalId, milestoneId, userId);

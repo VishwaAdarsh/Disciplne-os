@@ -9,7 +9,7 @@ import { sendSuccess } from '../../responses/apiResponse';
 
 export async function getSummary(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const period = typeof req.query.period === 'string' ? req.query.period : undefined;
     const startDate = typeof req.query.startDate === 'string' ? req.query.startDate : undefined;
     const endDate = typeof req.query.endDate === 'string' ? req.query.endDate : undefined;
@@ -30,7 +30,7 @@ export async function getSummary(req: AuthRequest, res: Response, next: NextFunc
 
 export async function exportCSV(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const dataset = typeof req.query.dataset === 'string' ? req.query.dataset : 'all';
     const startDate = typeof req.query.startDate === 'string' ? req.query.startDate : undefined;
     const endDate = typeof req.query.endDate === 'string' ? req.query.endDate : undefined;
@@ -47,7 +47,7 @@ export async function exportCSV(req: AuthRequest, res: Response, next: NextFunct
 
 export async function exportJSON(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const todayStr = new Date().toISOString().split('T')[0];
 
     const data = reportsService.exportJSON(userId);

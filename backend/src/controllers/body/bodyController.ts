@@ -17,7 +17,7 @@ import {
 // WORKOUTS
 export async function getWorkouts(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const workouts = await bodyService.getWorkouts(userId, date);
     sendSuccess(res, workouts, 'Workouts retrieved successfully', 200);
@@ -28,7 +28,7 @@ export async function getWorkouts(req: AuthRequest, res: Response, next: NextFun
 
 export async function createWorkout(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateWorkoutInput(input);
 
@@ -41,7 +41,7 @@ export async function createWorkout(req: AuthRequest, res: Response, next: NextF
 
 export async function updateWorkout(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const workout = await bodyService.updateWorkout(id, userId, req.body);
@@ -53,7 +53,7 @@ export async function updateWorkout(req: AuthRequest, res: Response, next: NextF
 
 export async function deleteWorkout(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await bodyService.deleteWorkout(id, userId);
@@ -66,7 +66,7 @@ export async function deleteWorkout(req: AuthRequest, res: Response, next: NextF
 // SLEEP
 export async function getSleep(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const sleep = await bodyService.getSleep(userId, date);
     sendSuccess(res, sleep, 'Sleep log retrieved successfully', 200);
@@ -77,7 +77,7 @@ export async function getSleep(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function logSleep(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateSleepInput(input);
 
@@ -91,7 +91,7 @@ export async function logSleep(req: AuthRequest, res: Response, next: NextFuncti
 // WATER
 export async function getWater(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : new Date().toISOString().split('T')[0];
     const summary = await bodyService.getDailySummary(userId, date);
     sendSuccess(res, summary.water, 'Water intake status retrieved successfully', 200);
@@ -102,7 +102,7 @@ export async function getWater(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function logWater(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateWaterInput(input);
 
@@ -116,7 +116,7 @@ export async function logWater(req: AuthRequest, res: Response, next: NextFuncti
 // STEPS
 export async function getSteps(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : new Date().toISOString().split('T')[0];
     const summary = await bodyService.getDailySummary(userId, date);
     sendSuccess(res, summary.steps, 'Step count retrieved successfully', 200);
@@ -127,7 +127,7 @@ export async function getSteps(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function logSteps(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateStepsInput(input);
 
@@ -141,7 +141,7 @@ export async function logSteps(req: AuthRequest, res: Response, next: NextFuncti
 // WEIGHT & BODY MEASUREMENTS
 export async function getWeight(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const summary = await bodyService.getDailySummary(userId);
     sendSuccess(res, summary.weight, 'Weight log retrieved successfully', 200);
   } catch (err) {
@@ -151,7 +151,7 @@ export async function getWeight(req: AuthRequest, res: Response, next: NextFunct
 
 export async function logWeight(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateWeightInput(input);
 
@@ -165,7 +165,7 @@ export async function logWeight(req: AuthRequest, res: Response, next: NextFunct
 // DAILY SUMMARY
 export async function getSummary(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const summary = await bodyService.getDailySummary(userId, date);
     sendSuccess(res, summary, 'Daily health summary retrieved successfully', 200);

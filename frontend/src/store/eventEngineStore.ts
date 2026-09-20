@@ -19,85 +19,6 @@ const STORAGE_KEYS = {
   OFFLINE_QUEUE: 'dos_offline_queue',
 };
 
-// Initial mock events for activity timeline richness
-const initialMockEvents: SystemEvent[] = [
-  {
-    eventId: 'evt-101',
-    userId: 'usr-1',
-    module: 'body',
-    eventType: 'WORKOUT_COMPLETED',
-    timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-    unixTimestamp: Date.now() - 25 * 60 * 1000,
-    title: 'Workout Completed',
-    description: 'Hyper-trophy Strength Training (45 mins)',
-    icon: '💪',
-    payload: { durationMinutes: 45, caloriesBurned: 320, xpEarned: 40 },
-    source: 'user',
-    status: 'completed',
-    scoreImpact: 5,
-  },
-  {
-    eventId: 'evt-102',
-    userId: 'usr-1',
-    module: 'nutrition',
-    eventType: 'WATER_ADDED',
-    timestamp: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
-    unixTimestamp: Date.now() - 65 * 60 * 1000,
-    title: 'Water Logged',
-    description: 'Logged 500ml Hydration',
-    icon: '💧',
-    payload: { amountMl: 500, totalTodayLiters: 2.5 },
-    source: 'user',
-    status: 'completed',
-    scoreImpact: 1,
-  },
-  {
-    eventId: 'evt-103',
-    userId: 'usr-1',
-    module: 'discipline',
-    eventType: 'DEEP_WORK_FINISHED',
-    timestamp: new Date(Date.now() - 130 * 60 * 1000).toISOString(),
-    unixTimestamp: Date.now() - 130 * 60 * 1000,
-    title: 'Deep Work Session Finished',
-    description: 'Completed 2 hours uninterruptible core coding',
-    icon: '💻',
-    payload: { durationMinutes: 120, sessionName: 'Core Coding' },
-    source: 'user',
-    status: 'completed',
-    scoreImpact: 8,
-  },
-  {
-    eventId: 'evt-104',
-    userId: 'usr-1',
-    module: 'mind',
-    eventType: 'MOOD_LOGGED',
-    timestamp: new Date(Date.now() - 220 * 60 * 1000).toISOString(),
-    unixTimestamp: Date.now() - 220 * 60 * 1000,
-    title: 'Mood & Energy Logged',
-    description: 'Logged High Energy (8/10)',
-    icon: '🧘',
-    payload: { mood: 'Energetic', score: 8 },
-    source: 'user',
-    status: 'completed',
-    scoreImpact: 2,
-  },
-  {
-    eventId: 'evt-105',
-    userId: 'usr-1',
-    module: 'nutrition',
-    eventType: 'MEAL_ADDED',
-    timestamp: new Date(Date.now() - 350 * 60 * 1000).toISOString(),
-    unixTimestamp: Date.now() - 350 * 60 * 1000,
-    title: 'Breakfast Added',
-    description: 'Oatmeal & Protein Shake (550 kcal)',
-    icon: '🍳',
-    payload: { mealName: 'Breakfast', calories: 550, protein: 35 },
-    source: 'user',
-    status: 'completed',
-    scoreImpact: 3,
-  },
-];
-
 function loadStoredHistory(): SystemEvent[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.HISTORY);
@@ -105,7 +26,7 @@ function loadStoredHistory(): SystemEvent[] {
   } catch (err) {
     console.error('Failed to parse event history from storage', err);
   }
-  return initialMockEvents;
+  return [];
 }
 
 function loadStoredSessions(): Record<string, LiveSession> {

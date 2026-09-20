@@ -10,7 +10,7 @@ import { validateCreateHabitInput } from '../../validators/disciplineValidator';
 
 export async function getHabits(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const habits = await habitService.getHabits(userId);
     sendSuccess(res, habits, 'Habits retrieved successfully', 200);
   } catch (err) {
@@ -20,7 +20,7 @@ export async function getHabits(req: AuthRequest, res: Response, next: NextFunct
 
 export async function createHabit(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { habitName, description, category, frequency, targetDaysPerWeek } = req.body;
 
     const input = {
@@ -42,7 +42,7 @@ export async function createHabit(req: AuthRequest, res: Response, next: NextFun
 
 export async function updateHabit(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const habit = await habitService.updateHabit(id, userId, req.body);
@@ -54,7 +54,7 @@ export async function updateHabit(req: AuthRequest, res: Response, next: NextFun
 
 export async function completeHabit(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const habit = await habitService.completeHabit(id, userId);
@@ -66,7 +66,7 @@ export async function completeHabit(req: AuthRequest, res: Response, next: NextF
 
 export async function deleteHabit(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await habitService.deleteHabit(id, userId);

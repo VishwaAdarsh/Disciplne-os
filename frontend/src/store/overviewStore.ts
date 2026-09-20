@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { mockOverviewData, type OverviewMockData } from '../mock/dashboardData';
 import { overviewApi } from '../services/overview/overviewApi';
-import type { DailyOverviewDTO } from '../types/overview';
+import type { DailyOverviewDTO, OverviewDashboardData } from '../types/overview';
 import { usePerformanceEngineStore } from './performanceEngineStore';
 
 export type EventType =
@@ -25,9 +24,64 @@ export interface ModuleEvent {
   icon: string;
 }
 
+const initialCleanOverviewData: OverviewDashboardData = {
+  greeting: 'Welcome',
+  user: 'Operator',
+  dateStr: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+  subtitle: 'Performance Command Center - Real-Time aggregated state',
+  comparisons: {
+    today: 0,
+    todayTrend: '0%',
+    thisWeek: 0,
+    thisWeekTrend: '0%',
+    thisMonth: 0,
+    thisMonthTrend: '0%',
+    yesterday: 0,
+    lastWeek: 0,
+    lastMonth: 0,
+  },
+  categoryScores: {
+    discipline: 0,
+    body: 0,
+    mind: 0,
+    nutrition: 0,
+    goals: 0,
+  },
+  kpis: {
+    disciplineScore: 0,
+    maxDisciplineScore: 1000,
+    scoreTier: 'BUILDING',
+    scoreChangeThisWeek: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    operatorLevel: 1,
+    currentXp: 0,
+    targetXp: 250,
+    nonnegDone: 0,
+    nonnegTotal: 0,
+  },
+  liveActivity: {
+    hasActiveSession: false,
+    activeTask: '',
+    elapsedSeconds: 0,
+    startTime: '',
+    isPaused: false,
+    recentActivities: [],
+  },
+  nonNegotiables: [],
+  history30Days: [],
+  insights: [],
+  weeklyPreview: {
+    performance: 0,
+    goalCompletion: 0,
+    currentStreak: 0,
+    reflectionStatus: 'Pending Sunday',
+  },
+};
+
 interface OverviewState {
   overview: DailyOverviewDTO | null;
-  data: OverviewMockData;
+  data: OverviewDashboardData;
   isLoading: boolean;
   error: string | null;
   activeTimeframe: '7D' | '30D' | '90D';
@@ -45,7 +99,7 @@ interface OverviewState {
 
 export const useOverviewStore = create<OverviewState>((set, get) => ({
   overview: null,
-  data: mockOverviewData,
+  data: initialCleanOverviewData,
   isLoading: false,
   error: null,
   activeTimeframe: '30D',
@@ -55,12 +109,14 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
 
   nextInsight: () => {
     const { insightIndex, data } = get();
+    if (!data.insights || data.insights.length === 0) return;
     const next = (insightIndex + 1) % data.insights.length;
     set({ insightIndex: next });
   },
 
   prevInsight: () => {
     const { insightIndex, data } = get();
+    if (!data.insights || data.insights.length === 0) return;
     const prev = (insightIndex - 1 + data.insights.length) % data.insights.length;
     set({ insightIndex: prev });
   },
@@ -113,7 +169,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
       }));
 
       // Keep legacy data object in sync with real values
-      const updatedData: OverviewMockData = {
+      const updatedData: OverviewDashboardData = {
         ...get().data,
         user: res.user.name || 'Operator',
         greeting: res.greeting,
@@ -136,11 +192,11 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
           nonnegDone: res.discipline.tasksCompletedToday,
           nonnegTotal: res.discipline.tasksTotalToday,
         },
-        nonNegotiables: pendingAsNonnegs.length > 0 ? pendingAsNonnegs : get().data.nonNegotiables,
-        history30Days: res.history30Days && res.history30Days.length > 0 ? res.history30Days : get().data.history30Days,
+        nonNegotiables: pendingAsNonnegs,
+        history30Days: res.history30Days || [],
         liveActivity: {
           ...get().data.liveActivity,
-          recentActivities: recentActivities.length > 0 ? recentActivities : get().data.liveActivity.recentActivities,
+          recentActivities: recentActivities,
         },
       };
 

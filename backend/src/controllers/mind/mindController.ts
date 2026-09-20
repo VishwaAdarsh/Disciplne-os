@@ -18,7 +18,7 @@ import {
 // MOOD
 export async function getMood(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const mood = await mindService.getMood(userId, date);
     sendSuccess(res, mood, 'Mood log retrieved successfully', 200);
@@ -29,7 +29,7 @@ export async function getMood(req: AuthRequest, res: Response, next: NextFunctio
 
 export async function logMood(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateMoodInput(input);
 
@@ -43,7 +43,7 @@ export async function logMood(req: AuthRequest, res: Response, next: NextFunctio
 // ENERGY
 export async function getEnergy(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const energy = await mindService.getEnergy(userId, date);
     sendSuccess(res, energy, 'Energy log retrieved successfully', 200);
@@ -54,7 +54,7 @@ export async function getEnergy(req: AuthRequest, res: Response, next: NextFunct
 
 export async function logEnergy(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateEnergyInput(input);
 
@@ -68,7 +68,7 @@ export async function logEnergy(req: AuthRequest, res: Response, next: NextFunct
 // STRESS
 export async function getStress(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const stress = await mindService.getStress(userId, date);
     sendSuccess(res, stress, 'Stress log retrieved successfully', 200);
@@ -79,7 +79,7 @@ export async function getStress(req: AuthRequest, res: Response, next: NextFunct
 
 export async function logStress(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateStressInput(input);
 
@@ -93,7 +93,7 @@ export async function logStress(req: AuthRequest, res: Response, next: NextFunct
 // FOCUS
 export async function getFocus(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const focus = await mindService.getFocus(userId, date);
     sendSuccess(res, focus, 'Focus log retrieved successfully', 200);
@@ -104,7 +104,7 @@ export async function getFocus(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function logFocus(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateFocusInput(input);
 
@@ -118,7 +118,7 @@ export async function logFocus(req: AuthRequest, res: Response, next: NextFuncti
 // JOURNAL (PRIVACY ENFORCED)
 export async function getJournals(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
     const journals = await mindService.getJournals(userId, search);
     sendSuccess(res, journals, 'Journal entries retrieved successfully', 200);
@@ -129,7 +129,7 @@ export async function getJournals(req: AuthRequest, res: Response, next: NextFun
 
 export async function createJournal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateJournalInput(input);
 
@@ -142,7 +142,7 @@ export async function createJournal(req: AuthRequest, res: Response, next: NextF
 
 export async function updateJournal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const journal = await mindService.updateJournal(id, userId, req.body);
@@ -154,7 +154,7 @@ export async function updateJournal(req: AuthRequest, res: Response, next: NextF
 
 export async function deleteJournal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await mindService.deleteJournal(id, userId);
@@ -167,7 +167,7 @@ export async function deleteJournal(req: AuthRequest, res: Response, next: NextF
 // MEDITATION
 export async function getMeditation(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const sessions = await mindService.getMeditations(userId, date);
     sendSuccess(res, sessions, 'Meditation sessions retrieved successfully', 200);
@@ -178,7 +178,7 @@ export async function getMeditation(req: AuthRequest, res: Response, next: NextF
 
 export async function logMeditation(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateMeditationInput(input);
 
@@ -192,7 +192,7 @@ export async function logMeditation(req: AuthRequest, res: Response, next: NextF
 // DAILY SUMMARY
 export async function getSummary(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const summary = await mindService.getDailySummary(userId, date);
     sendSuccess(res, summary, 'Daily mental summary retrieved successfully', 200);

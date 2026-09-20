@@ -200,3 +200,89 @@ export interface DailyOverviewDTO {
   recentActivity: OverviewActivityItem[];
   history30Days: OverviewHistoryPoint[];
 }
+
+export interface ComparisonMetric {
+  label: string;
+  value: number;
+  trend?: string;
+  isUp?: boolean;
+}
+
+export interface OverviewDashboardData {
+  greeting: string;
+  user: string;
+  dateStr: string;
+  subtitle: string;
+  comparisons: {
+    today: number;
+    todayTrend: string;
+    thisWeek: number;
+    thisWeekTrend: string;
+    thisMonth: number;
+    thisMonthTrend: string;
+    yesterday: number;
+    lastWeek: number;
+    lastMonth: number;
+  };
+  categoryScores: {
+    discipline: number;
+    body: number;
+    mind: number;
+    nutrition: number;
+    goals: number;
+  };
+  kpis: {
+    disciplineScore: number;
+    maxDisciplineScore: number;
+    scoreTier: string;
+    scoreChangeThisWeek: number;
+    currentStreak: number;
+    longestStreak: number;
+    operatorLevel: number;
+    currentXp: number;
+    targetXp: number;
+    nonnegDone: number;
+    nonnegTotal: number;
+  };
+  liveActivity: {
+    hasActiveSession: boolean;
+    activeTask: string;
+    elapsedSeconds: number;
+    startTime: string;
+    isPaused: boolean;
+    recentActivities: Array<{
+      id: string;
+      time: string;
+      icon: string;
+      text: string;
+      category: 'discipline' | 'body' | 'mind' | 'nutrition' | 'goals';
+    }>;
+  };
+  nonNegotiables: Array<{
+    id: string;
+    title: string;
+    time: string;
+    streakDays: number;
+    completed: boolean;
+  }>;
+  history30Days: Array<{
+    day: string;
+    date: string;
+    score: number;
+    isToday?: boolean;
+  }>;
+  insights: Array<{
+    id: string;
+    category: 'Tips' | 'Insights' | 'Suggestions';
+    title: string;
+    description: string;
+    impact: string;
+  }>;
+  weeklyPreview: {
+    performance: number;
+    goalCompletion: number;
+    currentStreak: number;
+    reflectionStatus: 'Pending Sunday' | 'Completed';
+  };
+}
+

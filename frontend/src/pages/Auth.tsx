@@ -48,41 +48,7 @@ export default function Auth() {
     }
   };
 
-  const handleQuickDemo = async () => {
-    setError('');
-    setLoading(true);
-    const demoEmail = 'selby.thomas.234@gmail.com';
-    const demoPass = 'password123';
-    setForm({ email: demoEmail, name: 'Selby Thomas', password: demoPass });
 
-    try {
-      const res = await authAPI.login({ email: demoEmail, password: demoPass });
-      const payload = res.data?.data || res.data;
-      const tokenVal = payload.accessToken || payload.token;
-      const userVal = payload.user;
-      if (tokenVal && userVal) {
-        setToken(tokenVal);
-        setUser(userVal);
-        return;
-      }
-    } catch (e: any) {
-      try {
-        const resReg = await authAPI.register({ name: 'Selby Thomas', email: demoEmail, password: demoPass });
-        const payload = resReg.data?.data || resReg.data;
-        const tokenVal = payload.accessToken || payload.token;
-        const userVal = payload.user;
-        if (tokenVal && userVal) {
-          setToken(tokenVal);
-          setUser(userVal);
-          return;
-        }
-      } catch (err: any) {
-        setError(extractErrorMessage(err));
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div
@@ -361,37 +327,7 @@ export default function Auth() {
               )}
             </button>
 
-            {/* Quick 1-Click Demo Login */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '6px 0 0' }}>
-              <div style={{ flex: 1, height: '1px', background: 'var(--card-border)' }} />
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>or test instantly</span>
-              <div style={{ flex: 1, height: '1px', background: 'var(--card-border)' }} />
-            </div>
 
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              disabled={loading}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                borderRadius: '10px',
-                padding: '11px',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--text-main)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <Zap size={15} color="#F59E0B" />
-              <span>1-Click Quick Demo Login</span>
-            </button>
           </form>
 
           <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '20px 0 0' }}>

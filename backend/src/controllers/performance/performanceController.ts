@@ -12,7 +12,7 @@ import { PerformanceFilter } from '../../types/performance';
 
 export async function getPerformance(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const performance = await performanceService.getLatestPerformance(userId);
     sendSuccess(res, performance, 'Current performance overview retrieved successfully', 200);
   } catch (err) {
@@ -22,7 +22,7 @@ export async function getPerformance(req: AuthRequest, res: Response, next: Next
 
 export async function getPerformanceHistory(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const pagination = getPaginationParams(req.query);
     const rawFilter = getFilterParams(req.query);
 
@@ -45,7 +45,7 @@ export async function getPerformanceHistory(req: AuthRequest, res: Response, nex
 
 export async function getModuleScores(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const breakdown = await performanceService.getModuleBreakdown(userId);
     sendSuccess(res, breakdown, 'Module performance breakdown retrieved successfully', 200);
   } catch (err) {
@@ -55,7 +55,7 @@ export async function getModuleScores(req: AuthRequest, res: Response, next: Nex
 
 export async function getPerformanceTrends(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const trends = await performanceService.getPerformanceTrends(userId);
     sendSuccess(res, trends, 'Performance trends retrieved successfully', 200);
   } catch (err) {

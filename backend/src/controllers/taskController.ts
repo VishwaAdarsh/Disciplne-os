@@ -11,7 +11,7 @@ import { getFilterParams } from '../utils/filtering';
 
 export async function getTasks(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const pagination = getPaginationParams(req.query);
     const filter = getFilterParams(req.query);
 
@@ -24,7 +24,7 @@ export async function getTasks(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function createTask(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { name, type, timeTarget, why, goalId } = req.body;
 
     const task = await taskService.createTask({
@@ -44,7 +44,7 @@ export async function createTask(req: AuthRequest, res: Response, next: NextFunc
 
 export async function getTaskById(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const task = await taskService.getTaskById(id, userId);

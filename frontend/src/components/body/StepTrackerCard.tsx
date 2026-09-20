@@ -4,7 +4,7 @@ import { useBodyStore } from '../../store/bodyStore';
 import HorizontalProgressBar from '../charts/HorizontalProgressBar';
 
 export default function StepTrackerCard() {
-  const { steps, updateSteps, mockSyncHealthConnect } = useBodyStore();
+  const { steps, updateSteps, syncHealthConnect } = useBodyStore();
   const [isEditing, setIsEditing] = useState(false);
   const [inputVal, setInputVal] = useState(steps.current.toString());
   const [isSyncing, setIsSyncing] = useState(false);
@@ -22,7 +22,7 @@ export default function StepTrackerCard() {
   const handleSync = () => {
     setIsSyncing(true);
     setTimeout(() => {
-      mockSyncHealthConnect();
+      syncHealthConnect();
       setIsSyncing(false);
     }, 600);
   };

@@ -82,7 +82,7 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
     get().loadAllData(date);
   },
 
-  nutritionScore: 85,
+  nutritionScore: 0,
   calories: {
     current: 0,
     target: 2200,

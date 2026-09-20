@@ -11,7 +11,7 @@ import { validateMealInput, validateGoalsInput } from '../../validators/nutritio
 // MEALS
 export async function getMeals(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
     const meals = await nutritionService.getMeals(userId, date, category);
@@ -23,7 +23,7 @@ export async function getMeals(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function createMeal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const input = { userId, ...req.body };
     validateMealInput(input);
 
@@ -36,7 +36,7 @@ export async function createMeal(req: AuthRequest, res: Response, next: NextFunc
 
 export async function updateMeal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const meal = await nutritionService.updateMeal(id, userId, req.body);
@@ -48,7 +48,7 @@ export async function updateMeal(req: AuthRequest, res: Response, next: NextFunc
 
 export async function deleteMeal(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await nutritionService.deleteMeal(id, userId);
@@ -61,7 +61,7 @@ export async function deleteMeal(req: AuthRequest, res: Response, next: NextFunc
 // GOALS
 export async function getGoals(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const goals = await nutritionService.getGoals(userId);
     sendSuccess(res, goals, 'Nutrition goals retrieved successfully', 200);
   } catch (err) {
@@ -71,7 +71,7 @@ export async function getGoals(req: AuthRequest, res: Response, next: NextFuncti
 
 export async function updateGoals(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     validateGoalsInput(req.body);
 
     const goals = await nutritionService.updateGoals(userId, req.body);
@@ -84,7 +84,7 @@ export async function updateGoals(req: AuthRequest, res: Response, next: NextFun
 // SUMMARY
 export async function getSummary(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const date = typeof req.query.date === 'string' ? req.query.date : undefined;
     const summary = await nutritionService.getDailySummary(userId, date);
     sendSuccess(res, summary, 'Daily nutrition summary retrieved successfully', 200);
@@ -96,7 +96,7 @@ export async function getSummary(req: AuthRequest, res: Response, next: NextFunc
 // HISTORY
 export async function getHistory(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const period = (typeof req.query.period === 'string' ? req.query.period : 'daily') as 'daily' | 'weekly' | 'monthly';
     const dateFrom = typeof req.query.from === 'string' ? req.query.from : undefined;
     const dateTo = typeof req.query.to === 'string' ? req.query.to : undefined;

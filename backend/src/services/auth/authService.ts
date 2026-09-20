@@ -38,26 +38,6 @@ export interface MockUserRecord {
 
 const usersDb: Map<string, MockUserRecord> = new Map();
 
-// Seed initial demo user
-const seedDemoUser = async () => {
-  const demoEmail = 'adarsh@disciplineos.app';
-  if (!Array.from(usersDb.values()).some((u) => u.email === demoEmail)) {
-    const hash = await bcrypt.hash('DemoUser123!', 12);
-    const demoUser: MockUserRecord = {
-      id: 'usr-demo-1',
-      email: demoEmail,
-      name: 'Adarsh',
-      passwordHash: hash,
-      role: 'USER',
-      status: 'active',
-      emailVerified: true,
-      createdAt: new Date().toISOString(),
-    };
-    usersDb.set(demoUser.id, demoUser);
-  }
-};
-seedDemoUser();
-
 export class AuthService {
   /**
    * Hash password with bcrypt cost factor 12

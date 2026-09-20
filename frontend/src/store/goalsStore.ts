@@ -59,7 +59,7 @@ interface GoalsState {
 }
 
 export const useGoalsStore = create<GoalsState>((set, get) => ({
-  goalScore: 85,
+  goalScore: 0,
   goals: [],
   summary: {
     totalGoals: 0,
@@ -71,12 +71,7 @@ export const useGoalsStore = create<GoalsState>((set, get) => ({
   },
   ruleInsights: [],
   activityFeed: [],
-  weeklyProgressHistory: [
-    { week: 'W1', progressAvg: 45, completedCount: 1 },
-    { week: 'W2', progressAvg: 58, completedCount: 2 },
-    { week: 'W3', progressAvg: 70, completedCount: 3 },
-    { week: 'W4', progressAvg: 82, completedCount: 4 },
-  ],
+  weeklyProgressHistory: [],
 
   loadAllGoals: async () => {
     try {

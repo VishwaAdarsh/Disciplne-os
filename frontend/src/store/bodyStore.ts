@@ -78,7 +78,7 @@ interface BodyState {
   }) => void;
   addWater: (amountMl: number) => void;
   updateSteps: (steps: number) => void;
-  mockSyncHealthConnect: () => void;
+  syncHealthConnect: () => void;
   logSleep: (start: string, wake: string, qualityStars: number) => void;
   logWeight: (weightKg: number) => void;
   logRecovery: (level: RecoveryLevel) => void;
@@ -87,122 +87,49 @@ interface BodyState {
 }
 
 export const useBodyStore = create<BodyState>((set, get) => ({
-  bodyScore: 78,
+  bodyScore: 0,
   steps: {
-    current: 8432,
+    current: 0,
     target: 10000,
-    caloriesBurned: 360,
-    distanceKm: 6.1,
-    weeklyHistory: [
-      { day: 'Mon', count: 7200 },
-      { day: 'Tue', count: 9100 },
-      { day: 'Wed', count: 10400 },
-      { day: 'Thu', count: 8500 },
-      { day: 'Fri', count: 9800 },
-      { day: 'Sat', count: 11200 },
-      { day: 'Sun', count: 8432 },
-    ],
+    caloriesBurned: 0,
+    distanceKm: 0,
+    weeklyHistory: [],
   },
   workout: {
-    todayTitle: 'Strength Training',
-    durationMinutes: 45,
-    caloriesBurned: 420,
-    completed: true,
-    streakDays: 6,
-    weeklyCount: 4,
+    todayTitle: '',
+    durationMinutes: 0,
+    caloriesBurned: 0,
+    completed: false,
+    streakDays: 0,
+    weeklyCount: 0,
     weeklyTarget: 5,
-    recentWorkouts: [
-      {
-        id: 'w1',
-        name: 'Push Day - Upper Body Focus',
-        type: 'Strength',
-        durationMinutes: 45,
-        caloriesBurned: 420,
-        intensity: 'High',
-        completed: true,
-        timestamp: new Date().toISOString(),
-        dateStr: 'Today, 7:20 AM',
-      },
-      {
-        id: 'w2',
-        name: 'Pull Day - Back & Biceps',
-        type: 'Strength',
-        durationMinutes: 50,
-        caloriesBurned: 460,
-        intensity: 'High',
-        completed: true,
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        dateStr: 'Yesterday',
-      },
-      {
-        id: 'w3',
-        name: 'Zone 2 Cardio Run',
-        type: 'Running',
-        durationMinutes: 35,
-        caloriesBurned: 310,
-        intensity: 'Medium',
-        completed: true,
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-        dateStr: '2 days ago',
-      },
-    ],
+    recentWorkouts: [],
   },
   sleep: {
-    durationHours: 7,
-    durationMinutes: 26,
+    durationHours: 0,
+    durationMinutes: 0,
     targetHours: 8,
-    qualityPercent: 88,
-    qualityStars: 4,
-    sleepStart: '11:10 PM',
-    wakeTime: '6:36 AM',
-    weeklyHistory: [
-      { day: 'Mon', hours: 7.1 },
-      { day: 'Tue', hours: 7.8 },
-      { day: 'Wed', hours: 6.9 },
-      { day: 'Thu', hours: 7.4 },
-      { day: 'Fri', hours: 8.0 },
-      { day: 'Sat', hours: 8.2 },
-      { day: 'Sun', hours: 7.43 },
-    ],
-    logs: [
-      {
-        id: 'sl-1',
-        sleepStart: '11:10 PM',
-        wakeTime: '6:36 AM',
-        durationHours: 7,
-        durationMinutes: 26,
-        targetHours: 8,
-        qualityStars: 4,
-        date: 'Today',
-      },
-    ],
+    qualityPercent: 0,
+    qualityStars: 0,
+    sleepStart: '',
+    wakeTime: '',
+    weeklyHistory: [],
+    logs: [],
   },
   water: {
-    currentLiters: 2.2,
+    currentLiters: 0,
     targetLiters: 3.0,
-    logs: [
-      { amountMl: 500, timestamp: '8:00 AM' },
-      { amountMl: 500, timestamp: '10:30 AM' },
-      { amountMl: 700, timestamp: '1:15 PM' },
-      { amountMl: 500, timestamp: '4:00 PM' },
-    ],
+    logs: [],
   },
   weight: {
-    currentKg: 68.4,
-    targetKg: 70.0,
-    change30Days: -0.8,
-    history30Days: [
-      { id: 'wt-1', date: 'Jul 1', weightKg: 69.2 },
-      { id: 'wt-2', date: 'Jul 7', weightKg: 69.0 },
-      { id: 'wt-3', date: 'Jul 14', weightKg: 68.7 },
-      { id: 'wt-4', date: 'Jul 21', weightKg: 68.5 },
-      { id: 'wt-5', date: 'Jul 28', weightKg: 68.4 },
-      { id: 'wt-6', date: 'Aug 3', weightKg: 68.4 },
-    ],
+    currentKg: 0,
+    targetKg: 0,
+    change30Days: 0,
+    history30Days: [],
   },
   recovery: {
-    currentLevel: 'good',
-    loggedToday: true,
+    currentLevel: null,
+    loggedToday: false,
   },
   activeSession: {
     name: '',
@@ -211,32 +138,7 @@ export const useBodyStore = create<BodyState>((set, get) => ({
     elapsedSeconds: 0,
     startTime: null,
   },
-  activityFeed: [
-    {
-      id: 'act-1',
-      type: 'WORKOUT_COMPLETED',
-      title: 'Completed Workout',
-      subtext: 'Push Day - Upper Body Focus (45 min)',
-      timestamp: 'Today, 7:20 AM',
-      icon: 'Dumbbell',
-    },
-    {
-      id: 'act-2',
-      type: 'WATER_LOGGED',
-      title: 'Logged Water',
-      subtext: '+500 ml added (Total 2.2L / 3.0L)',
-      timestamp: 'Today, 4:00 PM',
-      icon: 'Droplet',
-    },
-    {
-      id: 'act-3',
-      type: 'SLEEP_LOGGED',
-      title: 'Logged Sleep',
-      subtext: '7h 26m recorded (Quality ★★★★☆)',
-      timestamp: 'Today, 6:40 AM',
-      icon: 'Moon',
-    },
-  ],
+  activityFeed: [],
 
   calculateScoreBreakdown: () => {
     const { workout, steps, sleep, water, recovery } = get();
@@ -500,7 +402,7 @@ export const useBodyStore = create<BodyState>((set, get) => ({
     get().recalculateScore();
   },
 
-  mockSyncHealthConnect: () => {
+  syncHealthConnect: () => {
     const { steps } = get();
     const syncedSteps = Math.min(steps.target, steps.current + 1500);
     get().updateSteps(syncedSteps);
@@ -514,7 +416,7 @@ export const useBodyStore = create<BodyState>((set, get) => ({
 
   logSleep: (start, wake, qualityStars) => {
     const { sleep, activityFeed } = get();
-    // Simple duration parsing for demo
+    // Default duration calculation
     const durationHours = 7;
     const durationMinutes = 30;
 

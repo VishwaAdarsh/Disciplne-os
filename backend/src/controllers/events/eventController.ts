@@ -12,7 +12,7 @@ import { EventFilter } from '../../types/events';
 
 export async function publishEvent(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || req.body.userId || 'demo-user';
+    const userId = req.userId || req.body.userId;
     const { module, eventType, title, description, icon, metadata, payload, scoreImpact, source, status, timestamp } = req.body;
 
     const event = await eventService.publishEvent({
@@ -37,7 +37,7 @@ export async function publishEvent(req: AuthRequest, res: Response, next: NextFu
 
 export async function getEvents(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const pagination = getPaginationParams(req.query);
     const rawFilter = getFilterParams(req.query);
 
@@ -63,7 +63,7 @@ export async function getEvents(req: AuthRequest, res: Response, next: NextFunct
 
 export async function getEventById(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     const event = await eventService.getEventById(id, userId);
@@ -75,7 +75,7 @@ export async function getEventById(req: AuthRequest, res: Response, next: NextFu
 
 export async function deleteEvent(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = req.userId!;
     const { id } = req.params;
 
     await eventService.deleteEvent(id, userId);
