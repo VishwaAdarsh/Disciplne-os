@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Award, AlertTriangle, Zap, Calendar, RefreshCw, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Award, AlertTriangle, Zap, Calendar, RefreshCw, AlertCircle, FileText } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import MetricCard from '../components/MetricCard';
 import AreaTrendChartCard from '../components/charts/AreaTrendChartCard';
@@ -91,28 +92,51 @@ export default function Analytics() {
           if (mapped) setTimeRange(mapped);
         }}
         actionRight={
-          <button
-            onClick={() => loadAnalytics(timeRange)}
-            disabled={loading}
-            title="Refresh Analytics"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'var(--card-bg)',
-              border: '1px solid var(--card-border)',
-              color: 'var(--text-muted)',
-              borderRadius: '10px',
-              padding: '7px 12px',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>{loading ? 'Updating...' : 'Refresh'}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link
+              to="/reports"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#6366F1',
+                color: '#FFFFFF',
+                borderRadius: '10px',
+                padding: '7px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(99,102,241,0.25)',
+              }}
+              title="Generate comprehensive reports and export data"
+            >
+              <FileText size={14} />
+              <span>Reports & Export</span>
+            </Link>
+
+            <button
+              onClick={() => loadAnalytics(timeRange)}
+              disabled={loading}
+              title="Refresh Analytics"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                color: 'var(--text-muted)',
+                borderRadius: '10px',
+                padding: '7px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              <span>{loading ? 'Updating...' : 'Refresh'}</span>
+            </button>
+          </div>
         }
       />
 

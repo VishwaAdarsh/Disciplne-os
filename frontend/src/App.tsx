@@ -15,6 +15,7 @@ import Reflect from './pages/Reflect';
 import AchievementsPage from './pages/AchievementsPage';
 import SettingsPage from './pages/SettingsPage';
 import AICoachPage from './pages/AICoachPage';
+import ReportsPage from './pages/ReportsPage';
 
 function App() {
   const { user, token, setUser, logout } = useStore();
@@ -73,6 +74,7 @@ function App() {
           <Route path="/nutrition" element={<NutritionPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/reflect" element={<Reflect />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

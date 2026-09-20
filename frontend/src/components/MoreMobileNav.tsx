@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut, Sparkles, Bell } from 'lucide-react';
+import { X, Utensils, Target, BarChart2, BookOpen, Award, Settings, Sun, Moon, LogOut, Sparkles, Bell, FileText } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -24,6 +24,7 @@ export default function MoreMobileNav({ isOpen, onClose, onOpenNotifications }: 
     { to: '/nutrition', label: 'Nutrition', icon: Utensils, desc: 'Macro targets & meal logs' },
     { to: '/goals', label: 'Goals', icon: Target, desc: 'Milestone tracking & projects' },
     { to: '/analytics', label: 'Analytics', icon: BarChart2, desc: 'Deep performance comparison' },
+    { to: '/reports', label: 'Reports & Export', icon: FileText, desc: 'Performance audit, PDF & CSV export' },
     { to: '/reflect', label: 'Weekly Reflect', icon: BookOpen, desc: 'Weekly review & commitments' },
     { to: '/achievements', label: 'Achievements', icon: Award, desc: 'Operator badges & streaks' },
     { to: '/settings', label: 'Settings', icon: Settings, desc: 'Preferences & reset schedule' },

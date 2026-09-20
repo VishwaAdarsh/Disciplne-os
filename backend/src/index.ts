@@ -29,6 +29,7 @@ import v1NotificationRoutes from './routes/v1/notifications';
 import v1OverviewRoutes from './routes/v1/overview';
 import v1AnalyticsRoutes from './routes/v1/analytics';
 import v1RealtimeRoutes from './routes/v1/realtime';
+import v1ReportsRoutes from './routes/v1/reports';
 
 import { requestLogger } from './middleware/requestLogger';
 import { globalErrorHandler } from './middleware/errorHandler';
@@ -66,6 +67,7 @@ app.use('/api/v1/notifications', v1NotificationRoutes);
 app.use('/api/v1/overview', v1OverviewRoutes);
 app.use('/api/v1/analytics', v1AnalyticsRoutes);
 app.use('/api/v1/realtime', v1RealtimeRoutes);
+app.use('/api/v1/reports', v1ReportsRoutes);
 
 // Legacy routes for backward compatibility
 app.use('/api/auth', authRoutes);
